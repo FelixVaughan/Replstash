@@ -5,20 +5,25 @@ const path = require('path');
 /**
  * @param {vscode.ExtensionContext} context
  */
-function activate(context) {
-    let output = [];
-    const verboten = ["app", "arguments.length", "fn"]
+const activate = (context) => {
+    let sessionOutput = [];
+    let breakpoints = [];
+    let currentBreakpoint = null;
+
     // Listen to the start of a debug session
     const startDebugSessionDisposable = vscode.debug.onDidStartDebugSession(session => {
         vscode.window.showInformationMessage(`Debug session started: ${session.name}`);
         vscode.debug.activeDebugConsole.appendLine(`Debug session started: ${session.name}`);
-        output.push(`Debug session started: ${session.name}`);
+        sessionOutput.push(`Debug session started: ${session.name}`);
     });
 
-    // Capture output from the debug console
-    const customEventDisposable = vscode.debug.onDidReceiveDebugSessionCustomEvent(event => {
-        if (event.body && event.body.output) {
-            output.push(event.body.output);
+    const breakpointDisposable = vscode.debug.onDidChangeBreakpoints((event) => {
+        if (event.added.length > 0) {
+            event.added.forEach((breakpoint) => {
+                console.log('Breakpoint added:', breakpoint);
+                // You can handle the added breakpoint here
+                // For example, check its location, conditions, etc.
+            });
         }
     });
 
@@ -27,7 +32,7 @@ function activate(context) {
         vscode.window.showInformationMessage(`Debug session ended: ${session.name}`);
         // Save the captured output to a file
         const filePath = path.join(vscode.workspace.rootPath || '', 'debug_output.txt');
-        fs.writeFileSync(filePath, output.join('\n'));
+        fs.writeFileSync(filePath, sessionOutput.join('\n'));
         vscode.window.showInformationMessage(`Debug output saved to: ${filePath}`);
     });
 
@@ -35,26 +40,9 @@ function activate(context) {
         createDebugAdapterTracker(session) {
             return {
                 onWillReceiveMessage: async (message) => {
-                    // Capture the command entered in the debug console
-                    if (message.type === 'request' && message.command === 'evaluate') {
+                    if (message.arguments?.context === 'repl') {
                         const expression = message.arguments.expression;
-                        if (expression && !expression.startsWith("Debug session") && !verboten.includes(expression)) {
-                            console.log(`Command Entered: ${expression}`);
-                            if(expression == "//run"){
-                                //run whatever is in the output file
-                                const filePath = path.join(vscode.workspace.rootPath || '', 'debug_output.txt');
-                                const data = fs.readFileSync(filePath, 'utf8');
-                                const activeDebugSession = await vscode.debug.activeDebugSession;
-                                try {
-                                    vscode.debug.activeDebugConsole.appendLine(data);
-                                    await activeDebugSession.customRequest('evaluate', { expression: data });
-                                }catch(e){
-                                    vscode.window.showErrorMessage(`Error evaluating expression:\n{e}`);
-                                }
-                                return;
-                            }
-                            output.push(expression);
-                        }
+                        sessionOutput.push(expression);
                     }
                 },
                 onDidSendMessage: (message) => {
@@ -62,6 +50,7 @@ function activate(context) {
                     if (message.type === 'event' && message.event === 'output') {
                         const output = message.body.output;
                         if (output) {
+                            //TODO: only add expression if no errors
                             console.log(`Debug Console Output: ${output}`);
                             // Do something with the output, e.g., store it, process it, etc.
                         }
@@ -77,10 +66,9 @@ function activate(context) {
         }
     })
 
-
     context.subscriptions.push(
         startDebugSessionDisposable,
-        customEventDisposable,
+        breakpointDisposable,
         endDebugSessionDisposable
     );
 }
@@ -91,3 +79,16 @@ module.exports = {
     activate,
     deactivate
 };
+
+const func = async () => {
+    const filePath = path.join(vscode.workspace.rootPath || '', 'debug_output.txt');
+    const data = fs.readFileSync(filePath, 'utf8');
+    const activeDebugSession = await vscode.debug.activeDebugSession;
+    try {
+        vscode.debug.activeDebugConsole.appendLine(data);
+        await activeDebugSession.customRequest('evaluate', { expression: data, context: 'repl' });
+    }catch(e){
+        vscode.window.showErrorMessage(`Error evaluating expression:\n{e}`);
+    }
+    return;
+}

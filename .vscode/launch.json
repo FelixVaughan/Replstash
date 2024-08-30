@@ -6,7 +6,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Extension",
+            "name": "JS Example",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
@@ -17,6 +17,16 @@
             // "outFiles": [
             //     "${workspaceFolder}/out/**/*.js"
             // ],
+        },
+        {
+            "name": "Python Example",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "/home/felix/code/demo2"
+            ],
         }
     ]
 }
