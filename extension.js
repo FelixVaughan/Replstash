@@ -17,15 +17,6 @@ const activate = (context) => {
         sessionOutput.push(`Debug session started: ${session.name}`);
     });
 
-    const breakpointDisposable = vscode.debug.onDidChangeBreakpoints((event) => {
-        if (event.added.length > 0) {
-            event.added.forEach((breakpoint) => {
-                console.log('Breakpoint added:', breakpoint);
-                // You can handle the added breakpoint here
-                // For example, check its location, conditions, etc.
-            });
-        }
-    });
 
     // Listen to the end of a debug session
     const endDebugSessionDisposable = vscode.debug.onDidTerminateDebugSession(session => {
@@ -45,14 +36,48 @@ const activate = (context) => {
                         sessionOutput.push(expression);
                     }
                 },
-                onDidSendMessage: (message) => {
+                onDidSendMessage: async (message) => {
                     // Handle the message sent from the debug adapter to the extension
                     if (message.type === 'event' && message.event === 'output') {
                         const output = message.body.output;
                         if (output) {
                             //TODO: only add expression if no errors
-                            console.log(`Debug Console Output: ${output}`);
-                            // Do something with the output, e.g., store it, process it, etc.
+                            sessionOutput.push(output);
+                            currentBreakpoint.content.push(output);
+                        }
+                    }
+
+                    //handle breakpoint hit
+                    if (message.type === 'event' && message.event === 'stopped') {
+                        if (message.body.reason === 'breakpoint') {
+                            const stackTraceResponse = await vscode.debug.activeDebugSession.customRequest('stackTrace', { threadId: message.body.threadId });
+
+                            if (stackTraceResponse && stackTraceResponse.stackFrames.length > 0) {
+                                const topFrame = stackTraceResponse.stackFrames[0]; // Get the top frame, which is where the breakpoint hit
+                                const source = topFrame.source;
+                                const line = topFrame.line;
+                                const column = topFrame.column;
+    
+                                // Find the corresponding breakpoint from the list of breakpoints
+                                const hitBreakpoint = vscode.debug.breakpoints.find(point => {
+                                    const location = point.location;
+                                    return location.uri.path === source.path && location.range.start.line + 1 === line
+                                });    
+                                if (hitBreakpoint) {
+                                    const breakpointId = hitBreakpoint.id; // Extract the ID of the breakpoint
+                                    const breakpoint = breakpoints.find(breakpoint => breakpoint.id === breakpointId)
+                                    if (breakpoint) currentBreakpoint = breakpoint;
+                                    else {
+                                        currentBreakpoint = {
+                                            "id": breakpointId,
+                                            "line": line,
+                                            "content": []
+                                        };
+                                        breakpoints.push(currentBreakpoint);
+                                    }
+                                }
+
+                            }
                         }
                     }
                 },
@@ -68,7 +93,6 @@ const activate = (context) => {
 
     context.subscriptions.push(
         startDebugSessionDisposable,
-        breakpointDisposable,
         endDebugSessionDisposable
     );
 }
@@ -92,3 +116,7 @@ const func = async () => {
     }
     return;
 }
+
+//general questions
+//should multiple hits mean multiple scripts? Yes, each breakpoint should be its own "session"
+    //Perhaps make configurable
