@@ -6,7 +6,7 @@ const path = require('path');
  * @param {vscode.ExtensionContext} context
  */
 const activate = (context) => {
-    let sessionOutput = [];
+    let sessionOutput = {};
     let breakpoints = [];
     let currentBreakpoint = null;
 
@@ -21,10 +21,17 @@ const activate = (context) => {
     // Listen to the end of a debug session
     const endDebugSessionDisposable = vscode.debug.onDidTerminateDebugSession(session => {
         vscode.window.showInformationMessage(`Debug session ended: ${session.name}`);
-        // Save the captured output to a file
-        const filePath = path.join(vscode.workspace.rootPath || '', 'debug_output.txt');
-        fs.writeFileSync(filePath, sessionOutput.join('\n'));
-        vscode.window.showInformationMessage(`Debug output saved to: ${filePath}`);
+        
+        // Save the captured output for each breakpoint
+        breakpoints.forEach((breakpoint, index) => {
+            const filePath = path.join(vscode.workspace.rootPath || '', '.vscode',`breakpoint_${breakpoint.line}.txt`);
+            fs.writeFileSync(filePath, Object.values(breakpoint.content).join('\n'));
+            vscode.window.showInformationMessage(`Breakpoint output saved to: ${filePath}`);
+        });
+
+        const sessionFilePath = path.join(vscode.workspace.rootPath || '', '.vscode','debug_output.txt');
+        fs.writeFileSync(sessionFilePath, Object.values(sessionOutput).join('\n'));
+        vscode.window.showInformationMessage(`Debug session output saved to: ${sessionFilePath}`);
     });
 
     vscode.debug.registerDebugAdapterTrackerFactory('*', {
@@ -33,36 +40,47 @@ const activate = (context) => {
                 onWillReceiveMessage: async (message) => {
                     if (message.arguments?.context === 'repl') {
                         const expression = message.arguments.expression;
-                        sessionOutput.push(expression);
+                        currentBreakpoint.content[message.seq] = expression;
+                        sessionOutput[message.seq] = expression;
+                        
                     }
                 },
                 onDidSendMessage: async (message) => {
-                    // Handle the message sent from the debug adapter to the extension
-                    if (message.type === 'event' && message.event === 'output') {
-                        const output = message.body.output;
-                        if (output) {
-                            //TODO: only add expression if no errors
-                            sessionOutput.push(output);
-                            currentBreakpoint.content.push(output);
+
+                    // if (message.type === 'event' && message.event === 'output') {
+                    //     const output = message.body.output;
+                    //     if (output) {
+                    //         sessionOutput.push(output);
+                    //         currentBreakpoint?.content.push(output);
+                    //     }
+                    // }
+
+                    if (message.type === 'response' && message.command === 'evaluate') {
+                        if (!message?.success) {
+                            delete currentBreakpoint.content[message.request_seq];
+                            delete sessionOutput[message.request_seq];
                         }
                     }
 
                     //handle breakpoint hit
                     if (message.type === 'event' && message.event === 'stopped') {
                         if (message.body.reason === 'breakpoint') {
-                            const stackTraceResponse = await vscode.debug.activeDebugSession.customRequest('stackTrace', { threadId: message.body.threadId });
+                            const stackTraceResponse = await vscode.debug.activeDebugSession.customRequest('stackTrace', { 
+                                threadId: message.body.threadId 
+                            });
 
                             if (stackTraceResponse && stackTraceResponse.stackFrames.length > 0) {
                                 const topFrame = stackTraceResponse.stackFrames[0]; // Get the top frame, which is where the breakpoint hit
                                 const source = topFrame.source;
                                 const line = topFrame.line;
-                                const column = topFrame.column;
     
                                 // Find the corresponding breakpoint from the list of breakpoints
                                 const hitBreakpoint = vscode.debug.breakpoints.find(point => {
                                     const location = point.location;
                                     return location.uri.path === source.path && location.range.start.line + 1 === line
-                                });    
+                                });
+
+
                                 if (hitBreakpoint) {
                                     const breakpointId = hitBreakpoint.id; // Extract the ID of the breakpoint
                                     const breakpoint = breakpoints.find(breakpoint => breakpoint.id === breakpointId)
@@ -71,7 +89,7 @@ const activate = (context) => {
                                         currentBreakpoint = {
                                             "id": breakpointId,
                                             "line": line,
-                                            "content": []
+                                            "content": {}
                                         };
                                         breakpoints.push(currentBreakpoint);
                                     }
@@ -104,19 +122,7 @@ module.exports = {
     deactivate
 };
 
-const func = async () => {
-    const filePath = path.join(vscode.workspace.rootPath || '', 'debug_output.txt');
-    const data = fs.readFileSync(filePath, 'utf8');
-    const activeDebugSession = await vscode.debug.activeDebugSession;
-    try {
-        vscode.debug.activeDebugConsole.appendLine(data);
-        await activeDebugSession.customRequest('evaluate', { expression: data, context: 'repl' });
-    }catch(e){
-        vscode.window.showErrorMessage(`Error evaluating expression:\n{e}`);
-    }
-    return;
-}
 
 //general questions
 //should multiple hits mean multiple scripts? Yes, each breakpoint should be its own "session"
-    //Perhaps make configurable
+//Perhaps make configurable
