@@ -58,7 +58,6 @@ class StorageManager {
             bp.createdAt = this.getCurrentTimestamp();
         });
         this.context.workspaceState.update('breakpoints', breakpoints);
-        //why are breakpoints saving with the same id?
 
     }
 

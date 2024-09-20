@@ -15,14 +15,35 @@
   "main": "./src/extension.js",
   "contributes": {
     "commands": [
-        {
-            "command": "save-debug.startDebugSession",
-            "title": "Start Custom Debug Session"
-        },
-        {
-            "command": "save-debug.saveDebugOutput",
-            "title": "Save Debug Output"
-        }
+      {
+        "command": "slugger.startCapture",
+        "title": "Start Capturing Debug Console Input"
+      },
+      {
+        "command": "slugger.stopCapture",
+        "title": "Stop Capture and Save Output"
+      },
+      {
+        "command": "slugger.activateScripts",
+        "title": "Activate Saved Scripts"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "slugger.startCapture",
+        "key": "ctrl+alt+c",
+        "when": "debugging"
+      },
+      {
+        "command": "slugger.stopCapture",
+        "key": "ctrl+alt+s",
+        "when": "debugging"
+      },
+      {
+        "command": "slugger.activateScripts",
+        "key": "ctrl+alt+a",
+        "when": "debugging"
+      }
     ]
   },
   "scripts": {
