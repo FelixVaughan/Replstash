@@ -1,5 +1,6 @@
 const EventEmitter = require('events');
 const vscode = require('vscode');
+const path = require('path');
 
 class CommandHandler extends EventEmitter {
 
@@ -7,45 +8,119 @@ class CommandHandler extends EventEmitter {
         super();
         this.sessionManager = sessionManager;
         this.storageManager = storageManager;
-        this.isCapturing = false;
         this.pausedOnBreakpoint = false;
     }
 
     startCapture = () => {
-        let err_msg;
         const activeSession = vscode.debug.activeDebugSession;    
-
-        if (!activeSession) 
-            err_msg = 'No active debug session.';
-        else if (!this.pausedOnBreakpoint) 
-            err_msg = 'Not paused on a breakpoint.';
-        else if(this.isCapturing) 
-            err_msg = 'Already capturing debug console input.';
+        let err_msg;
+        if (!activeSession) err_msg = 'No active debug session.';
+        else if (!this.pausedOnBreakpoint) err_msg = 'Not paused on a breakpoint.';
+        else if(this.sessionManager.isCapturing) err_msg = 'Already capturing debug console input.';
 
         if (err_msg) {
             vscode.window.showWarningMessage(err_msg);
             return;
         }
 
-        this.isCapturing = true;
-        this.sessionManager.reset();
+        this.sessionManager.setCapturing(true);
+        // this.sessionManager.reset();
         this.emit('captureStarted');  // Emit event when capturing starts
         vscode.window.showInformationMessage('Started capturing debug console input.');
     };
 
-    stopCapture = () => {
-        if (this.isCapturing) {
-            this.isCapturing = false;
-            this.emit('captureStopped');  // Emit event when capturing stops
-            const breakpoints = this.sessionManager.getBreakpoints();
-            const sessionOutput = this.sessionManager.getSessionOutput();
-            this.storageManager.saveBreakpoints(breakpoints);
-            this.storageManager.saveSessionOutput(sessionOutput);
-            vscode.window.showInformationMessage('Stopped capturing and saved session output.');
-            this.sessionManager.reset();
+    pauseCapture = () => {
+
+        if (this.sessionManager.captureIsPaused) {
+            vscode.window.showWarningMessage('Capture already paused.');
             return;
         }
-        vscode.window.showWarningMessage('Not capturing debug console input.');
+
+        if (!this.sessionManager.isCapturing) {
+            vscode.window.showWarningMessage('Not capturing console input.');
+            return;
+        }
+
+        this.sessionManager.setCapturePaused(true);
+        vscode.window.showInformationMessage('Paused capturing debug console input.');
+    }
+
+    _isValidFilename = (name) => {
+        const invalidChars = /[<>:"\/\\|?*\x00-\x1F]/g;
+        const reservedNames = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+        if (invalidChars.test(name) || reservedNames.test(name) || name.length > 255)
+            return false;
+        return true;
+    }
+
+    stopCapture = async (autoSave = false) => {
+        if (!this.sessionManager.captureIsPaused && !this.sessionManager.isCapturing) {
+            vscode.window.showWarningMessage('Not capturing console input.');
+            return;
+        }
+
+        const captureTerminationSignal = () => {
+            this.sessionManager.setCapturing(false);
+            this.emit('captureStopped');  // Emit event when capturing stops
+        }
+
+        const currentBreakpoint = this.sessionManager.currentBreakpoint;
+
+        if (!Object.keys(currentBreakpoint.content).length) {
+            vscode.window.showWarningMessage('Stopped: No console input captured.');
+            captureTerminationSignal()
+            return;
+        }
+
+        const defaultFileName = `${path.basename(currentBreakpoint.file)}_${currentBreakpoint.line}_${currentBreakpoint.column}_${this.storageManager.getCurrentTimestamp()}`;
+        let fileName;
+        let invalidReason = "";
+
+        while (true) {
+
+            if (autoSave) {
+                fileName = defaultFileName;
+                break;
+            }
+
+            // Show input box to get the file name from the user
+            fileName = await vscode.window.showInputBox({
+                prompt: invalidReason || 'Save console input:',
+                value: defaultFileName,
+                placeHolder: defaultFileName
+            });
+
+            // If the user presses Escape or enters nothing, exit the loop and return
+            if (!fileName) {
+                vscode.window.showWarningMessage('Capture in progress, termination aborted.');
+                return;
+            }
+
+            fileName = fileName.trim();
+
+            // Check if the file already exists
+            if (this.storageManager.fileExists(fileName)) {
+                invalidReason = `File already exists: ${fileName}`;
+                continue;
+            }
+
+            // Check if the filename is valid
+            if (!this._isValidFilename(fileName)) {
+                invalidReason = 'Invalid file name.';
+                continue;
+            }
+
+            // If the filename is valid and does not exist, break out of the loop
+            break;
+    }
+
+
+        // Stop capturing and save the breakpoint with the specified file name 
+        captureTerminationSignal()
+        this.storageManager.saveBreakpoint(currentBreakpoint, fileName);
+        this.sessionManager.resetCurrentBeakpointContent();
+        vscode.window.showInformationMessage(`Stopped capture: ${fileName}`);
+    
     };
 
     activateScripts = () => {

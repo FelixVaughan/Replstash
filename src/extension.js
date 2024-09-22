@@ -1,53 +1,3 @@
-// const vscode = require('vscode');
-// const StorageManager = require('./storageManager');
-// const SessionManager = require('./sessionManager');
-// const DebugAdapterTracker = require('./debugAdapterTracker');
-// const CommandHandler = require('./commandHandler');
-
-
-
-// /**
-//  * @param {vscode.ExtensionContext} context
-//  */
-// const activate = (context) => {
-//     const sessionManager = new SessionManager();
-//     const storageManager = new StorageManager(context);
-
-//     const debugAdapterTrackerFactory = vscode.debug.registerDebugAdapterTrackerFactory('*', {
-//         createDebugAdapterTracker(session) {
-//             return new DebugAdapterTracker(sessionManager, storageManager);
-//         }
-//     });
-
-//     // Start and end debug session listeners
-//     const startDebugSessionDisposable = vscode.debug.onDidStartDebugSession(session => {
-//         vscode.window.showInformationMessage(`Debug session started: ${session.name}`);
-//         vscode.debug.activeDebugConsole.appendLine(`Debug session started: ${session.name}`);
-//     });
-
-//     const endDebugSessionDisposable = vscode.debug.onDidTerminateDebugSession(session => {
-//         vscode.window.showInformationMessage(`Debug session ended: ${session.name}`);
-//         storageManager.saveBreakpoints(sessionManager.getBreakpoints());
-//         storageManager.saveSessionOutput(sessionManager.getSessionOutput(), session.id);
-//         sessionManager.reset();
-//     });
-
-//     // Register disposables
-//     context.subscriptions.push(
-//         startDebugSessionDisposable,
-//         endDebugSessionDisposable,
-//         debugAdapterTrackerFactory
-//     );
-// };
-
-// const deactivate = () => {};
-
-// module.exports = {
-//     activate,
-//     deactivate,
-// };
-
-
 const vscode = require('vscode');
 const StorageManager = require('./storageManager');
 const SessionManager = require('./sessionManager');
@@ -79,6 +29,10 @@ const activate = (context) => {
         commandHandler.stopCapture();
     });
 
+    const pauseCommand = vscode.commands.registerCommand('slugger.pauseCapture', () => {
+        commandHandler.pauseCapture();
+    });
+
     // Command: Activate saved scripts (breakpoints)
     const activateScriptsCommand = vscode.commands.registerCommand('slugger.activateScripts', () => {
         commandHandler.activateScripts();
@@ -88,6 +42,7 @@ const activate = (context) => {
     context.subscriptions.push(
         startCaptureCommand,
         stopCaptureCommand,
+        pauseCommand,
         activateScriptsCommand,
         debugAdapterTrackerFactory
     );

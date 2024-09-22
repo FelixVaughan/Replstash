@@ -5,6 +5,8 @@ class SessionManager {
         this.sessionOutput = {};
         this.breakpoints = [];
         this.currentBreakpoint = null;
+        this.isCapturing = false;
+        this.captureIsPaused = false;
     }
 
     addSessionOutput(messageSeq, expression) {
@@ -13,6 +15,16 @@ class SessionManager {
 
     getSessionOutput() {
         return this.sessionOutput;
+    }
+
+    setCapturing(value) {
+        this.isCapturing = value;
+        this.captureIsPaused = false;
+    }
+
+    setCapturePaused(value) {
+        this.captureIsPaused = value
+        this.isCapturing = false;
     }
 
     createBreakpointId(file, line, column, threadId) {
@@ -54,10 +66,20 @@ class SessionManager {
         return this.breakpoints;
     }
 
-    reset() {
-        this.sessionOutput = {};
-        this.breakpoints = [];
-        this.currentBreakpoint = null;
+    getisCapturing() {
+        return this.isCapturing;
+    }
+
+    clearCapture() {
+
+    }
+
+    discardCapture() {
+
+    }
+
+    resetCurrentBeakpointContent() {
+        this.currentBreakpoint.content = {};
     }
 
 }

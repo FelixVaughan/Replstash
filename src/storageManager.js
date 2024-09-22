@@ -47,24 +47,34 @@ class StorageManager {
         }
     }
 
-    // Save all breakpoints
-    saveBreakpoints(breakpoints) {
-        breakpoints.forEach(bp => {
-            const content = Object.values(bp.content).join('\n');
-            const fileName = `${path.basename(bp.file)}_${bp.line}_${bp.column}_${this.getCurrentTimestamp()}`;
-            const fullPath = path.join(this.storagePath, 'breakpoints', fileName);
-            this.saveToFile(fullPath, content);
-            bp.scripts.push[fullPath];
-            bp.createdAt = this.getCurrentTimestamp();
-        });
-        this.context.workspaceState.update('breakpoints', breakpoints);
+    //save breakpoint
+    saveBreakpoint(bp, fileName) {
+        const content = Object.values(bp.content).join('\n');
+        const fullPath = path.join(this.storagePath, 'breakpoints', fileName);
+        this.saveToFile(fullPath, content);
+        this.upsertBreakpointScripts(bp, fullPath);
+    }
 
+    // Update record
+    upsertBreakpointScripts(bp, fullPath) {
+        const loadedBreakpoints = this.loadBreakpoints();
+        const existingBreakpoint = loadedBreakpoints.find(b => b.id === bp.id);
+        if (existingBreakpoint) {
+            existingBreakpoint.scripts.push(fullPath);
+            existingBreakpoint.modifedAt = this.getCurrentTimestamp();
+        } else {
+            bp.scripts.push(fullPath);
+            bp.createdAt = this.getCurrentTimestamp();
+            loadedBreakpoints.push(bp);
+        }
+        this.context.workspaceState.update('breakpoints', loadedBreakpoints);
+        this.loadBreakpoints(); //refresh
     }
 
     // Load all breakpoints
     loadBreakpoints() {
-        this.fetchedBreakpoints = this.context.workspaceState.get('breakpoints', []);
-        console.log('Loaded breakpoints:\n', this.fetchedBreakpoints);
+        this.loadedBreakpoints = this.context.workspaceState.get('breakpoints', []);
+        return this.loadedBreakpoints;
     }
 
     // Save session output
@@ -74,6 +84,12 @@ class StorageManager {
         const fullPath = path.join(this.storagePath, 'session', sessionFilename);
         this.saveToFile(fullPath, content);
     }
+
+    fileExists(filename) {
+        const [sessionPath, breakpointsPath] = ['session', 'breakpoints'].map(dir => path.join(this.storagePath, dir, filename));
+        return fs.existsSync(sessionPath) || fs.existsSync(breakpointsPath);
+    }
+
 }
 
 module.exports = StorageManager;
