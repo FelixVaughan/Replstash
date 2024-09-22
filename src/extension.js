@@ -19,30 +19,22 @@ const activate = (context) => {
         }
     });
 
-    // Command: Start capturing
-    const startCaptureCommand = vscode.commands.registerCommand('slugger.startCapture', () => {
-        commandHandler.startCapture();
-    });
+    // Commands
+    const startCaptureCommand = vscode.commands.registerCommand('slugger.startCapture', commandHandler.startCapture);
+    const stopCaptureCommand = vscode.commands.registerCommand('slugger.stopCapture', commandHandler.stopCapture);
+    const pauseCommand = vscode.commands.registerCommand('slugger.pauseCapture', commandHandler.pauseCapture);
+    const editScriptCommand = vscode.commands.registerCommand('slugger.editSavedScript', commandHandler.editSavedScript);
+    const deleteScriptCommand = vscode.commands.registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript);
+    const activateScriptsCommand = vscode.commands.registerCommand('slugger.activateScripts', commandHandler.activateScripts);
 
-    // Command: Stop capturing and save
-    const stopCaptureCommand = vscode.commands.registerCommand('slugger.stopCapture', () => {
-        commandHandler.stopCapture();
-    });
-
-    const pauseCommand = vscode.commands.registerCommand('slugger.pauseCapture', () => {
-        commandHandler.pauseCapture();
-    });
-
-    // Command: Activate saved scripts (breakpoints)
-    const activateScriptsCommand = vscode.commands.registerCommand('slugger.activateScripts', () => {
-        commandHandler.activateScripts();
-    });
 
     // Add to subscriptions
     context.subscriptions.push(
         startCaptureCommand,
         stopCaptureCommand,
         pauseCommand,
+        editScriptCommand,
+        deleteScriptCommand,
         activateScriptsCommand,
         debugAdapterTrackerFactory
     );

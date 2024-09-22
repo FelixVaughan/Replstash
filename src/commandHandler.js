@@ -123,6 +123,47 @@ class CommandHandler extends EventEmitter {
     
     };
 
+    _selectScript = async () => {
+        const scriptsMetaData = this.storageManager.breakpointFilesMetaData(); // This should return an array of script paths
+        if (!scriptsMetaData.length) {
+            vscode.window.showInformationMessage('No saved breakpoints found.');
+            return;
+        }
+
+        const selectedScript = await vscode.window.showQuickPick(
+            scriptsMetaData.map((meta) => ({
+                label: meta.fileName,
+                description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
+            })),
+            {
+                placeHolder: 'Select a saved breakpoint script to edit',
+                canPickMany: false
+            }
+        );
+
+        // If no script was selected (user canceled the QuickPick)
+        if (!selectedScript) {
+            vscode.window.showInformationMessage('No script selected.');
+            return;
+        }
+        return selectedScript.label;
+
+    }
+
+    editSavedScript = async () => {
+        const selectedScript = await this._selectScript();
+        if (selectedScript) {
+            this.storageManager.openBreakpointFile(selectedScript);
+        }
+    };
+
+    deleteSavedScript = async () => {
+        const selectedScript = await this._selectScript();
+        if (selectedScript) {
+            this.storageManager.deleteBreakpointFile(selectedScript);
+        }
+    }
+
     activateScripts = () => {
         const breakpoints = this.storageManager.loadBreakpoints();
         if (breakpoints.length > 0) {

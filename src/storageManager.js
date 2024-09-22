@@ -55,6 +55,11 @@ class StorageManager {
         this.upsertBreakpointScripts(bp, fullPath);
     }
 
+    _updateBreakpoints(breakpoints) {
+        this.context.workspaceState.update('breakpoints', breakpoints);
+        this.loadBreakpoints(); //refresh
+    }
+
     // Update record
     upsertBreakpointScripts(bp, fullPath) {
         const loadedBreakpoints = this.loadBreakpoints();
@@ -67,8 +72,7 @@ class StorageManager {
             bp.createdAt = this.getCurrentTimestamp();
             loadedBreakpoints.push(bp);
         }
-        this.context.workspaceState.update('breakpoints', loadedBreakpoints);
-        this.loadBreakpoints(); //refresh
+        this._updateBreakpoints(loadedBreakpoints);
     }
 
     // Load all breakpoints
@@ -88,6 +92,42 @@ class StorageManager {
     fileExists(filename) {
         const [sessionPath, breakpointsPath] = ['session', 'breakpoints'].map(dir => path.join(this.storagePath, dir, filename));
         return fs.existsSync(sessionPath) || fs.existsSync(breakpointsPath);
+    }
+
+    breakpointFilesMetaData() {
+
+        const _formatDate = (date) => {
+            return date.toLocaleString('en-US', {
+                timeZoneName: 'short',
+            });
+        }
+        const breakpointsPath = path.join(this.storagePath, 'breakpoints');
+        return fs.readdirSync(breakpointsPath).map(file => {
+            const fullPath = path.join(breakpointsPath, file);
+            let { size, birthtime: createdAt, mtime: modifiedAt } = fs.statSync(fullPath);
+            [createdAt, modifiedAt] = [createdAt, modifiedAt].map(_formatDate);
+            return { fileName: file, fullPath, size, createdAt, modifiedAt };
+        });
+    }
+    
+    openBreakpointFile(fileName) {
+        const fullPath = path.join(this.storagePath, 'breakpoints', fileName);
+        vscode.workspace.openTextDocument(fullPath).then((doc) => {
+            vscode.window.showTextDocument(doc);
+        });
+    }
+
+    deleteBreakpointFile(fileName) {
+        const fullPath = path.join(this.storagePath, 'breakpoints', fileName);
+        fs.unlinkSync(fullPath);
+
+        const loadedBreakpoints = this.loadBreakpoints();
+        const updatedBreakpoints = loadedBreakpoints.filter(bp => {
+            const updatedScripts = bp.scripts.filter(s => s !== fullPath);
+            bp.scripts = updatedScripts;
+            return bp.scripts.length > 0; // Remove if no scripts are left
+        });
+        this._updateBreakpoints(updatedBreakpoints);
     }
 
 }

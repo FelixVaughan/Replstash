@@ -30,6 +30,14 @@
       {
         "command": "slugger.activateScripts",
         "title": "Activate Saved Scripts"
+      },
+      {
+        "command": "slugger.editSavedScript",
+        "title": "Edit Capture Script"
+      },
+      {
+        "command": "slugger.deleteSavedScript",
+        "title": "Delete Capture Script"
       }
     ],
     "keybindings": [
@@ -49,8 +57,18 @@
         "when": "debugging"
       },
       {
+        "command": "slugger.editSavedScript",
+        "key": "ctrl+alt+e",
+        "when": "debugging"
+      },
+      {
         "command": "slugger.activateScripts",
         "key": "ctrl+alt+a",
+        "when": "debugging"
+      },
+      {
+        "command": "slugger.deleteSavedScript",
+        "key": "ctrl+alt+d",
         "when": "debugging"
       }
     ]
