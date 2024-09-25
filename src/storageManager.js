@@ -95,12 +95,12 @@ class StorageManager {
     }
 
     breakpointFilesMetaData() {
-
         const _formatDate = (date) => {
             return date.toLocaleString('en-US', {
                 timeZoneName: 'short',
             });
         }
+
         const breakpointsPath = path.join(this.storagePath, 'breakpoints');
         return fs.readdirSync(breakpointsPath).map(file => {
             const fullPath = path.join(breakpointsPath, file);
