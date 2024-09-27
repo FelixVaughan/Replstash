@@ -1,22 +1,28 @@
-const EventEmitter = require('events');
-const vscode = require('vscode');
-const path = require('path');
+import EventEmitter from 'events';
+import * as vscode from 'vscode';
+import path from 'path';
+import SessionManager from './sessionManager';
+import StorageManager from './storageManager';
 
 class CommandHandler extends EventEmitter {
 
-    constructor(sessionManager, storageManager) {
+    private sessionManager: SessionManager;
+    private storageManager: StorageManager;
+    private pausedOnBreakpoint: boolean;
+
+    constructor (sessionManager: SessionManager, storageManager: StorageManager) {
         super();
         this.sessionManager = sessionManager;
         this.storageManager = storageManager;
         this.pausedOnBreakpoint = false;
     }
 
-    startCapture = () => {
-        const activeSession = vscode.debug.activeDebugSession;    
-        let err_msg;
+    startCapture = (): void => {
+        const activeSession: vscode.DebugSession = vscode.debug.activeDebugSession!;  //!: Non-null assertion operator  
+        let err_msg: string = "";
         if (!activeSession) err_msg = 'No active debug session.';
         else if (!this.pausedOnBreakpoint) err_msg = 'Not paused on a breakpoint.';
-        else if(this.sessionManager.isCapturing) err_msg = 'Already capturing debug console input.';
+        else if(this.sessionManager.isCapturing()) err_msg = 'Already capturing debug console input.';
 
         if (err_msg) {
             vscode.window.showWarningMessage(err_msg);
@@ -24,19 +30,18 @@ class CommandHandler extends EventEmitter {
         }
 
         this.sessionManager.setCapturing(true);
-        // this.sessionManager.reset();
         this.emit('captureStarted');  // Emit event when capturing starts
         vscode.window.showInformationMessage('Started capturing debug console input.');
     };
 
-    pauseCapture = () => {
+    pauseCapture = (): void => {
 
-        if (this.sessionManager.captureIsPaused) {
+        if (this.sessionManager.capturePaused()) {
             vscode.window.showWarningMessage('Capture already paused.');
             return;
         }
 
-        if (!this.sessionManager.isCapturing) {
+        if (!this.sessionManager.isCapturing()) {
             vscode.window.showWarningMessage('Not capturing console input.');
             return;
         }
@@ -45,26 +50,26 @@ class CommandHandler extends EventEmitter {
         vscode.window.showInformationMessage('Paused capturing debug console input.');
     }
 
-    _isValidFilename = (name) => {
-        const invalidChars = /[<>:"\/\\|?*\x00-\x1F]/g;
-        const reservedNames = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+    _isValidFilename = (name: string): boolean => {
+        const invalidChars: RegExp = /[<>:"\/\\|?*\x00-\x1F]/g;
+        const reservedNames: RegExp = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
         if (invalidChars.test(name) || reservedNames.test(name) || name.length > 255)
             return false;
         return true;
     }
 
-    stopCapture = async (autoSave = false) => {
-        if (!this.sessionManager.captureIsPaused && !this.sessionManager.isCapturing) {
+    stopCapture = async (autoSave: boolean = false): Promise<void> => {
+        if (!this.sessionManager.capturePaused() && !this.sessionManager.isCapturing()) {
             vscode.window.showWarningMessage('Not capturing console input.');
             return;
         }
 
-        const captureTerminationSignal = () => {
+        const captureTerminationSignal = (): void => {
             this.sessionManager.setCapturing(false);
             this.emit('captureStopped');  // Emit event when capturing stops
         }
 
-        const currentBreakpoint = this.sessionManager.currentBreakpoint;
+        const currentBreakpoint = this.sessionManager.getCurrentBreakpoint()!;
 
         if (!Object.keys(currentBreakpoint.content).length) {
             vscode.window.showWarningMessage('Stopped: No console input captured.');
@@ -123,14 +128,19 @@ class CommandHandler extends EventEmitter {
     
     };
 
-    _selectScript = async () => {
+    _selectScript = async (): Promise<string | void> => {
         const scriptsMetaData = this.storageManager.breakpointFilesMetaData(); // This should return an array of script paths
         if (!scriptsMetaData.length) {
             vscode.window.showInformationMessage('No saved breakpoints found.');
             return;
         }
 
-        const selectedScript = await vscode.window.showQuickPick(
+        interface LabeledItem {
+            label: any;
+            description: string;
+        }
+
+        const selectedScript: LabeledItem | undefined = await vscode.window.showQuickPick(
             scriptsMetaData.map((meta) => ({
                 label: meta.fileName,
                 description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
@@ -150,21 +160,21 @@ class CommandHandler extends EventEmitter {
 
     }
 
-    editSavedScript = async () => {
+    editSavedScript = async (): Promise<void> => {
         const selectedScript = await this._selectScript();
         if (selectedScript) {
             this.storageManager.openBreakpointFile(selectedScript);
         }
     };
 
-    deleteSavedScript = async () => {
+    deleteSavedScript = async (): Promise<void> => {
         const selectedScript = await this._selectScript();
         if (selectedScript) {
             this.storageManager.deleteBreakpointFile(selectedScript);
         }
     }
 
-    activateScripts = () => {
+    activateScripts = (): void => {
         const breakpoints = this.storageManager.loadBreakpoints();
         if (breakpoints.length > 0) {
             vscode.window.showInformationMessage(`Loaded ${breakpoints.length} breakpoints.`);
@@ -176,9 +186,9 @@ class CommandHandler extends EventEmitter {
             vscode.window.showInformationMessage('No breakpoints to activate.');
         }
     };
-    setPausedOnBreakpoint = (value) => {
-        this.pausedOnBreakpoint = value;
+    setPausedOnBreakpoint = (paused: boolean): void => {
+        this.pausedOnBreakpoint = paused;
     }
 }
 
-module.exports = CommandHandler;
+export default CommandHandler;
