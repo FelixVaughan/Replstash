@@ -1,20 +1,8 @@
-export interface Breakpoint {
-    id: string;
-    threadId: number;
-    line: number;
-    column: number;
-    file: string;
-    scripts: string[];
-    createdAt?: string;
-    modifedAt?: string;
-    content: { [key: string]: string };  // Key-value pairs for content
-}
-
-
+import { Breakpoint } from './utils';
 export default class SessionManager {
 
-    private sessionOutput: { [key: string]: string };
-    private breakpoints: Array<Breakpoint>;
+    private sessionOutput: Record<string, string>;
+    private breakpoints: Breakpoint[];
     private currentBreakpoint: Breakpoint | null;
     private capturing: boolean;
     private captureIsPaused: boolean
@@ -39,9 +27,7 @@ export default class SessionManager {
         this.captureIsPaused = false;
     }
 
-    capturePaused = (): boolean => {  // Getter
-        return this.captureIsPaused;
-    }
+    capturePaused = (): boolean => this.captureIsPaused;
 
     setCapturePaused = (paused: boolean): void => {
         this.captureIsPaused = paused
@@ -53,13 +39,14 @@ export default class SessionManager {
         line: number, 
         column: number, 
         threadId: number
-    ): string => {
-        return `${file}_${line}_${column}_${threadId}`;
-    }
+    ): string => `${file}_${line}_${column}_${threadId}`;
+    
 
     addBreakpoint = (threadId: number, line: number, column: number, file: string): void => {
-        const breakpointId = this.createBreakpointId(file, line, column, threadId);
-        const existingBreakpoint = this.breakpoints.find(breakpoint => breakpoint.id === breakpointId);
+        const breakpointId: string = this.createBreakpointId(file, line, column, threadId);
+        const existingBreakpoint: Breakpoint | undefined  = this.breakpoints.find((breakpoint) => 
+            breakpoint.id === breakpointId
+        );
         if (!existingBreakpoint) {
             this.currentBreakpoint = {
                 id: breakpointId,
@@ -89,13 +76,12 @@ export default class SessionManager {
         }
     }
 
-    getBreakpoints = (): Array<object> => {
+    getBreakpoints = (): Breakpoint[] => {
         return this.breakpoints;
     }
 
-    isCapturing = (): boolean => {
-        return this.capturing;
-    }
+    isCapturing = (): boolean => this.capturing;
+
 
     clearCapture = (): void => {
 

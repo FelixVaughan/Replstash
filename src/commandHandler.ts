@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import path from 'path';
 import SessionManager from './sessionManager';
 import StorageManager from './storageManager';
+import { Breakpoint, BreakpointMetaData } from './utils';
 
 class CommandHandler extends EventEmitter {
 
@@ -69,7 +70,7 @@ class CommandHandler extends EventEmitter {
             this.emit('captureStopped');  // Emit event when capturing stops
         }
 
-        const currentBreakpoint = this.sessionManager.getCurrentBreakpoint()!;
+        const currentBreakpoint: Breakpoint = this.sessionManager.getCurrentBreakpoint()!;
 
         if (!Object.keys(currentBreakpoint.content).length) {
             vscode.window.showWarningMessage('Stopped: No console input captured.');
@@ -77,12 +78,15 @@ class CommandHandler extends EventEmitter {
             return;
         }
 
-        const defaultFileName = `${path.basename(currentBreakpoint.file)}_${currentBreakpoint.line}_${currentBreakpoint.column}_${this.storageManager.getCurrentTimestamp()}`;
-        let fileName;
-        let invalidReason = "";
+        const defaultFileName: string = `${path.basename(currentBreakpoint.file)}_` +
+                        `${currentBreakpoint.line}_` +
+                        `${currentBreakpoint.column}_` +
+                        `${this.storageManager.getCurrentTimestamp()}`;
+
+        let fileName: string | undefined;
+        let invalidReason: string = "";
 
         while (true) {
-
             if (autoSave) {
                 fileName = defaultFileName;
                 break;
@@ -129,7 +133,7 @@ class CommandHandler extends EventEmitter {
     };
 
     _selectScript = async (): Promise<string | void> => {
-        const scriptsMetaData = this.storageManager.breakpointFilesMetaData(); // This should return an array of script paths
+        const scriptsMetaData: BreakpointMetaData[] = this.storageManager.breakpointFilesMetaData(); // This should return an array of script paths
         if (!scriptsMetaData.length) {
             vscode.window.showInformationMessage('No saved breakpoints found.');
             return;
@@ -141,7 +145,7 @@ class CommandHandler extends EventEmitter {
         }
 
         const selectedScript: LabeledItem | undefined = await vscode.window.showQuickPick(
-            scriptsMetaData.map((meta) => ({
+            scriptsMetaData.map((meta: BreakpointMetaData) => ({
                 label: meta.fileName,
                 description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
             })),
@@ -161,31 +165,31 @@ class CommandHandler extends EventEmitter {
     }
 
     editSavedScript = async (): Promise<void> => {
-        const selectedScript = await this._selectScript();
+        const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
             this.storageManager.openBreakpointFile(selectedScript);
         }
     };
 
     deleteSavedScript = async (): Promise<void> => {
-        const selectedScript = await this._selectScript();
+        const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
             this.storageManager.deleteBreakpointFile(selectedScript);
         }
     }
 
     activateScripts = (): void => {
-        const breakpoints = this.storageManager.loadBreakpoints();
+        const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
         if (breakpoints.length > 0) {
             vscode.window.showInformationMessage(`Loaded ${breakpoints.length} breakpoints.`);
-            breakpoints.forEach(breakpoint => {
-                // Do something to activate the scripts, such as re-injecting into session or debugging environment
+            breakpoints.forEach((breakpoint: Breakpoint) => {
                 vscode.window.showInformationMessage(`Activating breakpoint in file: ${breakpoint.file} at line: ${breakpoint.line}`);
             });
         } else {
             vscode.window.showInformationMessage('No breakpoints to activate.');
         }
     };
+
     setPausedOnBreakpoint = (paused: boolean): void => {
         this.pausedOnBreakpoint = paused;
     }

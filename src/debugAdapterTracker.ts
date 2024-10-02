@@ -16,7 +16,7 @@ class DebugAdapterTracker {
 
     onWillReceiveMessage = async (message: any): Promise<void> => {
         if (this.sessionManager.isCapturing() && message.arguments?.context === 'repl') {
-            const expression = message.arguments.expression;
+            const expression: string = message.arguments.expression;
             this.sessionManager.addSessionOutput(message.seq, expression);
             this.sessionManager.addBreakpointContent(message.seq, expression);
         }

@@ -8,38 +8,37 @@ import CommandHandler from './commandHandler';
 /**
  * @param {vscode.ExtensionContext} context
  */
-export const activate = (context: vscode.ExtensionContext) => {
+export const activate = (context: vscode.ExtensionContext): void => {
     const sessionManager: SessionManager = new SessionManager();
     const storageManager: StorageManager = new StorageManager(context);
     const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
 
     // Register debug adapter tracker factory
-    const debugAdapterTrackerFactory = vscode.debug.registerDebugAdapterTrackerFactory('*', {
+    const debugAdapterTrackerFactory: Disposable = vscode.debug.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session: DebugSession) {
             console.log(`Tracking Session: ${session.id}`);
             return new DebugAdapterTracker(sessionManager, commandHandler); // Pass commandHandler to track capturing state
         }
     });
 
-    // Commands
-    const startCaptureCommand: Disposable = vscode.commands.registerCommand('slugger.startCapture', commandHandler.startCapture);
-    const stopCaptureCommand: Disposable = vscode.commands.registerCommand('slugger.stopCapture', commandHandler.stopCapture);
-    const pauseCommand: Disposable = vscode.commands.registerCommand('slugger.pauseCapture', commandHandler.pauseCapture);
-    const editScriptCommand: Disposable = vscode.commands.registerCommand('slugger.editSavedScript', commandHandler.editSavedScript);
-    const deleteScriptCommand: Disposable = vscode.commands.registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript);
-    const activateScriptsCommand: Disposable = vscode.commands.registerCommand('slugger.activateScripts', commandHandler.activateScripts);
+    // Command registration helper
+    const registerCommand = (commandId: string, commandFunction: (...args: any[]) => any) => {
+        return vscode.commands.registerCommand(commandId, commandFunction);
+    };
 
+    // Register all commands with a helper function
+    const commands: Disposable[] = [
+        registerCommand('slugger.startCapture', commandHandler.startCapture),
+        registerCommand('slugger.stopCapture', commandHandler.stopCapture),
+        registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
+        registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
+        registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
+        registerCommand('slugger.activateScripts', commandHandler.activateScripts)
+    ];
 
-    // Add to subscriptions
-    context.subscriptions.push(
-        startCaptureCommand,
-        stopCaptureCommand,
-        pauseCommand,
-        editScriptCommand,
-        deleteScriptCommand,
-        activateScriptsCommand,
-        debugAdapterTrackerFactory
-    );
+    // Add all disposables (commands and tracker) to the subscriptions
+    context.subscriptions.push(...commands, debugAdapterTrackerFactory);
+
 };
 
-export const deactivate = () => {};
+export const deactivate = (): void => {};
