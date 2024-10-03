@@ -68,7 +68,7 @@ class StorageManager {
         // Update record
         this.upsertBreakpointScripts = (bp, fullPath) => {
             const loadedBreakpoints = this.loadBreakpoints();
-            const existingBreakpoint = loadedBreakpoints.find(b => b.id === bp.id);
+            const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
             if (existingBreakpoint) {
                 existingBreakpoint.scripts.push(fullPath);
                 existingBreakpoint.modifiedAt = this.getCurrentTimestamp();
@@ -93,7 +93,10 @@ class StorageManager {
             this.saveToFile(fullPath, content);
         };
         this.fileExists = (filename) => {
-            const [sessionPath, breakpointsPath] = ['session', 'breakpoints'].map(dir => path_1.default.join(this.storagePath, dir, filename));
+            const paths = ['session', 'breakpoints'].map((dir) => {
+                return path_1.default.join(this.storagePath, dir, filename);
+            });
+            const [sessionPath, breakpointsPath] = paths;
             return fs_1.default.existsSync(sessionPath) || fs_1.default.existsSync(breakpointsPath);
         };
         this.storagePath = ((_a = context.storageUri) === null || _a === void 0 ? void 0 : _a.fsPath) || "";
@@ -119,7 +122,7 @@ class StorageManager {
             });
         };
         const breakpointsPath = path_1.default.join(this.storagePath, 'breakpoints');
-        return fs_1.default.readdirSync(breakpointsPath).map(file => {
+        return fs_1.default.readdirSync(breakpointsPath).map((file) => {
             const fullPath = path_1.default.join(breakpointsPath, file);
             const { size, birthtime: _createdAt, mtime: _modifiedAt } = fs_1.default.statSync(fullPath);
             const [createdAt, modifiedAt] = [_createdAt, _modifiedAt].map(_formatDate);
@@ -128,8 +131,8 @@ class StorageManager {
     }
     openBreakpointFile(fileName) {
         const fullPath = path_1.default.join(this.storagePath, 'breakpoints', fileName);
-        vscode.workspace.openTextDocument(fullPath).then((doc) => {
-            vscode.window.showTextDocument(doc);
+        vscode.workspace.openTextDocument(fullPath).then((document) => {
+            vscode.window.showTextDocument(document);
         });
     }
     deleteBreakpointFile(fileName) {
@@ -145,3 +148,4 @@ class StorageManager {
     }
 }
 exports.default = StorageManager;
+//# sourceMappingURL=storageManager.js.map

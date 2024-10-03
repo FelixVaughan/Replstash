@@ -12,7 +12,7 @@
   "activationEvents": [
     "onDebug"
   ],
-  "main": "./src/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -76,7 +76,8 @@
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "watch": "tsc --watch"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.7",

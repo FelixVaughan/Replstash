@@ -92,7 +92,10 @@ class CommandHandler extends events_1.default {
                 captureTerminationSignal();
                 return;
             }
-            const defaultFileName = `${path_1.default.basename(currentBreakpoint.file)}_${currentBreakpoint.line}_${currentBreakpoint.column}_${this.storageManager.getCurrentTimestamp()}`;
+            const defaultFileName = `${path_1.default.basename(currentBreakpoint.file)}_` +
+                `${currentBreakpoint.line}_` +
+                `${currentBreakpoint.column}_` +
+                `${this.storageManager.getCurrentTimestamp()}`;
             let fileName;
             let invalidReason = "";
             while (true) {
@@ -167,8 +170,7 @@ class CommandHandler extends events_1.default {
             const breakpoints = this.storageManager.loadBreakpoints();
             if (breakpoints.length > 0) {
                 vscode.window.showInformationMessage(`Loaded ${breakpoints.length} breakpoints.`);
-                breakpoints.forEach(breakpoint => {
-                    // Do something to activate the scripts, such as re-injecting into session or debugging environment
+                breakpoints.forEach((breakpoint) => {
                     vscode.window.showInformationMessage(`Activating breakpoint in file: ${breakpoint.file} at line: ${breakpoint.line}`);
                 });
             }
@@ -185,3 +187,4 @@ class CommandHandler extends events_1.default {
     }
 }
 exports.default = CommandHandler;
+//# sourceMappingURL=commandHandler.js.map

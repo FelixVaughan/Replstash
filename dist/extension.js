@@ -65,3 +65,4 @@ const activate = (context) => {
 exports.activate = activate;
 const deactivate = () => { };
 exports.deactivate = deactivate;
+//# sourceMappingURL=extension.js.map

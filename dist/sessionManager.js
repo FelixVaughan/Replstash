@@ -72,3 +72,4 @@ exports.default = SessionManager;
 //     //use this to handle changes to breakpoints
 //     vscode.DebugStackFrame
 // });
+//# sourceMappingURL=sessionManager.js.map

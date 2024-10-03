@@ -33,12 +33,12 @@ class DebugAdapterTracker {
 
             if (!vscode.debug.activeDebugSession) return;
 
-            const stackTraceResponse = await vscode.debug.activeDebugSession.customRequest('stackTrace', {
+            const stackTraceResponse: any = await vscode.debug.activeDebugSession.customRequest('stackTrace', {
                 threadId: message.body.threadId,
             });
 
             if (stackTraceResponse && stackTraceResponse.stackFrames.length > 0) {
-                const topFrame = stackTraceResponse.stackFrames[0]; // TODO: add type for stackFrame
+                const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
                 const source: string = topFrame.source.path;
                 const line: number = topFrame.line;
                 const column: number = topFrame.column;

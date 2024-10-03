@@ -56,7 +56,7 @@ class DebugAdapterTracker {
                     threadId: message.body.threadId,
                 });
                 if (stackTraceResponse && stackTraceResponse.stackFrames.length > 0) {
-                    const topFrame = stackTraceResponse.stackFrames[0]; // TODO: add type for stackFrame
+                    const topFrame = stackTraceResponse.stackFrames[0];
                     const source = topFrame.source.path;
                     const line = topFrame.line;
                     const column = topFrame.column;
@@ -85,3 +85,4 @@ class DebugAdapterTracker {
     }
 }
 exports.default = DebugAdapterTracker;
+//# sourceMappingURL=debugAdapterTracker.js.map
