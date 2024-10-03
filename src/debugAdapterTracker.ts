@@ -1,7 +1,6 @@
-import * as vscode from 'vscode';
 import SessionManager from './sessionManager';
 import CommandHandler from './commandHandler';
-
+import {_debugger, window} from './utils';
 class DebugAdapterTracker {
 
     private sessionManager: SessionManager;
@@ -31,9 +30,9 @@ class DebugAdapterTracker {
 
         if (message.type === 'event' && message.event === 'stopped' && message.body.reason === 'breakpoint') {
 
-            if (!vscode.debug.activeDebugSession) return;
+            if (!_debugger.activeDebugSession) return;
 
-            const stackTraceResponse: any = await vscode.debug.activeDebugSession.customRequest('stackTrace', {
+            const stackTraceResponse: any = await _debugger.activeDebugSession.customRequest('stackTrace', {
                 threadId: message.body.threadId,
             });
 
@@ -52,7 +51,7 @@ class DebugAdapterTracker {
             if (this.sessionManager.isCapturing()) {
                 this.commandHandler.stopCapture(true);
             }
-            vscode.window.showInformationMessage('Debugger resumed from breakpoint.');
+            window.showInformationMessage('Debugger resumed from breakpoint.');
         }
 
     };

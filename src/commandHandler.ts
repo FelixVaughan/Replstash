@@ -4,7 +4,7 @@ import path from 'path';
 import SessionManager from './sessionManager';
 import StorageManager from './storageManager';
 import { Breakpoint, BreakpointMetaData } from './utils';
-
+import { _debugger, window } from './utils';
 class CommandHandler extends EventEmitter {
 
     private sessionManager: SessionManager;
@@ -19,36 +19,36 @@ class CommandHandler extends EventEmitter {
     }
 
     startCapture = (): void => {
-        const activeSession: vscode.DebugSession = vscode.debug.activeDebugSession!;  //!: Non-null assertion operator  
+        const activeSession: vscode.DebugSession = _debugger.activeDebugSession!;  //!: Non-null assertion operator  
         let err_msg: string = "";
         if (!activeSession) err_msg = 'No active debug session.';
         else if (!this.pausedOnBreakpoint) err_msg = 'Not paused on a breakpoint.';
         else if(this.sessionManager.isCapturing()) err_msg = 'Already capturing debug console input.';
 
         if (err_msg) {
-            vscode.window.showWarningMessage(err_msg);
+            window.showWarningMessage(err_msg);
             return;
         }
 
         this.sessionManager.setCapturing(true);
         this.emit('captureStarted');  // Emit event when capturing starts
-        vscode.window.showInformationMessage('Started capturing debug console input.');
+        window.showInformationMessage('Started capturing debug console input.');
     };
 
     pauseCapture = (): void => {
 
         if (this.sessionManager.capturePaused()) {
-            vscode.window.showWarningMessage('Capture already paused.');
+            window.showWarningMessage('Capture already paused.');
             return;
         }
 
         if (!this.sessionManager.isCapturing()) {
-            vscode.window.showWarningMessage('Not capturing console input.');
+            window.showWarningMessage('Not capturing console input.');
             return;
         }
 
         this.sessionManager.setCapturePaused(true);
-        vscode.window.showInformationMessage('Paused capturing debug console input.');
+        window.showInformationMessage('Paused capturing debug console input.');
     }
 
     _isValidFilename = (name: string): boolean => {
@@ -61,7 +61,7 @@ class CommandHandler extends EventEmitter {
 
     stopCapture = async (autoSave: boolean = false): Promise<void> => {
         if (!this.sessionManager.capturePaused() && !this.sessionManager.isCapturing()) {
-            vscode.window.showWarningMessage('Not capturing console input.');
+            window.showWarningMessage('Not capturing console input.');
             return;
         }
 
@@ -73,7 +73,7 @@ class CommandHandler extends EventEmitter {
         const currentBreakpoint: Breakpoint = this.sessionManager.getCurrentBreakpoint()!;
 
         if (!Object.keys(currentBreakpoint.content).length) {
-            vscode.window.showWarningMessage('Stopped: No console input captured.');
+            window.showWarningMessage('Stopped: No console input captured.');
             captureTerminationSignal()
             return;
         }
@@ -93,7 +93,7 @@ class CommandHandler extends EventEmitter {
             }
 
             // Show input box to get the file name from the user
-            fileName = await vscode.window.showInputBox({
+            fileName = await window.showInputBox({
                 prompt: invalidReason || 'Save console input:',
                 value: defaultFileName,
                 placeHolder: defaultFileName
@@ -101,7 +101,7 @@ class CommandHandler extends EventEmitter {
 
             // If the user presses Escape or enters nothing, exit the loop and return
             if (!fileName) {
-                vscode.window.showWarningMessage('Capture in progress, termination aborted.');
+                window.showWarningMessage('Capture in progress, termination aborted.');
                 return;
             }
 
@@ -128,14 +128,14 @@ class CommandHandler extends EventEmitter {
         captureTerminationSignal()
         this.storageManager.saveBreakpoint(currentBreakpoint, fileName);
         this.sessionManager.resetCurrentBeakpointContent();
-        vscode.window.showInformationMessage(`Stopped capture: ${fileName}`);
+        window.showInformationMessage(`Stopped capture: ${fileName}`);
     
     };
 
     _selectScript = async (): Promise<string | void> => {
         const scriptsMetaData: BreakpointMetaData[] = this.storageManager.breakpointFilesMetaData(); // This should return an array of script paths
         if (!scriptsMetaData.length) {
-            vscode.window.showInformationMessage('No saved breakpoints found.');
+            window.showInformationMessage('No saved breakpoints found.');
             return;
         }
 
@@ -144,7 +144,7 @@ class CommandHandler extends EventEmitter {
             description: string;
         }
 
-        const selectedScript: LabeledItem | undefined = await vscode.window.showQuickPick(
+        const selectedScript: LabeledItem | undefined = await window.showQuickPick(
             scriptsMetaData.map((meta: BreakpointMetaData) => ({
                 label: meta.fileName,
                 description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
@@ -157,7 +157,7 @@ class CommandHandler extends EventEmitter {
 
         // If no script was selected (user canceled the QuickPick)
         if (!selectedScript) {
-            vscode.window.showInformationMessage('No script selected.');
+            window.showInformationMessage('No script selected.');
             return;
         }
         return selectedScript.label;
@@ -175,18 +175,19 @@ class CommandHandler extends EventEmitter {
         const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
             this.storageManager.deleteBreakpointFile(selectedScript);
+            window.showInformationMessage(`Deleted: ${selectedScript}`);
         }
     }
 
     activateScripts = (): void => {
         const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
         if (breakpoints.length > 0) {
-            vscode.window.showInformationMessage(`Loaded ${breakpoints.length} breakpoints.`);
+            window.showInformationMessage(`Loaded ${breakpoints.length} breakpoints.`);
             breakpoints.forEach((breakpoint: Breakpoint) => {
-                vscode.window.showInformationMessage(`Activating breakpoint in file: ${breakpoint.file} at line: ${breakpoint.line}`);
+                window.showInformationMessage(`Activating breakpoint in file: ${breakpoint.file} at line: ${breakpoint.line}`);
             });
         } else {
-            vscode.window.showInformationMessage('No breakpoints to activate.');
+            window.showInformationMessage('No breakpoints to activate.');
         }
     };
 

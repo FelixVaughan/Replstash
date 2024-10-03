@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import fs from 'fs';
 import path  from 'path';
 import { Breakpoint, BreakpointMetaData } from './utils';
+import {window} from './utils';
 
 type FileMetadata = {
     size: number;
@@ -45,7 +46,7 @@ export default class StorageManager {
     // Save the contents to a file
     saveToFile = (fullPath: string, content: string): void => {
         fs.writeFileSync(fullPath, content);
-        vscode.window.showInformationMessage(`Saved to: ${fullPath}`);
+        window.showInformationMessage(`Saved to: ${fullPath}`);
     }
 
     // Read contents from a file
@@ -54,7 +55,7 @@ export default class StorageManager {
         if (fs.existsSync(filePath)) {
             return fs.readFileSync(filePath, 'utf8');
         } else {
-            vscode.window.showErrorMessage(`File not found: ${filePath}`);
+            window.showErrorMessage(`File not found: ${filePath}`);
             return null;
         }
     }
@@ -133,7 +134,7 @@ export default class StorageManager {
     openBreakpointFile(fileName: string) {
         const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
         vscode.workspace.openTextDocument(fullPath).then((document: vscode.TextDocument) => {
-            vscode.window.showTextDocument(document);
+            window.showTextDocument(document);
         });
     }
 

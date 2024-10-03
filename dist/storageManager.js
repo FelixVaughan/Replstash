@@ -29,6 +29,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = __importStar(require("vscode"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const utils_1 = require("./utils");
 class StorageManager {
     constructor(context) {
         var _a;
@@ -41,7 +42,7 @@ class StorageManager {
         // Save the contents to a file
         this.saveToFile = (fullPath, content) => {
             fs_1.default.writeFileSync(fullPath, content);
-            vscode.window.showInformationMessage(`Saved to: ${fullPath}`);
+            utils_1.window.showInformationMessage(`Saved to: ${fullPath}`);
         };
         // Read contents from a file
         this.readFromFile = (filename) => {
@@ -50,7 +51,7 @@ class StorageManager {
                 return fs_1.default.readFileSync(filePath, 'utf8');
             }
             else {
-                vscode.window.showErrorMessage(`File not found: ${filePath}`);
+                utils_1.window.showErrorMessage(`File not found: ${filePath}`);
                 return null;
             }
         };
@@ -132,7 +133,7 @@ class StorageManager {
     openBreakpointFile(fileName) {
         const fullPath = path_1.default.join(this.storagePath, 'breakpoints', fileName);
         vscode.workspace.openTextDocument(fullPath).then((document) => {
-            vscode.window.showTextDocument(document);
+            utils_1.window.showTextDocument(document);
         });
     }
     deleteBreakpointFile(fileName) {

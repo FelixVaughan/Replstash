@@ -4,6 +4,7 @@ import StorageManager from './storageManager';
 import SessionManager from './sessionManager';
 import DebugAdapterTracker from './debugAdapterTracker';
 import CommandHandler from './commandHandler';
+import { _debugger } from './utils';
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -14,7 +15,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
     const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
 
     // Register debug adapter tracker factory
-    const debugAdapterTrackerFactory: Disposable = vscode.debug.registerDebugAdapterTrackerFactory('*', {
+    const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session: DebugSession) {
             console.log(`Tracking Session: ${session.id}`);
             return new DebugAdapterTracker(sessionManager, commandHandler); // Pass commandHandler to track capturing state

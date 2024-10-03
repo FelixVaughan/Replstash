@@ -1,3 +1,7 @@
+import * as vscode from 'vscode';
+
+export const _debugger = vscode.debug;
+export const window = vscode.window;
 export interface Breakpoint {
     id: string;
     threadId: number;

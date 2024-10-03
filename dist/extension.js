@@ -32,6 +32,7 @@ const storageManager_1 = __importDefault(require("./storageManager"));
 const sessionManager_1 = __importDefault(require("./sessionManager"));
 const debugAdapterTracker_1 = __importDefault(require("./debugAdapterTracker"));
 const commandHandler_1 = __importDefault(require("./commandHandler"));
+const utils_1 = require("./utils");
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -40,7 +41,7 @@ const activate = (context) => {
     const storageManager = new storageManager_1.default(context);
     const commandHandler = new commandHandler_1.default(sessionManager, storageManager);
     // Register debug adapter tracker factory
-    const debugAdapterTrackerFactory = vscode.debug.registerDebugAdapterTrackerFactory('*', {
+    const debugAdapterTrackerFactory = utils_1._debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session) {
             console.log(`Tracking Session: ${session.id}`);
             return new debugAdapterTracker_1.default(sessionManager, commandHandler); // Pass commandHandler to track capturing state
