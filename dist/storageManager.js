@@ -71,11 +71,11 @@ class StorageManager {
             const loadedBreakpoints = this.loadBreakpoints();
             const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
             if (existingBreakpoint) {
-                existingBreakpoint.scripts.push(fullPath);
+                existingBreakpoint.scripts.push({ uri: fullPath, active: false });
                 existingBreakpoint.modifiedAt = this.getCurrentTimestamp();
             }
             else {
-                bp.scripts.push(fullPath);
+                bp.scripts.push({ uri: fullPath, active: true });
                 bp.createdAt = this.getCurrentTimestamp();
                 loadedBreakpoints.push(bp);
             }
@@ -141,7 +141,7 @@ class StorageManager {
         fs_1.default.unlinkSync(fullPath);
         const loadedBreakpoints = this.loadBreakpoints();
         const updatedBreakpoints = loadedBreakpoints.filter(bp => {
-            const updatedScripts = bp.scripts.filter((s) => s !== fullPath);
+            const updatedScripts = bp.scripts.filter((s) => s.uri !== fullPath);
             bp.scripts = updatedScripts;
             return bp.scripts.length > 0; // Remove if no scripts are left
         });

@@ -23,8 +23,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.window = exports._debugger = void 0;
+exports.commands = exports.window = exports._debugger = void 0;
 const vscode = __importStar(require("vscode"));
 exports._debugger = vscode.debug;
 exports.window = vscode.window;
+exports.commands = vscode.commands;
 //# sourceMappingURL=utils.js.map

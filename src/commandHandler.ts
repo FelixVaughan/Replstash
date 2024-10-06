@@ -4,7 +4,7 @@ import path from 'path';
 import SessionManager from './sessionManager';
 import StorageManager from './storageManager';
 import { Breakpoint, BreakpointMetaData } from './utils';
-import { _debugger, window } from './utils';
+import { _debugger, window, commands } from './utils';
 class CommandHandler extends EventEmitter {
 
     private sessionManager: SessionManager;
@@ -29,9 +29,9 @@ class CommandHandler extends EventEmitter {
             window.showWarningMessage(err_msg);
             return;
         }
-
         this.sessionManager.setCapturing(true);
         this.emit('captureStarted');  // Emit event when capturing starts
+        commands.executeCommand('workbench.debug.action.toggleRepl');
         window.showInformationMessage('Started capturing debug console input.');
     };
 
@@ -193,7 +193,7 @@ class CommandHandler extends EventEmitter {
 
     setPausedOnBreakpoint = (paused: boolean): void => {
         this.pausedOnBreakpoint = paused;
-    }
+    };
 }
 
 export default CommandHandler;

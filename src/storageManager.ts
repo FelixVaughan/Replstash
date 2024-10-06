@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import fs from 'fs';
 import path  from 'path';
 import { Breakpoint, BreakpointMetaData } from './utils';
-import {window} from './utils';
+import {window, Script} from './utils';
 
 type FileMetadata = {
     size: number;
@@ -78,10 +78,10 @@ export default class StorageManager {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
         const existingBreakpoint: Breakpoint | undefined = loadedBreakpoints.find((b: Breakpoint) => b.id === bp.id);
         if (existingBreakpoint) {
-            existingBreakpoint.scripts.push(fullPath);
+            existingBreakpoint.scripts.push({ uri: fullPath, active: false });
             existingBreakpoint.modifiedAt = this.getCurrentTimestamp();
         } else {
-            bp.scripts.push(fullPath);
+            bp.scripts.push({ uri: fullPath, active: true });
             bp.createdAt = this.getCurrentTimestamp();
             loadedBreakpoints.push(bp);
         }
@@ -144,7 +144,7 @@ export default class StorageManager {
 
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
         const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.filter(bp => {
-            const updatedScripts: string[] = bp.scripts.filter((s: string) => s !== fullPath);
+            const updatedScripts: Script[] = bp.scripts.filter((s: Script) => s.uri !== fullPath);
             bp.scripts = updatedScripts;
             return bp.scripts.length > 0; // Remove if no scripts are left
         });

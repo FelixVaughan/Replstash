@@ -33,6 +33,7 @@ class CommandHandler extends events_1.default {
             }
             this.sessionManager.setCapturing(true);
             this.emit('captureStarted'); // Emit event when capturing starts
+            utils_1.commands.executeCommand('workbench.debug.action.toggleRepl');
             utils_1.window.showInformationMessage('Started capturing debug console input.');
         };
         this.pauseCapture = () => {
