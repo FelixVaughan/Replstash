@@ -4,6 +4,7 @@ import StorageManager from './storageManager';
 import SessionManager from './sessionManager';
 import DebugAdapterTracker from './debugAdapterTracker';
 import CommandHandler from './commandHandler';
+import BreakpointsTreeProvider from './breakpointsTreeProvider';
 import { _debugger } from './utils';
 
 /**
@@ -13,6 +14,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
     const sessionManager: SessionManager = new SessionManager();
     const storageManager: StorageManager = new StorageManager(context);
     const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
+    const breakpointsProvider = new BreakpointsTreeProvider(storageManager, commandHandler);  // Pass the whole StorageManager
+
+    vscode.window.registerTreeDataProvider('breakpointsView', breakpointsProvider);
 
     // Register debug adapter tracker factory
     const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
@@ -34,7 +38,12 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
         registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
-        registerCommand('slugger.activateScripts', commandHandler.activateScripts)
+        registerCommand('slugger.loadScripts', commandHandler.activateScripts),
+        registerCommand('slugger.activateScript', commandHandler.toggleScriptActivation),
+        registerCommand('slugger.deactivateScript', commandHandler.toggleScriptActivation),
+        registerCommand('slugger.activateBreakpoint', commandHandler.activateBreakpoint),
+        registerCommand('slugger.deactivateBreakpoint', commandHandler.deactivateBreakpoint), 
+
     ];
 
     // Add all disposables (commands and tracker) to the subscriptions

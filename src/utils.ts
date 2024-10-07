@@ -14,6 +14,7 @@ export interface Breakpoint {
     threadId: number;
     line: number;
     column: number;
+    active: boolean;
     file: string;
     scripts: Script[];
     createdAt?: string;

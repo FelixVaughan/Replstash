@@ -7,13 +7,31 @@
     "vscode": "^1.92.2"
   },
   "categories": [
-    "Other"
+    "Debuggers"
   ],
   "activationEvents": [
     "onDebug"
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "debug",
+          "title": "Debug",
+          "icon": "debug-alt"
+        }
+      ]
+    },
+    "views": {
+      "debug": [
+        {
+          "id": "breakpointsView",
+          "name": "Slugs",
+          "type": "tree"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "slugger.startCapture",
@@ -28,18 +46,45 @@
         "title": "Stop Capturing Debug Console"
       },
       {
-        "command": "slugger.activateScripts",
-        "title": "Activate Saved Scripts"
-      },
-      {
         "command": "slugger.editSavedScript",
         "title": "Edit Capture Script"
       },
       {
         "command": "slugger.deleteSavedScript",
         "title": "Delete Capture Script"
+      },
+      {
+        "command": "slugger.deactivateBreakpoint",
+        "title": "Deactivate Breakpoint"
+      },
+      {
+        "command": "slugger.activateScript",
+        "title": "Activate Script"
+      },
+      {
+        "command": "slugger.deactivateScript",
+        "title": "Deactivate Script"
       }
     ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "slugger.deactivateBreakpoint",
+          "when": "view == breakpointsView && viewItem == breakpoint && viewItem.active",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.activateScript",
+          "when": "view == breakpointsView && viewItem == script && !viewItem.active",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.deactivateScript",
+          "when": "view == breakpointsView && viewItem == script && viewItem.active",
+          "group": "navigation"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "slugger.startCapture",

@@ -94,6 +94,10 @@ export default class StorageManager {
         return this.loadedBreakpoints;
     }
 
+    getLoadedBreakpoints = (): Breakpoint[] => {
+        return this.loadedBreakpoints;
+    }
+
     // Save session output
     saveSessionOutput = (sessionOutput: string, sessionId: string): void => {
         const content: string = Object.values(sessionOutput).join('\n');

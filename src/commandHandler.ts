@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import path from 'path';
 import SessionManager from './sessionManager';
 import StorageManager from './storageManager';
-import { Breakpoint, BreakpointMetaData } from './utils';
+import { Breakpoint, BreakpointMetaData, Script } from './utils';
 import { _debugger, window, commands } from './utils';
 class CommandHandler extends EventEmitter {
 
@@ -181,19 +181,27 @@ class CommandHandler extends EventEmitter {
 
     activateScripts = (): void => {
         const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
-        if (breakpoints.length > 0) {
-            window.showInformationMessage(`Loaded ${breakpoints.length} breakpoints.`);
-            breakpoints.forEach((breakpoint: Breakpoint) => {
-                window.showInformationMessage(`Activating breakpoint in file: ${breakpoint.file} at line: ${breakpoint.line}`);
+            breakpoints.forEach((bp: Breakpoint) => {
+                bp.active
             });
-        } else {
-            window.showInformationMessage('No breakpoints to activate.');
-        }
     };
 
     setPausedOnBreakpoint = (paused: boolean): void => {
         this.pausedOnBreakpoint = paused;
     };
-}
+
+
+    toggleScriptActivation = (breakpoint: Breakpoint, script: Script, active: boolean): void => {
+        this.sessionManager.toggleScriptActivation(breakpoint, script, active);  
+    };
+
+    activateBreakpoint = (breakpoint: Breakpoint): void => {
+        this.sessionManager.breakpointActive(breakpoint, true);
+    };
+
+    deactivateBreakpoint = (breakpoint: Breakpoint): void => {
+        this.sessionManager.breakpointActive(breakpoint, false);
+    };
+} 
 
 export default CommandHandler;
