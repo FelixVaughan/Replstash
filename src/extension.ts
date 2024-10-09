@@ -14,10 +14,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
     const sessionManager: SessionManager = new SessionManager();
     const storageManager: StorageManager = new StorageManager(context);
     const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
-    const breakpointsProvider = new BreakpointsTreeProvider(storageManager, commandHandler);  // Pass the whole StorageManager
+    const breakpointsProvider: BreakpointsTreeProvider = new BreakpointsTreeProvider(storageManager, commandHandler);  // Pass the whole StorageManager
 
     vscode.window.registerTreeDataProvider('breakpointsView', breakpointsProvider);
-
     // Register debug adapter tracker factory
     const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session: DebugSession) {
@@ -43,6 +42,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.deactivateScript', commandHandler.toggleScriptActivation),
         registerCommand('slugger.activateBreakpoint', commandHandler.activateBreakpoint),
         registerCommand('slugger.deactivateBreakpoint', commandHandler.deactivateBreakpoint), 
+        registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
 
     ];
 

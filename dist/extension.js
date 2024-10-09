@@ -32,6 +32,7 @@ const storageManager_1 = __importDefault(require("./storageManager"));
 const sessionManager_1 = __importDefault(require("./sessionManager"));
 const debugAdapterTracker_1 = __importDefault(require("./debugAdapterTracker"));
 const commandHandler_1 = __importDefault(require("./commandHandler"));
+const breakpointsTreeProvider_1 = __importDefault(require("./breakpointsTreeProvider"));
 const utils_1 = require("./utils");
 /**
  * @param {vscode.ExtensionContext} context
@@ -40,6 +41,8 @@ const activate = (context) => {
     const sessionManager = new sessionManager_1.default();
     const storageManager = new storageManager_1.default(context);
     const commandHandler = new commandHandler_1.default(sessionManager, storageManager);
+    const breakpointsProvider = new breakpointsTreeProvider_1.default(storageManager, commandHandler); // Pass the whole StorageManager
+    vscode.window.registerTreeDataProvider('breakpointsView', breakpointsProvider);
     // Register debug adapter tracker factory
     const debugAdapterTrackerFactory = utils_1._debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session) {
@@ -58,7 +61,12 @@ const activate = (context) => {
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
         registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
-        registerCommand('slugger.activateScripts', commandHandler.activateScripts)
+        registerCommand('slugger.loadScripts', commandHandler.activateScripts),
+        registerCommand('slugger.activateScript', commandHandler.toggleScriptActivation),
+        registerCommand('slugger.deactivateScript', commandHandler.toggleScriptActivation),
+        registerCommand('slugger.activateBreakpoint', commandHandler.activateBreakpoint),
+        registerCommand('slugger.deactivateBreakpoint', commandHandler.deactivateBreakpoint),
+        registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
     ];
     // Add all disposables (commands and tracker) to the subscriptions
     context.subscriptions.push(...commands, debugAdapterTrackerFactory);

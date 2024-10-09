@@ -14,21 +14,13 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "debug",
-          "title": "Debug",
-          "icon": "debug-alt"
-        }
-      ]
-    },
     "views": {
       "debug": [
         {
           "id": "breakpointsView",
           "name": "Slugs",
-          "type": "tree"
+          "type": "tree",
+          "visibility": "visible"
         }
       ]
     },
@@ -64,6 +56,10 @@
       {
         "command": "slugger.deactivateScript",
         "title": "Deactivate Script"
+      },
+      {
+        "command": "slugger.purgeBreakpoints",
+        "title": "Purge Breakpoints"
       }
     ],
     "menus": {

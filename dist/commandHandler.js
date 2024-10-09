@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = __importDefault(require("events"));
+const vscode = __importStar(require("vscode"));
 const path_1 = __importDefault(require("path"));
 const utils_1 = require("./utils");
 class CommandHandler extends events_1.default {
@@ -132,6 +156,10 @@ class CommandHandler extends events_1.default {
             }
             return selectedScript.label;
         });
+        this._confirmWarning = (message) => __awaiter(this, void 0, void 0, function* () {
+            const selection = yield vscode.window.showWarningMessage(message, { modal: true }, "Yes");
+            return selection == "Yes";
+        });
         this.editSavedScript = () => __awaiter(this, void 0, void 0, function* () {
             const selectedScript = yield this._selectScript();
             if (selectedScript) {
@@ -147,18 +175,34 @@ class CommandHandler extends events_1.default {
         });
         this.activateScripts = () => {
             const breakpoints = this.storageManager.loadBreakpoints();
-            if (breakpoints.length > 0) {
-                utils_1.window.showInformationMessage(`Loaded ${breakpoints.length} breakpoints.`);
-                breakpoints.forEach((breakpoint) => {
-                    utils_1.window.showInformationMessage(`Activating breakpoint in file: ${breakpoint.file} at line: ${breakpoint.line}`);
-                });
-            }
-            else {
-                utils_1.window.showInformationMessage('No breakpoints to activate.');
-            }
+            breakpoints.forEach((bp) => {
+                bp.active;
+            });
         };
         this.setPausedOnBreakpoint = (paused) => {
             this.pausedOnBreakpoint = paused;
+        };
+        // Methods using the reusable function
+        this.purgeBreakpoints = () => __awaiter(this, void 0, void 0, function* () {
+            const proceed = yield this._confirmWarning("Are you sure you want to purge all breakpoints?");
+            proceed && this.storageManager.purgeBreakpoints();
+        });
+        this.purgeScripts = () => __awaiter(this, void 0, void 0, function* () {
+            const proceed = yield this._confirmWarning("Are you sure you want to purge all scripts?");
+            proceed && this.storageManager.purgeScripts();
+        });
+        this.purgeAll = () => __awaiter(this, void 0, void 0, function* () {
+            const proceed = yield this._confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?");
+            proceed && this.storageManager.purgeAll();
+        });
+        this.toggleScriptActivation = (breakpoint, script, active) => {
+            this.sessionManager.toggleScriptActivation(breakpoint, script, active);
+        };
+        this.activateBreakpoint = (breakpoint) => {
+            this.sessionManager.breakpointActive(breakpoint, true);
+        };
+        this.deactivateBreakpoint = (breakpoint) => {
+            this.sessionManager.breakpointActive(breakpoint, false);
         };
         this.sessionManager = sessionManager;
         this.storageManager = storageManager;

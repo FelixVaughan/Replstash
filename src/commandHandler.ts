@@ -164,6 +164,16 @@ class CommandHandler extends EventEmitter {
 
     }
 
+    private _confirmWarning = async (message: string): Promise<boolean> => {
+        const selection = await vscode.window.showWarningMessage(
+            message,
+            { modal: true },
+            "Yes"
+        );
+    
+        return selection == "Yes"
+    }
+
     editSavedScript = async (): Promise<void> => {
         const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
@@ -190,6 +200,21 @@ class CommandHandler extends EventEmitter {
         this.pausedOnBreakpoint = paused;
     };
 
+    // Methods using the reusable function
+    purgeBreakpoints = async (): Promise<void> => {
+        const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all breakpoints?")
+        proceed && this.storageManager.purgeBreakpoints();
+    }
+
+    purgeScripts = async (): Promise<void> => {
+        const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all scripts?")
+        proceed && this.storageManager.purgeScripts();
+    }
+
+    purgeAll = async (): Promise<void> => {
+        const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?")
+        proceed && this.storageManager.purgeAll();
+    }
 
     toggleScriptActivation = (breakpoint: Breakpoint, script: Script, active: boolean): void => {
         this.sessionManager.toggleScriptActivation(breakpoint, script, active);  

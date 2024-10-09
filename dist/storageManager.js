@@ -86,6 +86,9 @@ class StorageManager {
             this.loadedBreakpoints = this.context.workspaceState.get('breakpoints', []);
             return this.loadedBreakpoints;
         };
+        this.getLoadedBreakpoints = () => {
+            return this.loadedBreakpoints;
+        };
         // Save session output
         this.saveSessionOutput = (sessionOutput, sessionId) => {
             const content = Object.values(sessionOutput).join('\n');
@@ -99,6 +102,24 @@ class StorageManager {
             });
             const [sessionPath, breakpointsPath] = paths;
             return fs_1.default.existsSync(sessionPath) || fs_1.default.existsSync(breakpointsPath);
+        };
+        this.purgeBreakpoints = () => {
+            this._updateBreakpoints([]);
+        };
+        this.purgeScripts = () => {
+            const breakpointsPath = path_1.default.join(this.storagePath, 'breakpoints');
+            fs_1.default.readdirSync(breakpointsPath).forEach((file) => {
+                fs_1.default.unlinkSync(path_1.default.join(breakpointsPath, file));
+            });
+            const loadedBreakpoints = this.loadBreakpoints();
+            loadedBreakpoints.forEach((bp) => {
+                bp.scripts = [];
+            });
+            this._updateBreakpoints(loadedBreakpoints);
+        };
+        this.purgeAll = () => {
+            this.purgeBreakpoints();
+            this.purgeScripts();
         };
         this.storagePath = ((_a = context.storageUri) === null || _a === void 0 ? void 0 : _a.fsPath) || "";
         this.context = context;

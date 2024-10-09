@@ -11,16 +11,17 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     constructor(
         private storageManager: StorageManager,  // StorageManager for data
         private commandHandler: CommandHandler   // CommandHandler for operations
-    ) {}
+    ) {
+    }
 
     // Refresh the TreeView
-    refresh(): void {
+    refresh = (): void => {
         this._onDidChangeTreeData.fire(undefined);
     }
 
     // Retrieve the item for the TreeView (either Breakpoint or Script)
-    getTreeItem(element: Breakpoint | Script): vscode.TreeItem {
-        const treeItem = new vscode.TreeItem('uri' in element ? element.uri : element.file);
+    getTreeItem = (element: Breakpoint | Script): vscode.TreeItem => {
+        const treeItem: vscode.TreeItem = new vscode.TreeItem('uri' in element ? element.uri : element.file);
     
         // Add collapsible state based on whether it's a Breakpoint or a Script
         treeItem.collapsibleState = 'scripts' in element 
@@ -35,7 +36,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     
 
     // Retrieve children for the Breakpoint (the scripts), or return the top-level breakpoints
-    getChildren(element?: Breakpoint): Thenable<Breakpoint[] | Script[]> {
+    getChildren = (element?: Breakpoint): Thenable<Breakpoint[] | Script[]> => {
         if (!element) {
             return Promise.resolve(this.storageManager.loadBreakpoints());  // Load breakpoints from StorageManager
         }
@@ -43,21 +44,21 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     }
 
     // Get the parent element of the given script (to support nested hierarchy)
-    getParent(element: Script): Breakpoint | null {
-        const breakpoints = this.storageManager.loadBreakpoints();
+    getParent = (element: Script): Breakpoint | null => {
+        const breakpoints : Breakpoint[] = this.storageManager.loadBreakpoints();
         return breakpoints.find(breakpoint => breakpoint.scripts.includes(element)) || null;
     }
 
     // Method to deactivate a breakpoint
-    deactivateBreakpoint(breakpoint: Breakpoint): void {
+    deactivateBreakpoint = (breakpoint: Breakpoint): void => {
         this.commandHandler.deactivateBreakpoint(breakpoint);  // Use commandHandler's deactivate logic
         this.refresh();
     }
 
     // Method to activate or deactivate a script
-    activateDeactivateScript(script: Script): void {
+    activateDeactivateScript = (script: Script): void => {
         script.active = !script.active;  // Toggle active state
-        const parentBreakpoint = this.getParent(script);
+        const parentBreakpoint: Breakpoint | null = this.getParent(script);
         if (parentBreakpoint) {
             this.commandHandler.toggleScriptActivation(parentBreakpoint, script, script.active);  // Call commandHandler for state change
         }

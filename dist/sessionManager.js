@@ -24,6 +24,7 @@ class SessionManager {
                     id: breakpointId,
                     threadId: threadId,
                     line: line,
+                    active: true,
                     column: column,
                     file: file,
                     scripts: [],
@@ -60,6 +61,16 @@ class SessionManager {
             }
         };
         this.getCurrentBreakpoint = () => this.currentBreakpoint;
+        this.toggleScriptActivation = (breakpoint, script, isActive) => {
+            breakpoint.scripts.forEach((s) => {
+                if (s.uri === script.uri) {
+                    s.active = isActive;
+                }
+            });
+        };
+        this.breakpointActive = (breakpoint, isActive) => {
+            breakpoint.active = isActive;
+        };
         this.sessionOutput = {};
         this.breakpoints = [];
         this.currentBreakpoint = null;

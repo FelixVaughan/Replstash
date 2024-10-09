@@ -155,5 +155,25 @@ export default class StorageManager {
         this._updateBreakpoints(updatedBreakpoints);
     }
 
+    purgeBreakpoints = (): void => {
+        this._updateBreakpoints([]);
+    }
+
+    purgeScripts = (): void => {
+        const breakpointsPath: string = path.join(this.storagePath, 'breakpoints');
+        fs.readdirSync(breakpointsPath).forEach((file: string) => {
+            fs.unlinkSync(path.join(breakpointsPath, file));
+        });
+        const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
+        loadedBreakpoints.forEach((bp: Breakpoint) => {
+            bp.scripts = [];
+        });
+        this._updateBreakpoints(loadedBreakpoints);
+    }
+
+    purgeAll = (): void => {
+        this.purgeBreakpoints();
+        this.purgeScripts();
+    }
 }
 
