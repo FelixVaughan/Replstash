@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import path from 'path';
 import SessionManager from './sessionManager';
 import StorageManager from './storageManager';
-import { Breakpoint, BreakpointMetaData, Script } from './utils';
+import { Breakpoint, BreakpointMetaData } from './utils';
 import { _debugger, window, commands } from './utils';
 class CommandHandler extends EventEmitter {
 
@@ -177,14 +177,14 @@ class CommandHandler extends EventEmitter {
     editSavedScript = async (): Promise<void> => {
         const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
-            this.storageManager.openBreakpointFile(selectedScript);
+            this.storageManager.openBreakpointScript(selectedScript);
         }
     };
 
     deleteSavedScript = async (): Promise<void> => {
         const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
-            this.storageManager.deleteBreakpointFile(selectedScript);
+            this.storageManager.deleteBreakpointSript(selectedScript);
             window.showInformationMessage(`Deleted: ${selectedScript}`);
         }
     }
@@ -215,18 +215,6 @@ class CommandHandler extends EventEmitter {
         const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?")
         proceed && this.storageManager.purgeAll();
     }
-
-    toggleScriptActivation = (breakpoint: Breakpoint, script: Script, active: boolean): void => {
-        this.sessionManager.toggleScriptActivation(breakpoint, script, active);  
-    };
-
-    activateBreakpoint = (breakpoint: Breakpoint): void => {
-        this.sessionManager.breakpointActive(breakpoint, true);
-    };
-
-    deactivateBreakpoint = (breakpoint: Breakpoint): void => {
-        this.sessionManager.breakpointActive(breakpoint, false);
-    };
 } 
 
 export default CommandHandler;

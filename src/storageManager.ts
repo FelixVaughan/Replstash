@@ -68,7 +68,7 @@ export default class StorageManager {
         this.upsertBreakpointScripts(bp, fullPath);
     }
 
-    _updateBreakpoints = (breakpoints: Breakpoint[]) => {
+    updateBreakpoints = (breakpoints: Breakpoint[]) => {
         this.context.workspaceState.update('breakpoints', breakpoints);
         this.loadBreakpoints(); //refresh
     }
@@ -85,7 +85,7 @@ export default class StorageManager {
             bp.createdAt = this.getCurrentTimestamp();
             loadedBreakpoints.push(bp);
         }
-        this._updateBreakpoints(loadedBreakpoints);
+        this.updateBreakpoints(loadedBreakpoints);
     }
 
     // Load all breakpoints
@@ -135,14 +135,14 @@ export default class StorageManager {
         });
     }
     
-    openBreakpointFile(fileName: string) {
+    openBreakpointScript(fileName: string) {
         const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
         vscode.workspace.openTextDocument(fullPath).then((document: vscode.TextDocument) => {
             window.showTextDocument(document);
         });
     }
 
-    deleteBreakpointFile(fileName: string) {
+    deleteBreakpointSript(fileName: string) {
         const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
         fs.unlinkSync(fullPath);
 
@@ -152,11 +152,11 @@ export default class StorageManager {
             bp.scripts = updatedScripts;
             return bp.scripts.length > 0; // Remove if no scripts are left
         });
-        this._updateBreakpoints(updatedBreakpoints);
+        this.updateBreakpoints(updatedBreakpoints);
     }
 
     purgeBreakpoints = (): void => {
-        this._updateBreakpoints([]);
+        this.updateBreakpoints([]);
     }
 
     purgeScripts = (): void => {
@@ -168,12 +168,30 @@ export default class StorageManager {
         loadedBreakpoints.forEach((bp: Breakpoint) => {
             bp.scripts = [];
         });
-        this._updateBreakpoints(loadedBreakpoints);
+        this.updateBreakpoints(loadedBreakpoints);
     }
 
     purgeAll = (): void => {
         this.purgeBreakpoints();
         this.purgeScripts();
     }
+
+    toggleScriptActivation = (breakpoint: Breakpoint, script: Script) => {
+        const loaded: Breakpoint[] = this.loadBreakpoints();
+        breakpoint.scripts.forEach((s: Script) => {
+            if (s.uri === script.uri) {
+                s.active = !s.active;
+            }
+        });
+        this.updateBreakpoints(loaded.map((bp: Breakpoint) => bp.id === breakpoint.id ? breakpoint : bp));
+
+    };
+    
+    toggleBreakpointActivation = (breakpoint: Breakpoint) => {
+        const loaded: Breakpoint[] = this.loadBreakpoints();
+        breakpoint.active = !breakpoint.active;
+        this.updateBreakpoints(loaded.map((bp: Breakpoint) => bp.id === breakpoint.id ? breakpoint : bp));
+    };
+
 }
 

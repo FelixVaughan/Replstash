@@ -31,97 +31,11 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const utils_1 = require("./utils");
 class StorageManager {
+    storagePath;
+    context;
+    loadedBreakpoints = [];
     constructor(context) {
-        var _a;
-        this.loadedBreakpoints = [];
-        // Helper function to get current timestamp
-        this.getCurrentTimestamp = () => {
-            const now = new Date();
-            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-        };
-        // Save the contents to a file
-        this.saveToFile = (fullPath, content) => {
-            fs_1.default.writeFileSync(fullPath, content);
-            utils_1.window.showInformationMessage(`Saved to: ${fullPath}`);
-        };
-        // Read contents from a file
-        this.readFromFile = (filename) => {
-            const filePath = path_1.default.join(this.storagePath, filename);
-            if (fs_1.default.existsSync(filePath)) {
-                return fs_1.default.readFileSync(filePath, 'utf8');
-            }
-            else {
-                utils_1.window.showErrorMessage(`File not found: ${filePath}`);
-                return null;
-            }
-        };
-        //save breakpoint
-        this.saveBreakpoint = (bp, fileName) => {
-            const content = Object.values(bp.content).join('\n');
-            const fullPath = path_1.default.join(this.storagePath, 'breakpoints', fileName);
-            this.saveToFile(fullPath, content);
-            this.upsertBreakpointScripts(bp, fullPath);
-        };
-        this._updateBreakpoints = (breakpoints) => {
-            this.context.workspaceState.update('breakpoints', breakpoints);
-            this.loadBreakpoints(); //refresh
-        };
-        // Update record
-        this.upsertBreakpointScripts = (bp, fullPath) => {
-            const loadedBreakpoints = this.loadBreakpoints();
-            const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
-            if (existingBreakpoint) {
-                existingBreakpoint.scripts.push({ uri: fullPath, active: false });
-                existingBreakpoint.modifiedAt = this.getCurrentTimestamp();
-            }
-            else {
-                bp.scripts.push({ uri: fullPath, active: true });
-                bp.createdAt = this.getCurrentTimestamp();
-                loadedBreakpoints.push(bp);
-            }
-            this._updateBreakpoints(loadedBreakpoints);
-        };
-        // Load all breakpoints
-        this.loadBreakpoints = () => {
-            this.loadedBreakpoints = this.context.workspaceState.get('breakpoints', []);
-            return this.loadedBreakpoints;
-        };
-        this.getLoadedBreakpoints = () => {
-            return this.loadedBreakpoints;
-        };
-        // Save session output
-        this.saveSessionOutput = (sessionOutput, sessionId) => {
-            const content = Object.values(sessionOutput).join('\n');
-            const sessionFilename = `${sessionId}_${this.getCurrentTimestamp()}`;
-            const fullPath = path_1.default.join(this.storagePath, 'session', sessionFilename);
-            this.saveToFile(fullPath, content);
-        };
-        this.fileExists = (filename) => {
-            const paths = ['session', 'breakpoints'].map((dir) => {
-                return path_1.default.join(this.storagePath, dir, filename);
-            });
-            const [sessionPath, breakpointsPath] = paths;
-            return fs_1.default.existsSync(sessionPath) || fs_1.default.existsSync(breakpointsPath);
-        };
-        this.purgeBreakpoints = () => {
-            this._updateBreakpoints([]);
-        };
-        this.purgeScripts = () => {
-            const breakpointsPath = path_1.default.join(this.storagePath, 'breakpoints');
-            fs_1.default.readdirSync(breakpointsPath).forEach((file) => {
-                fs_1.default.unlinkSync(path_1.default.join(breakpointsPath, file));
-            });
-            const loadedBreakpoints = this.loadBreakpoints();
-            loadedBreakpoints.forEach((bp) => {
-                bp.scripts = [];
-            });
-            this._updateBreakpoints(loadedBreakpoints);
-        };
-        this.purgeAll = () => {
-            this.purgeBreakpoints();
-            this.purgeScripts();
-        };
-        this.storagePath = ((_a = context.storageUri) === null || _a === void 0 ? void 0 : _a.fsPath) || "";
+        this.storagePath = context.storageUri?.fsPath || "";
         this.context = context;
         // Ensure the base directory exists
         if (!fs_1.default.existsSync(this.storagePath)) {
@@ -137,6 +51,75 @@ class StorageManager {
         });
         this.loadBreakpoints();
     }
+    // Helper function to get current timestamp
+    getCurrentTimestamp = () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+    };
+    // Save the contents to a file
+    saveToFile = (fullPath, content) => {
+        fs_1.default.writeFileSync(fullPath, content);
+        utils_1.window.showInformationMessage(`Saved to: ${fullPath}`);
+    };
+    // Read contents from a file
+    readFromFile = (filename) => {
+        const filePath = path_1.default.join(this.storagePath, filename);
+        if (fs_1.default.existsSync(filePath)) {
+            return fs_1.default.readFileSync(filePath, 'utf8');
+        }
+        else {
+            utils_1.window.showErrorMessage(`File not found: ${filePath}`);
+            return null;
+        }
+    };
+    //save breakpoint
+    saveBreakpoint = (bp, fileName) => {
+        const content = Object.values(bp.content).join('\n');
+        const fullPath = path_1.default.join(this.storagePath, 'breakpoints', fileName);
+        this.saveToFile(fullPath, content);
+        this.upsertBreakpointScripts(bp, fullPath);
+    };
+    updateBreakpoints = (breakpoints) => {
+        this.context.workspaceState.update('breakpoints', breakpoints);
+        this.loadBreakpoints(); //refresh
+    };
+    // Update record
+    upsertBreakpointScripts = (bp, fullPath) => {
+        const loadedBreakpoints = this.loadBreakpoints();
+        const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
+        if (existingBreakpoint) {
+            existingBreakpoint.scripts.push({ uri: fullPath, active: false });
+            existingBreakpoint.modifiedAt = this.getCurrentTimestamp();
+        }
+        else {
+            bp.scripts.push({ uri: fullPath, active: true });
+            bp.createdAt = this.getCurrentTimestamp();
+            loadedBreakpoints.push(bp);
+        }
+        this.updateBreakpoints(loadedBreakpoints);
+    };
+    // Load all breakpoints
+    loadBreakpoints = () => {
+        this.loadedBreakpoints = this.context.workspaceState.get('breakpoints', []);
+        return this.loadedBreakpoints;
+    };
+    getLoadedBreakpoints = () => {
+        return this.loadedBreakpoints;
+    };
+    // Save session output
+    saveSessionOutput = (sessionOutput, sessionId) => {
+        const content = Object.values(sessionOutput).join('\n');
+        const sessionFilename = `${sessionId}_${this.getCurrentTimestamp()}`;
+        const fullPath = path_1.default.join(this.storagePath, 'session', sessionFilename);
+        this.saveToFile(fullPath, content);
+    };
+    fileExists = (filename) => {
+        const paths = ['session', 'breakpoints'].map((dir) => {
+            return path_1.default.join(this.storagePath, dir, filename);
+        });
+        const [sessionPath, breakpointsPath] = paths;
+        return fs_1.default.existsSync(sessionPath) || fs_1.default.existsSync(breakpointsPath);
+    };
     breakpointFilesMetaData() {
         const _formatDate = (date) => {
             return date.toLocaleString('en-US', {
@@ -151,13 +134,13 @@ class StorageManager {
             return { fileName: file, fullPath, size, createdAt, modifiedAt };
         });
     }
-    openBreakpointFile(fileName) {
+    openBreakpointScript(fileName) {
         const fullPath = path_1.default.join(this.storagePath, 'breakpoints', fileName);
         vscode.workspace.openTextDocument(fullPath).then((document) => {
             utils_1.window.showTextDocument(document);
         });
     }
-    deleteBreakpointFile(fileName) {
+    deleteBreakpointSript(fileName) {
         const fullPath = path_1.default.join(this.storagePath, 'breakpoints', fileName);
         fs_1.default.unlinkSync(fullPath);
         const loadedBreakpoints = this.loadBreakpoints();
@@ -166,8 +149,40 @@ class StorageManager {
             bp.scripts = updatedScripts;
             return bp.scripts.length > 0; // Remove if no scripts are left
         });
-        this._updateBreakpoints(updatedBreakpoints);
+        this.updateBreakpoints(updatedBreakpoints);
     }
+    purgeBreakpoints = () => {
+        this.updateBreakpoints([]);
+    };
+    purgeScripts = () => {
+        const breakpointsPath = path_1.default.join(this.storagePath, 'breakpoints');
+        fs_1.default.readdirSync(breakpointsPath).forEach((file) => {
+            fs_1.default.unlinkSync(path_1.default.join(breakpointsPath, file));
+        });
+        const loadedBreakpoints = this.loadBreakpoints();
+        loadedBreakpoints.forEach((bp) => {
+            bp.scripts = [];
+        });
+        this.updateBreakpoints(loadedBreakpoints);
+    };
+    purgeAll = () => {
+        this.purgeBreakpoints();
+        this.purgeScripts();
+    };
+    toggleScriptActivation = (breakpoint, script) => {
+        const loaded = this.loadBreakpoints();
+        breakpoint.scripts.forEach((s) => {
+            if (s.uri === script.uri) {
+                s.active = !s.active;
+            }
+        });
+        this.updateBreakpoints(loaded.map((bp) => bp.id === breakpoint.id ? breakpoint : bp));
+    };
+    toggleBreakpointActivation = (breakpoint) => {
+        const loaded = this.loadBreakpoints();
+        breakpoint.active = !breakpoint.active;
+        this.updateBreakpoints(loaded.map((bp) => bp.id === breakpoint.id ? breakpoint : bp));
+    };
 }
 exports.default = StorageManager;
 //# sourceMappingURL=storageManager.js.map

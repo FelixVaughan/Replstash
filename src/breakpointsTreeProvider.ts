@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
+import path from 'path';
 import { Breakpoint, Script } from './utils';
 import StorageManager from './storageManager';
-import CommandHandler from './commandHandler';  // Import CommandHandler
 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
 
@@ -10,9 +10,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     constructor(
         private storageManager: StorageManager,  // StorageManager for data
-        private commandHandler: CommandHandler   // CommandHandler for operations
-    ) {
-    }
+    ) {}
 
     // Refresh the TreeView
     refresh = (): void => {
@@ -21,16 +19,29 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     // Retrieve the item for the TreeView (either Breakpoint or Script)
     getTreeItem = (element: Breakpoint | Script): vscode.TreeItem => {
-        const treeItem: vscode.TreeItem = new vscode.TreeItem('uri' in element ? element.uri : element.file);
-    
-        // Add collapsible state based on whether it's a Breakpoint or a Script
-        treeItem.collapsibleState = 'scripts' in element 
-            ? vscode.TreeItemCollapsibleState.Collapsed 
-            : vscode.TreeItemCollapsibleState.None;
-    
-        // Add contextValue for context menu
-        treeItem.contextValue = 'scripts' in element ? 'breakpoint' : 'script';
-        
+        const isBreakpoint: boolean = Object.hasOwn(element, 'scripts');
+        const treeItem: vscode.TreeItem = new vscode.TreeItem(
+            'uri' in element ? element.uri : element.file
+        );
+
+        treeItem.checkboxState = element.active 
+            ? vscode.TreeItemCheckboxState.Checked 
+            : vscode.TreeItemCheckboxState.Unchecked;
+
+        if (isBreakpoint) {
+            element = element as Breakpoint;
+            treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+            treeItem.contextValue = 'breakpoint';
+            treeItem.label = `[${element.file}]\t(${element.scripts.length})`;
+            treeItem.tooltip = element.id;
+            treeItem.description = `${element.line}:${element.column}`;
+        }else {
+            element = element as Script
+            treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
+            treeItem.contextValue = 'script';
+            treeItem.label = `<${path.basename(element.uri)}>`;
+        }
+
         return treeItem;
     }
     
@@ -49,19 +60,20 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         return breakpoints.find(breakpoint => breakpoint.scripts.includes(element)) || null;
     }
 
-    // Method to deactivate a breakpoint
-    deactivateBreakpoint = (breakpoint: Breakpoint): void => {
-        this.commandHandler.deactivateBreakpoint(breakpoint);  // Use commandHandler's deactivate logic
-        this.refresh();
-    }
+    activateDeactivateElement = (element: Breakpoint | Script): void => {
+        const isBreakpoint = Object.hasOwn(element, 'scripts');
 
-    // Method to activate or deactivate a script
-    activateDeactivateScript = (script: Script): void => {
-        script.active = !script.active;  // Toggle active state
-        const parentBreakpoint: Breakpoint | null = this.getParent(script);
-        if (parentBreakpoint) {
-            this.commandHandler.toggleScriptActivation(parentBreakpoint, script, script.active);  // Call commandHandler for state change
+        if (isBreakpoint) {
+            const breakpoint: Breakpoint = element as Breakpoint;
+            this.storageManager.toggleBreakpointActivation(breakpoint);
+        } else {
+            const script = element as Script;
+            const parentBreakpoint = this.getParent(script);
+            if (parentBreakpoint) {
+                this.storageManager.toggleScriptActivation(parentBreakpoint, script);
+            }
         }
+
         this.refresh();
     }
 }

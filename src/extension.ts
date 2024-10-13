@@ -14,7 +14,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
     const sessionManager: SessionManager = new SessionManager();
     const storageManager: StorageManager = new StorageManager(context);
     const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
-    const breakpointsProvider: BreakpointsTreeProvider = new BreakpointsTreeProvider(storageManager, commandHandler);  // Pass the whole StorageManager
+    const breakpointsProvider: BreakpointsTreeProvider = new BreakpointsTreeProvider(storageManager);  // Pass the whole StorageManager
 
     vscode.window.registerTreeDataProvider('breakpointsView', breakpointsProvider);
     // Register debug adapter tracker factory
@@ -30,6 +30,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
         return vscode.commands.registerCommand(commandId, commandFunction);
     };
 
+
+
     // Register all commands with a helper function
     const commands: Disposable[] = [
         registerCommand('slugger.startCapture', commandHandler.startCapture),
@@ -38,12 +40,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
         registerCommand('slugger.loadScripts', commandHandler.activateScripts),
-        registerCommand('slugger.activateScript', commandHandler.toggleScriptActivation),
-        registerCommand('slugger.deactivateScript', commandHandler.toggleScriptActivation),
-        registerCommand('slugger.activateBreakpoint', commandHandler.activateBreakpoint),
-        registerCommand('slugger.deactivateBreakpoint', commandHandler.deactivateBreakpoint), 
+        registerCommand('slugger.activateDeactivateElement', breakpointsProvider.activateDeactivateElement),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
-
+        registerCommand('breakpointsView.toggleActivation', breakpointsProvider.activateDeactivateElement),
     ];
 
     // Add all disposables (commands and tracker) to the subscriptions

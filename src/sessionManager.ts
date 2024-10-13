@@ -1,4 +1,4 @@
-import { Breakpoint, Script } from './utils';
+import { Breakpoint } from './utils';
 export default class SessionManager {
 
     private sessionOutput: Record<string, string>;
@@ -99,18 +99,6 @@ export default class SessionManager {
     }
 
     getCurrentBreakpoint = (): Breakpoint | null => this.currentBreakpoint;
-
-    toggleScriptActivation = (breakpoint: Breakpoint, script: Script, isActive: boolean) => {
-        breakpoint.scripts.forEach((s: Script) => {
-            if (s.uri === script.uri) {
-                s.active = isActive;
-            }
-        });
-    };
-
-    breakpointActive = (breakpoint: Breakpoint, isActive: boolean) => {
-        breakpoint.active = isActive;
-    };
 
 }
 

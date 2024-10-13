@@ -58,6 +58,10 @@
         "title": "Deactivate Script"
       },
       {
+        "command": "slugger.activateDeactivateElement",
+        "title": "Toggle Activate"
+      },
+      {
         "command": "slugger.purgeBreakpoints",
         "title": "Purge Breakpoints"
       }
@@ -65,18 +69,13 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "slugger.deactivateBreakpoint",
-          "when": "view == breakpointsView && viewItem == breakpoint && viewItem.active",
+          "command": "slugger.activateDeactivateElement",
+          "when": "view == breakpointsView && viewItem == breakpoint",
           "group": "navigation"
         },
         {
-          "command": "slugger.activateScript",
-          "when": "view == breakpointsView && viewItem == script && !viewItem.active",
-          "group": "navigation"
-        },
-        {
-          "command": "slugger.deactivateScript",
-          "when": "view == breakpointsView && viewItem == script && viewItem.active",
+          "command": "slugger.activateDeactivateElement",
+          "when": "view == breakpointsView && viewItem == script",
           "group": "navigation"
         }
       ]
