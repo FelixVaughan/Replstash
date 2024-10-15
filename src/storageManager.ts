@@ -176,22 +176,21 @@ export default class StorageManager {
         this.purgeScripts();
     }
 
-    toggleScriptActivation = (breakpoint: Breakpoint, script: Script) => {
+    
+    changeScriptActivation = (breakpoint: Breakpoint, script: Script, active: boolean) => {
         const loaded: Breakpoint[] = this.loadBreakpoints();
         breakpoint.scripts.forEach((s: Script) => {
             if (s.uri === script.uri) {
-                s.active = !s.active;
+                s.active = active;
             }
         });
         this.updateBreakpoints(loaded.map((bp: Breakpoint) => bp.id === breakpoint.id ? breakpoint : bp));
+    }
 
-    };
-    
-    toggleBreakpointActivation = (breakpoint: Breakpoint) => {
+    changeBreakpointActivation = (breakpoint: Breakpoint, active: boolean) => {
         const loaded: Breakpoint[] = this.loadBreakpoints();
-        breakpoint.active = !breakpoint.active;
+        breakpoint.active = active;
         this.updateBreakpoints(loaded.map((bp: Breakpoint) => bp.id === breakpoint.id ? breakpoint : bp));
-    };
+    }
 
 }
-

@@ -41,8 +41,8 @@ const activate = (context) => {
     const sessionManager = new sessionManager_1.default();
     const storageManager = new storageManager_1.default(context);
     const commandHandler = new commandHandler_1.default(sessionManager, storageManager);
-    const breakpointsProvider = new breakpointsTreeProvider_1.default(storageManager); // Pass the whole StorageManager
-    vscode.window.registerTreeDataProvider('breakpointsView', breakpointsProvider);
+    const breakpointsTreeProvider = new breakpointsTreeProvider_1.default(storageManager);
+    const treeView = breakpointsTreeProvider.createTreeView();
     // Register debug adapter tracker factory
     const debugAdapterTrackerFactory = utils_1._debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session) {
@@ -62,12 +62,11 @@ const activate = (context) => {
         registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
         registerCommand('slugger.loadScripts', commandHandler.activateScripts),
-        registerCommand('slugger.activateDeactivateElement', breakpointsProvider.activateDeactivateElement),
+        registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
-        registerCommand('breakpointsView.toggleActivation', breakpointsProvider.activateDeactivateElement),
     ];
     // Add all disposables (commands and tracker) to the subscriptions
-    context.subscriptions.push(...commands, debugAdapterTrackerFactory);
+    context.subscriptions.push(...commands, debugAdapterTrackerFactory, treeView);
 };
 exports.activate = activate;
 const deactivate = () => { };

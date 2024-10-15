@@ -5,7 +5,7 @@ import SessionManager from './sessionManager';
 import DebugAdapterTracker from './debugAdapterTracker';
 import CommandHandler from './commandHandler';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
-import { _debugger } from './utils';
+import { _debugger, Breakpoint, Script } from './utils';
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -14,9 +14,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
     const sessionManager: SessionManager = new SessionManager();
     const storageManager: StorageManager = new StorageManager(context);
     const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
-    const breakpointsProvider: BreakpointsTreeProvider = new BreakpointsTreeProvider(storageManager);  // Pass the whole StorageManager
+    const breakpointsTreeProvider: BreakpointsTreeProvider = new BreakpointsTreeProvider(storageManager);
+    const treeView: vscode.TreeView<Breakpoint | Script> = breakpointsTreeProvider.createTreeView(); 
 
-    vscode.window.registerTreeDataProvider('breakpointsView', breakpointsProvider);
     // Register debug adapter tracker factory
     const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session: DebugSession) {
@@ -30,8 +30,6 @@ export const activate = (context: vscode.ExtensionContext): void => {
         return vscode.commands.registerCommand(commandId, commandFunction);
     };
 
-
-
     // Register all commands with a helper function
     const commands: Disposable[] = [
         registerCommand('slugger.startCapture', commandHandler.startCapture),
@@ -40,13 +38,16 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
         registerCommand('slugger.loadScripts', commandHandler.activateScripts),
-        registerCommand('slugger.activateDeactivateElement', breakpointsProvider.activateDeactivateElement),
+        registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
-        registerCommand('breakpointsView.toggleActivation', breakpointsProvider.activateDeactivateElement),
     ];
 
     // Add all disposables (commands and tracker) to the subscriptions
-    context.subscriptions.push(...commands, debugAdapterTrackerFactory);
+    context.subscriptions.push(
+        ...commands, 
+        debugAdapterTrackerFactory, 
+        treeView
+    );
 
 };
 

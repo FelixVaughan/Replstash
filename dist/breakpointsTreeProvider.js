@@ -28,6 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = __importStar(require("vscode"));
 const path_1 = __importDefault(require("path"));
+const utils_1 = require("./utils");
 class BreakpointsTreeProvider {
     storageManager;
     _onDidChangeTreeData = new vscode.EventEmitter();
@@ -74,20 +75,37 @@ class BreakpointsTreeProvider {
         const breakpoints = this.storageManager.loadBreakpoints();
         return breakpoints.find(breakpoint => breakpoint.scripts.includes(element)) || null;
     };
-    activateDeactivateElement = (element) => {
-        const isBreakpoint = Object.hasOwn(element, 'scripts');
-        if (isBreakpoint) {
+    setElementActivation = (element, status) => {
+        // Compute the status value: use provided status or toggle current state
+        const statusValue = status !== undefined ? status : !element.active;
+        if (Object.hasOwn(element, 'scripts')) {
+            // Element is a Breakpoint
             const breakpoint = element;
-            this.storageManager.toggleBreakpointActivation(breakpoint);
+            this.storageManager.changeBreakpointActivation(breakpoint, statusValue);
         }
         else {
+            // Element is a Script
             const script = element;
             const parentBreakpoint = this.getParent(script);
             if (parentBreakpoint) {
-                this.storageManager.toggleScriptActivation(parentBreakpoint, script);
+                this.storageManager.changeScriptActivation(parentBreakpoint, script, statusValue);
             }
         }
+        // Refresh the tree view to reflect changes
         this.refresh();
+    };
+    createTreeView = () => {
+        const treeView = utils_1.window.createTreeView('breakpointsView', {
+            treeDataProvider: this,
+            manageCheckboxStateManually: true,
+        });
+        treeView.onDidChangeCheckboxState((event) => {
+            event.items.forEach(([elem, checked]) => {
+                const isChecked = checked === vscode.TreeItemCheckboxState.Checked;
+                this.setElementActivation(elem, isChecked);
+            });
+        });
+        return treeView;
     };
 }
 exports.default = BreakpointsTreeProvider;

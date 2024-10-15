@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import path from 'path';
-import { Breakpoint, Script } from './utils';
+import { Breakpoint, Script, window } from './utils';
 import StorageManager from './storageManager';
 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
@@ -27,6 +27,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         treeItem.checkboxState = element.active 
             ? vscode.TreeItemCheckboxState.Checked 
             : vscode.TreeItemCheckboxState.Unchecked;
+
 
         if (isBreakpoint) {
             element = element as Breakpoint;
@@ -60,20 +61,40 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         return breakpoints.find(breakpoint => breakpoint.scripts.includes(element)) || null;
     }
 
-    activateDeactivateElement = (element: Breakpoint | Script): void => {
-        const isBreakpoint = Object.hasOwn(element, 'scripts');
-
-        if (isBreakpoint) {
-            const breakpoint: Breakpoint = element as Breakpoint;
-            this.storageManager.toggleBreakpointActivation(breakpoint);
+    setElementActivation = (element: Breakpoint | Script, status?: boolean): void => {
+        // Compute the status value: use provided status or toggle current state
+        const statusValue: boolean = status !== undefined ? status : !element.active;
+    
+        if (Object.hasOwn(element, 'scripts')) {
+            // Element is a Breakpoint
+            const breakpoint = element as Breakpoint;
+            this.storageManager.changeBreakpointActivation(breakpoint, statusValue);
         } else {
+            // Element is a Script
             const script = element as Script;
             const parentBreakpoint = this.getParent(script);
             if (parentBreakpoint) {
-                this.storageManager.toggleScriptActivation(parentBreakpoint, script);
+                this.storageManager.changeScriptActivation(parentBreakpoint, script, statusValue);
             }
         }
-
+    
+        // Refresh the tree view to reflect changes
         this.refresh();
+    }
+
+    createTreeView = (): vscode.TreeView<Breakpoint | Script> => {
+        const treeView = window.createTreeView('breakpointsView', {
+            treeDataProvider: this,
+            manageCheckboxStateManually: true,
+        });
+
+        treeView.onDidChangeCheckboxState((event: vscode.TreeCheckboxChangeEvent<Script | Breakpoint>) => {
+            event.items.forEach(([elem, checked]: [Script | Breakpoint, number]) => { //vscode.TreeItemCheckboxState
+                const isChecked: boolean = checked === vscode.TreeItemCheckboxState.Checked;
+                this.setElementActivation(elem, isChecked);
+            });
+        });
+
+        return treeView;
     }
 }

@@ -169,18 +169,18 @@ class StorageManager {
         this.purgeBreakpoints();
         this.purgeScripts();
     };
-    toggleScriptActivation = (breakpoint, script) => {
+    changeScriptActivation = (breakpoint, script, active) => {
         const loaded = this.loadBreakpoints();
         breakpoint.scripts.forEach((s) => {
             if (s.uri === script.uri) {
-                s.active = !s.active;
+                s.active = active;
             }
         });
         this.updateBreakpoints(loaded.map((bp) => bp.id === breakpoint.id ? breakpoint : bp));
     };
-    toggleBreakpointActivation = (breakpoint) => {
+    changeBreakpointActivation = (breakpoint, active) => {
         const loaded = this.loadBreakpoints();
-        breakpoint.active = !breakpoint.active;
+        breakpoint.active = active;
         this.updateBreakpoints(loaded.map((bp) => bp.id === breakpoint.id ? breakpoint : bp));
     };
 }

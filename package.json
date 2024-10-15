@@ -58,7 +58,7 @@
         "title": "Deactivate Script"
       },
       {
-        "command": "slugger.activateDeactivateElement",
+        "command": "slugger.toggleElementActive",
         "title": "Toggle Activate"
       },
       {
@@ -69,12 +69,12 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "slugger.activateDeactivateElement",
+          "command": "slugger.toggleElementActive",
           "when": "view == breakpointsView && viewItem == breakpoint",
           "group": "navigation"
         },
         {
-          "command": "slugger.activateDeactivateElement",
+          "command": "slugger.toggleElementActive",
           "when": "view == breakpointsView && viewItem == script",
           "group": "navigation"
         }
