@@ -64,6 +64,16 @@
       {
         "command": "slugger.purgeBreakpoints",
         "title": "Purge Breakpoints"
+      },
+      {
+        "command": "slugger.enableScriptsRunnable",
+        "title": "Set Scripts Runnable",
+        "category": "Slugger"
+      },
+      {
+        "command": "slugger.disableScriptsRunnable",
+        "title": "Set Scripts Not Runnable",
+        "category": "Slugger"
       }
     ],
     "menus": {
@@ -77,6 +87,16 @@
           "command": "slugger.toggleElementActive",
           "when": "view == breakpointsView && viewItem == script",
           "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "slugger.enableScriptsRunnable",
+          "when": "!slugger.scriptsRunnable"
+        },
+        {
+          "command": "slugger.disableScriptsRunnable",
+          "when": "slugger.scriptsRunnable"
         }
       ]
     },

@@ -215,6 +215,13 @@ class CommandHandler extends EventEmitter {
         const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?")
         proceed && this.storageManager.purgeAll();
     }
+
+    setScriptRunnable = async (runnable: boolean): Promise<void> => {
+        this.sessionManager.setScriptsRunnable(runnable);
+        vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
+        window.showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
+    }
+
 } 
 
 export default CommandHandler;

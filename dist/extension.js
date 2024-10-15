@@ -43,18 +43,15 @@ const activate = (context) => {
     const commandHandler = new commandHandler_1.default(sessionManager, storageManager);
     const breakpointsTreeProvider = new breakpointsTreeProvider_1.default(storageManager);
     const treeView = breakpointsTreeProvider.createTreeView();
-    // Register debug adapter tracker factory
     const debugAdapterTrackerFactory = utils_1._debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session) {
             console.log(`Tracking Session: ${session.id}`);
-            return new debugAdapterTracker_1.default(sessionManager, commandHandler); // Pass commandHandler to track capturing state
+            return new debugAdapterTracker_1.default(sessionManager, commandHandler, storageManager); // Pass commandHandler to track capturing state
         }
     });
-    // Command registration helper
     const registerCommand = (commandId, commandFunction) => {
         return vscode.commands.registerCommand(commandId, commandFunction);
     };
-    // Register all commands with a helper function
     const commands = [
         registerCommand('slugger.startCapture', commandHandler.startCapture),
         registerCommand('slugger.stopCapture', commandHandler.stopCapture),
@@ -64,8 +61,10 @@ const activate = (context) => {
         registerCommand('slugger.loadScripts', commandHandler.activateScripts),
         registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
+        registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
+        registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
     ];
-    // Add all disposables (commands and tracker) to the subscriptions
+    vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
     context.subscriptions.push(...commands, debugAdapterTrackerFactory, treeView);
 };
 exports.activate = activate;

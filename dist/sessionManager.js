@@ -1,17 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class SessionManager {
-    sessionOutput;
-    breakpoints;
-    currentBreakpoint;
-    capturing;
-    captureIsPaused;
+    sessionOutput = {};
+    breakpoints = [];
+    currentBreakpoint = null;
+    capturing = false;
+    captureIsPaused = false;
+    scriptsRunnable = false;
     constructor() {
-        this.sessionOutput = {};
-        this.breakpoints = [];
-        this.currentBreakpoint = null;
-        this.capturing = false;
-        this.captureIsPaused = false;
+        // this.sessionOutput = {};
+        // this.breakpoints = [];
+        // this.currentBreakpoint = null;
+        // this.capturing = false;
+        // this.captureIsPaused = false;
+        // this.scriptsRunnable = false;
     }
     addSessionOutput = (messageSeq, expression) => {
         this.sessionOutput[messageSeq] = expression;
@@ -26,9 +28,9 @@ class SessionManager {
         this.captureIsPaused = paused;
         this.capturing = false;
     };
-    createBreakpointId = (file, line, column, threadId) => `${file}_${line}_${column}_${threadId}`;
-    addBreakpoint = (threadId, line, column, file) => {
-        const breakpointId = this.createBreakpointId(file, line, column, threadId);
+    constructBreakpointId = (file, line, column, threadId) => `${file}_${line}_${column}_${threadId}`;
+    addBreakpoint = (file, line, column, threadId) => {
+        const breakpointId = this.constructBreakpointId(file, line, column, threadId);
         const existingBreakpoint = this.breakpoints.find((breakpoint) => breakpoint.id === breakpointId);
         if (!existingBreakpoint) {
             this.currentBreakpoint = {
@@ -62,10 +64,12 @@ class SessionManager {
         return this.breakpoints;
     };
     isCapturing = () => this.capturing;
-    clearCapture = () => {
+    clearCapture = () => { };
+    discardCapture = () => { };
+    setScriptsRunnable = (runnable) => {
+        this.scriptsRunnable = runnable;
     };
-    discardCapture = () => {
-    };
+    scriptsAreRunnable = () => this.scriptsRunnable;
     resetCurrentBeakpointContent = () => {
         if (this.currentBreakpoint) {
             this.currentBreakpoint.content = {};

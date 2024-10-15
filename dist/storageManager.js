@@ -183,6 +183,12 @@ class StorageManager {
         breakpoint.active = active;
         this.updateBreakpoints(loaded.map((bp) => bp.id === breakpoint.id ? breakpoint : bp));
     };
+    getScriptContent = (uri) => {
+        if (fs_1.default.existsSync(uri)) {
+            return fs_1.default.readFileSync(uri, 'utf8');
+        }
+        return null;
+    };
 }
 exports.default = StorageManager;
 //# sourceMappingURL=storageManager.js.map

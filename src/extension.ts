@@ -17,20 +17,17 @@ export const activate = (context: vscode.ExtensionContext): void => {
     const breakpointsTreeProvider: BreakpointsTreeProvider = new BreakpointsTreeProvider(storageManager);
     const treeView: vscode.TreeView<Breakpoint | Script> = breakpointsTreeProvider.createTreeView(); 
 
-    // Register debug adapter tracker factory
     const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session: DebugSession) {
             console.log(`Tracking Session: ${session.id}`);
-            return new DebugAdapterTracker(sessionManager, commandHandler); // Pass commandHandler to track capturing state
+            return new DebugAdapterTracker(sessionManager, commandHandler, storageManager); // Pass commandHandler to track capturing state
         }
     });
 
-    // Command registration helper
     const registerCommand = (commandId: string, commandFunction: (...args: any[]) => any) => {
         return vscode.commands.registerCommand(commandId, commandFunction);
     };
 
-    // Register all commands with a helper function
     const commands: Disposable[] = [
         registerCommand('slugger.startCapture', commandHandler.startCapture),
         registerCommand('slugger.stopCapture', commandHandler.stopCapture),
@@ -40,9 +37,12 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.loadScripts', commandHandler.activateScripts),
         registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
+        registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
+        registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
     ];
 
-    // Add all disposables (commands and tracker) to the subscriptions
+    vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
+
     context.subscriptions.push(
         ...commands, 
         debugAdapterTrackerFactory, 

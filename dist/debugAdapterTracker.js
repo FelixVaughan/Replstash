@@ -4,12 +4,32 @@ const utils_1 = require("./utils");
 class DebugAdapterTracker {
     sessionManager;
     commandHandler;
-    constructor(sessionManager, commandHandler) {
+    storageManager;
+    constructor(sessionManager, commandHandler, storageManager) {
         this.sessionManager = sessionManager;
-        this.commandHandler = commandHandler; // Reference to CommandHandler to check capturing state
+        this.commandHandler = commandHandler;
+        this.storageManager = storageManager;
         this.commandHandler.on('captureStarted', () => { this.sessionManager.setCapturing(true); });
         this.commandHandler.on('captureStopped', () => { this.sessionManager.setCapturing(false); });
     }
+    _evaluateBreakpointScripts = async (breakpointId, frameId, session) => {
+        const loadedBreakpoints = this.storageManager.loadBreakpoints();
+        const existingBreakpoint = loadedBreakpoints.find((breakpoint) => breakpoint.id === breakpointId);
+        existingBreakpoint?.scripts.forEach(async (script) => {
+            if (!script.active)
+                return;
+            const scriptContent = this.storageManager.getScriptContent(script.uri);
+            if (scriptContent) {
+                const response = await session.customRequest('evaluate', {
+                    expression: scriptContent,
+                    context: 'repl',
+                    frameId: frameId,
+                });
+                if (response.success)
+                    utils_1.window.showInformationMessage(`Script: ${script.uri} evaluated successfully.`);
+            }
+        });
+    };
     onWillReceiveMessage = async (message) => {
         if (this.sessionManager.isCapturing() && message.arguments?.context === 'repl') {
             const expression = message.arguments.expression;
@@ -24,18 +44,24 @@ class DebugAdapterTracker {
             }
         }
         if (message.type === 'event' && message.event === 'stopped' && message.body.reason === 'breakpoint') {
-            if (!utils_1._debugger.activeDebugSession)
+            const activeSession = utils_1._debugger?.activeDebugSession;
+            if (!activeSession)
                 return;
-            const stackTraceResponse = await utils_1._debugger.activeDebugSession.customRequest('stackTrace', {
+            const stackTraceResponse = await activeSession.customRequest('stackTrace', {
                 threadId: message.body.threadId,
             });
-            if (stackTraceResponse && stackTraceResponse.stackFrames.length > 0) {
-                const topFrame = stackTraceResponse.stackFrames[0];
-                const source = topFrame.source.path;
-                const line = topFrame.line;
-                const column = topFrame.column;
-                this.sessionManager.addBreakpoint(message.body.threadId, line, column, source);
-                this.commandHandler.setPausedOnBreakpoint(true);
+            if (stackTraceResponse?.stackFrames.length < 1)
+                return;
+            const topFrame = stackTraceResponse.stackFrames[0];
+            const source = topFrame.source.path;
+            const line = topFrame.line;
+            const column = topFrame.column;
+            const threadId = message.body.threadId;
+            this.sessionManager.addBreakpoint(source, line, column, threadId);
+            this.commandHandler.setPausedOnBreakpoint(true);
+            if (this.sessionManager.scriptsAreRunnable()) {
+                const breakpointId = this.sessionManager.constructBreakpointId(source, line, column, threadId);
+                this._evaluateBreakpointScripts(breakpointId, topFrame.id, activeSession);
             }
         }
         if (message.type === 'event' && message.event === 'continued') {

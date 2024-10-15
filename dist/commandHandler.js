@@ -193,6 +193,11 @@ class CommandHandler extends events_1.default {
         const proceed = await this._confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?");
         proceed && this.storageManager.purgeAll();
     };
+    setScriptRunnable = async (runnable) => {
+        this.sessionManager.setScriptsRunnable(runnable);
+        vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
+        utils_1.window.showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
+    };
 }
 exports.default = CommandHandler;
 //# sourceMappingURL=commandHandler.js.map
