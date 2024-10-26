@@ -3,8 +3,14 @@ import * as vscode from 'vscode';
 import path from 'path';
 import SessionManager from './sessionManager';
 import StorageManager from './storageManager';
-import { Breakpoint, BreakpointMetaData } from './utils';
-import { _debugger, window, commands } from './utils';
+import { 
+    Breakpoint, 
+    BreakpointMetaData, 
+    _debugger, 
+    window, 
+    commands,
+    LabeledItem
+} from './utils';
 class CommandHandler extends EventEmitter {
 
     private sessionManager: SessionManager;
@@ -139,11 +145,6 @@ class CommandHandler extends EventEmitter {
             return;
         }
 
-        interface LabeledItem {
-            label: any;
-            description: string;
-        }
-
         const selectedScript: LabeledItem | undefined = await window.showQuickPick(
             scriptsMetaData.map((meta: BreakpointMetaData) => ({
                 label: meta.fileName,
@@ -154,7 +155,7 @@ class CommandHandler extends EventEmitter {
                 canPickMany: false
             }
         );
-
+    
         // If no script was selected (user canceled the QuickPick)
         if (!selectedScript) {
             window.showInformationMessage('No script selected.');
@@ -163,6 +164,32 @@ class CommandHandler extends EventEmitter {
         return selectedScript.label;
 
     }
+
+    _selectBreakpoint = async (): Promise<Breakpoint | void> => {
+        const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+        if (!breakpoints.length) {
+            window.showInformationMessage('No saved breakpoints found.');
+            return;
+        }
+
+        const selectedBreakpoint: LabeledItem | undefined = await window.showQuickPick(
+            breakpoints.map((bp: Breakpoint) => ({
+                label: bp.id,
+                description: `File: ${bp.file} | Line: ${bp.line} | Column: ${bp.column}`
+            })),
+            {
+                placeHolder: 'Select a breakpoint to assign scripts',
+                canPickMany: false
+            }
+        );
+
+        if (!selectedBreakpoint) {
+            window.showInformationMessage('No breakpoint selected.');
+            return;
+        }
+        return breakpoints.find((bp: Breakpoint) => bp.id === selectedBreakpoint.label);
+    }
+
 
     private _confirmWarning = async (message: string): Promise<boolean> => {
         const selection = await vscode.window.showWarningMessage(
@@ -218,9 +245,18 @@ class CommandHandler extends EventEmitter {
 
     setScriptRunnable = async (runnable: boolean): Promise<void> => {
         this.sessionManager.setScriptsRunnable(runnable);
-        vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
+        commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
         window.showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
     }
+
+    assignScriptsToBreakpoint = async (): Promise<void> => {
+        const selected: string | void = await this._selectScript();
+        if (!selected) return;
+        const selectedBreakpoint: Breakpoint | void = await this._selectBreakpoint();
+        if (!selectedBreakpoint) return;
+        this.storageManager.assignScriptsToBreakpoint(selectedBreakpoint, [selected]);
+    }
+        
 
 } 
 

@@ -74,6 +74,11 @@
         "command": "slugger.disableScriptsRunnable",
         "title": "Set Scripts Not Runnable",
         "category": "Slugger"
+      },
+      {
+        "command": "slugger.assignScriptsToBreakpoint",
+        "title": "Assign Scripts to Breakpoint",
+        "category": "Slugger"
       }
     ],
     "menus": {

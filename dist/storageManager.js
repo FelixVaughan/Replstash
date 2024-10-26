@@ -189,6 +189,19 @@ class StorageManager {
         }
         return null;
     };
+    assignScriptsToBreakpoint = (breakpoint, scripts) => {
+        const loaded = this.loadBreakpoints();
+        const updatedBreakpoints = loaded.map((bp) => {
+            if (bp.id === breakpoint.id) {
+                const filteredScripts = scripts.filter((uri) => {
+                    return !bp.scripts.some((s) => s.uri === uri);
+                });
+                bp.scripts.push(...filteredScripts.map((uri) => ({ uri, active: false })));
+            }
+            return bp;
+        });
+        this.updateBreakpoints(updatedBreakpoints);
+    };
 }
 exports.default = StorageManager;
 //# sourceMappingURL=storageManager.js.map

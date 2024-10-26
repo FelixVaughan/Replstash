@@ -5,7 +5,7 @@ import SessionManager from './sessionManager';
 import DebugAdapterTracker from './debugAdapterTracker';
 import CommandHandler from './commandHandler';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
-import { _debugger, Breakpoint, Script } from './utils';
+import { _debugger, Breakpoint, Script, commands } from './utils';
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -28,7 +28,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         return vscode.commands.registerCommand(commandId, commandFunction);
     };
 
-    const commands: Disposable[] = [
+    const commandsDisposable: Disposable[] = [
         registerCommand('slugger.startCapture', commandHandler.startCapture),
         registerCommand('slugger.stopCapture', commandHandler.stopCapture),
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
@@ -39,12 +39,13 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
         registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
         registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
+        registerCommand('slugger.assignScriptsToBreakpoint', commandHandler.assignScriptsToBreakpoint),
     ];
 
-    vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
+    commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
 
     context.subscriptions.push(
-        ...commands, 
+        ...commandsDisposable, 
         debugAdapterTrackerFactory, 
         treeView
     );

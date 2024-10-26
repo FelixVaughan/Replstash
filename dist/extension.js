@@ -52,7 +52,7 @@ const activate = (context) => {
     const registerCommand = (commandId, commandFunction) => {
         return vscode.commands.registerCommand(commandId, commandFunction);
     };
-    const commands = [
+    const commandsDisposable = [
         registerCommand('slugger.startCapture', commandHandler.startCapture),
         registerCommand('slugger.stopCapture', commandHandler.stopCapture),
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
@@ -63,9 +63,10 @@ const activate = (context) => {
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
         registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
         registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
+        registerCommand('slugger.assignScriptsToBreakpoint', commandHandler.assignScriptsToBreakpoint),
     ];
-    vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
-    context.subscriptions.push(...commands, debugAdapterTrackerFactory, treeView);
+    utils_1.commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
+    context.subscriptions.push(...commandsDisposable, debugAdapterTrackerFactory, treeView);
 };
 exports.activate = activate;
 const deactivate = () => { };

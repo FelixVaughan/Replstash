@@ -30,3 +30,8 @@ export interface BreakpointMetaData {
     createdAt: string;
     modifiedAt: string;
 }
+
+export interface LabeledItem {
+    label: any;
+    description: string;
+}

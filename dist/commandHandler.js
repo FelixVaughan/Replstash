@@ -154,6 +154,25 @@ class CommandHandler extends events_1.default {
         }
         return selectedScript.label;
     };
+    _selectBreakpoint = async () => {
+        const breakpoints = this.storageManager.loadBreakpoints();
+        if (!breakpoints.length) {
+            utils_1.window.showInformationMessage('No saved breakpoints found.');
+            return;
+        }
+        const selectedBreakpoint = await utils_1.window.showQuickPick(breakpoints.map((bp) => ({
+            label: bp.id,
+            description: `File: ${bp.file} | Line: ${bp.line} | Column: ${bp.column}`
+        })), {
+            placeHolder: 'Select a breakpoint to assign scripts',
+            canPickMany: false
+        });
+        if (!selectedBreakpoint) {
+            utils_1.window.showInformationMessage('No breakpoint selected.');
+            return;
+        }
+        return breakpoints.find((bp) => bp.id === selectedBreakpoint.label);
+    };
     _confirmWarning = async (message) => {
         const selection = await vscode.window.showWarningMessage(message, { modal: true }, "Yes");
         return selection == "Yes";
@@ -195,8 +214,17 @@ class CommandHandler extends events_1.default {
     };
     setScriptRunnable = async (runnable) => {
         this.sessionManager.setScriptsRunnable(runnable);
-        vscode.commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
+        utils_1.commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
         utils_1.window.showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
+    };
+    assignScriptsToBreakpoint = async () => {
+        const selected = await this._selectScript();
+        if (!selected)
+            return;
+        const selectedBreakpoint = await this._selectBreakpoint();
+        if (!selectedBreakpoint)
+            return;
+        this.storageManager.assignScriptsToBreakpoint(selectedBreakpoint, [selected]);
     };
 }
 exports.default = CommandHandler;

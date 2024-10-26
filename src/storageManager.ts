@@ -200,4 +200,18 @@ export default class StorageManager {
         return null;
     }
 
+    assignScriptsToBreakpoint = (breakpoint: Breakpoint, scripts: string[]): void => {
+        const loaded: Breakpoint[] = this.loadBreakpoints();
+        const updatedBreakpoints: Breakpoint[] = loaded.map((bp: Breakpoint) => {
+            if (bp.id === breakpoint.id) {
+                const filteredScripts : string[] = scripts.filter((uri: string) => {
+                    return !bp.scripts.some((s: Script) => s.uri === uri)
+                });
+                bp.scripts.push(...filteredScripts.map((uri: string) => ({ uri, active: false })));
+            }
+            return bp;
+        });
+        this.updateBreakpoints(updatedBreakpoints);
+    }
+
 }
