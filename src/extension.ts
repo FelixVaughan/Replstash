@@ -25,27 +25,33 @@ export const activate = (context: vscode.ExtensionContext): void => {
     });
 
     const registerCommand = (commandId: string, commandFunction: (...args: any[]) => any) => {
-        return vscode.commands.registerCommand(commandId, commandFunction);
+        return commands.registerCommand(commandId, commandFunction);
     };
 
-    const commandsDisposable: Disposable[] = [
+    const disposableCommands: Disposable[] = [
+        //command palette commands
         registerCommand('slugger.startCapture', commandHandler.startCapture),
         registerCommand('slugger.stopCapture', commandHandler.stopCapture),
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
         registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
         registerCommand('slugger.loadScripts', commandHandler.activateScripts),
-        registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
         registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
         registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
         registerCommand('slugger.assignScriptsToBreakpoint', commandHandler.assignScriptsToBreakpoint),
+        //tree view commands
+        registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
+        registerCommand('slugger.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),
+        registerCommand('slugger.activateSelected', breakpointsTreeProvider.activateSelectedItems),
+        registerCommand('slugger.copyScripts', breakpointsTreeProvider.copyScripts),
+        registerCommand('slugger.pasteScripts', breakpointsTreeProvider.pasteScripts),
     ];
 
     commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
 
     context.subscriptions.push(
-        ...commandsDisposable, 
+        ...disposableCommands, 
         debugAdapterTrackerFactory, 
         treeView
     );

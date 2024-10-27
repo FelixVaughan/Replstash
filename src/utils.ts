@@ -35,3 +35,6 @@ export interface LabeledItem {
     label: any;
     description: string;
 }
+
+
+export const showWarningMessage: any = vscode.window.showWarningMessage;

@@ -27,43 +27,38 @@
     "commands": [
       {
         "command": "slugger.startCapture",
-        "title": "Start Capturing Debug Console"
+        "title": "Start Capturing Debug Console",
+        "category": "Slugger"
       },
       {
         "command": "slugger.pauseCapture",
-        "title": "Pause Capturing Debug Console"
+        "title": "Pause Capturing Debug Console",
+        "category": "Slugger"
       },
       {
         "command": "slugger.stopCapture",
-        "title": "Stop Capturing Debug Console"
+        "title": "Stop Capturing Debug Console",
+        "category": "Slugger"
       },
       {
         "command": "slugger.editSavedScript",
-        "title": "Edit Capture Script"
+        "title": "Edit Capture Script",
+        "category": "Slugger"
       },
       {
         "command": "slugger.deleteSavedScript",
-        "title": "Delete Capture Script"
-      },
-      {
-        "command": "slugger.deactivateBreakpoint",
-        "title": "Deactivate Breakpoint"
+        "title": "Delete Capture Script",
+        "category": "Slugger"
       },
       {
         "command": "slugger.activateScript",
-        "title": "Activate Script"
-      },
-      {
-        "command": "slugger.deactivateScript",
-        "title": "Deactivate Script"
-      },
-      {
-        "command": "slugger.toggleElementActive",
-        "title": "Toggle Activate"
+        "title": "Activate Script",
+        "category": "Slugger"
       },
       {
         "command": "slugger.purgeBreakpoints",
-        "title": "Purge Breakpoints"
+        "title": "Purge Breakpoints",
+        "category": "Slugger"
       },
       {
         "command": "slugger.enableScriptsRunnable",
@@ -79,6 +74,31 @@
         "command": "slugger.assignScriptsToBreakpoint",
         "title": "Assign Scripts to Breakpoint",
         "category": "Slugger"
+      },
+      {
+        "command": "slugger.activateSelected",
+        "title": "Activate Selected",
+        "enablement": "view == breakpointsView"
+      },
+      {
+        "command": "slugger.deactivateSelected",
+        "title": "Deactivate Selected",
+        "enablement": "view == breakpointsView"
+      },
+      {
+        "command": "slugger.toggleElementActive",
+        "title": "Toggle Activate",
+        "enablement": "view == breakpointsView && !slugger.hasSelectedItems"
+      },
+      {
+        "command": "slugger.copyScripts",
+        "title": "Copy Scripts",
+        "enablement": "view == breakpointsView && slugger.hasSelectedItems && !slugger.hasBreakpointSelected"
+      },
+      {
+        "command": "slugger.pasteScripts",
+        "title": "Paste Scripts",
+        "enablement": "view == breakpointsView && slugger.hasCopiedScripts"
       }
     ],
     "menus": {
@@ -91,6 +111,26 @@
         {
           "command": "slugger.toggleElementActive",
           "when": "view == breakpointsView && viewItem == script",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.activateSelected",
+          "when": "view == breakpointsView",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.deactivateSelected",
+          "when": "view == breakpointsView",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.copyScripts",
+          "when": "view == breakpointsView",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.pasteScripts",
+          "when": "view == breakpointsView && viewItem == breakpoint",
           "group": "navigation"
         }
       ],

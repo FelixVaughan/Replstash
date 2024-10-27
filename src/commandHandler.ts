@@ -9,7 +9,7 @@ import {
     _debugger, 
     window, 
     commands,
-    LabeledItem
+    LabeledItem,
 } from './utils';
 class CommandHandler extends EventEmitter {
 
@@ -211,7 +211,7 @@ class CommandHandler extends EventEmitter {
     deleteSavedScript = async (): Promise<void> => {
         const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
-            this.storageManager.deleteBreakpointSript(selectedScript);
+            this.storageManager.deleteScript(selectedScript);
             window.showInformationMessage(`Deleted: ${selectedScript}`);
         }
     }

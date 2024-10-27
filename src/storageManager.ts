@@ -142,7 +142,7 @@ export default class StorageManager {
         });
     }
 
-    deleteBreakpointSript(fileName: string) {
+    deleteScript(fileName: string) {
         const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
         fs.unlinkSync(fullPath);
 
@@ -204,10 +204,10 @@ export default class StorageManager {
         const loaded: Breakpoint[] = this.loadBreakpoints();
         const updatedBreakpoints: Breakpoint[] = loaded.map((bp: Breakpoint) => {
             if (bp.id === breakpoint.id) {
-                const filteredScripts : string[] = scripts.filter((uri: string) => {
+                const newScripts : string[] = scripts.filter((uri: string) => {
                     return !bp.scripts.some((s: Script) => s.uri === uri)
                 });
-                bp.scripts.push(...filteredScripts.map((uri: string) => ({ uri, active: false })));
+                bp.scripts.push(...newScripts.map((uri: string) => ({ uri, active: false })));
             }
             return bp;
         });
@@ -215,3 +215,9 @@ export default class StorageManager {
     }
 
 }
+
+
+//Delete script from breakpoint
+//delete breakpoint (slug)
+//delete or move actual breakpoint event
+//rename breakpoint and script
