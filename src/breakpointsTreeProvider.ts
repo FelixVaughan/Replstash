@@ -140,6 +140,19 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         });
     }
 
+    removeBreakpointScripts = (script: Script): void => {
+        //TODO: Modify to generic remove "element" method
+        //TODO: Hook up the delete icon to this method
+        const elements: (Breakpoint | Script)[] = this.getSelectedItems();
+        const selectedScripts: Script[] = elements.filter((elem): elem is Script => 'uri' in elem);
+        selectedScripts.push(script);
+        new Set(selectedScripts).forEach((s: Script) => {
+            const p: Breakpoint | null = this.getParent(s);
+            p && this.storageManager.removeBreakpointScript(p, s.uri);
+        });
+        this.refresh();
+    }
+
     copyScripts = (): void => {
         const selectedScripts: Script[] = this.getSelectedItems() as Script[];
         if (selectedScripts.length) {
@@ -167,10 +180,10 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
         treeView.onDidChangeSelection(event => {
             const selection: readonly (Breakpoint | Script)[] = event.selection;
-            const isMultipleSelect: boolean = selection.length > 0;
+            const isMultipleSelect: boolean = selection.length > 1;
             const breakpointSelected: boolean = selection.some((elem: Breakpoint | Script) => Object.hasOwn(elem, 'scripts'));
             this.selectedItems = new Set(selection);
-            commands.executeCommand('setContext', 'slugger.hasSelectedItems', isMultipleSelect);
+            commands.executeCommand('setContext', 'slugger.multipleSelectedItems', isMultipleSelect);
             commands.executeCommand('setContext', 'slugger.hasBreakpointSelected', breakpointSelected);
         });
 

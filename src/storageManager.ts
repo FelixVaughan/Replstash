@@ -155,6 +155,18 @@ export default class StorageManager {
         this.updateBreakpoints(updatedBreakpoints);
     }
 
+    removeBreakpointScript = (breakpoint: Breakpoint, uri: string): void => {
+        const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
+        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.map((bp: Breakpoint) => {
+            if (bp.id === breakpoint.id) {
+                bp.scripts = bp.scripts.filter((s: Script) => s.uri !== uri);
+            }
+            return bp;
+        });
+        this.updateBreakpoints(updatedBreakpoints);
+    }
+
+
     purgeBreakpoints = (): void => {
         this.updateBreakpoints([]);
     }
@@ -165,9 +177,7 @@ export default class StorageManager {
             fs.unlinkSync(path.join(breakpointsPath, file));
         });
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
-        loadedBreakpoints.forEach((bp: Breakpoint) => {
-            bp.scripts = [];
-        });
+        loadedBreakpoints.forEach((bp: Breakpoint) => {bp.scripts = []});
         this.updateBreakpoints(loadedBreakpoints);
     }
 

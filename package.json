@@ -88,18 +88,24 @@
       {
         "command": "slugger.toggleElementActive",
         "title": "Toggle Activate",
-        "enablement": "view == breakpointsView && !slugger.hasSelectedItems"
+        "enablement": "view == breakpointsView && !slugger.multipleSelectedItems"
       },
       {
         "command": "slugger.copyScripts",
         "title": "Copy Scripts",
-        "enablement": "view == breakpointsView && slugger.hasSelectedItems && !slugger.hasBreakpointSelected"
+        "enablement": "view == breakpointsView && slugger.multipleSelectedItems && !slugger.hasBreakpointSelected"
       },
       {
         "command": "slugger.pasteScripts",
         "title": "Paste Scripts",
         "enablement": "view == breakpointsView && slugger.hasCopiedScripts"
+      },
+      {
+        "command": "slugger.removeBreakpointScripts",
+        "title": "Delete",
+        "enablement": "view == breakpointsView"
       }
+      
     ],
     "menus": {
       "view/item/context": [
@@ -131,6 +137,11 @@
         {
           "command": "slugger.pasteScripts",
           "when": "view == breakpointsView && viewItem == breakpoint",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.removeBreakpointScripts",
+          "when": "view == breakpointsView && viewItem == script",
           "group": "navigation"
         }
       ],
