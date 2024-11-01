@@ -9,10 +9,10 @@ import {
 } from './utils';
 import StorageManager from './storageManager';
 
-//TODO: Adopt tree-view context menu
-//TODO: Implement open file on right click
+//TODO: Hook up the delete an open icons
+//TODO: Run scripts by right click
+//TODO: improve refresh functionality 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
-
     private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
     readonly onDidChangeTreeData: vscode.Event<Breakpoint | Script | undefined> = this._onDidChangeTreeData.event;
@@ -166,7 +166,6 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     }
 
     removeBreakpointScripts = (element: Script): void => {
-        //TODO: Hook up the delete icon to this method
         const elements: (Breakpoint | Script)[] = [...this.getSelectedItems()];
         elements.push(element);
         new Set(elements).forEach((elem: Script | Breakpoint) => {

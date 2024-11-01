@@ -11,6 +11,9 @@ import {
     commands,
     LabeledItem,
 } from './utils';
+
+//TODO: clear capture
+//TODO: discard capture
 class CommandHandler extends EventEmitter {
 
     private sessionManager: SessionManager;

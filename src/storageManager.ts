@@ -10,6 +10,8 @@ type FileMetadata = {
     mtime: Date;
 };
 
+//TODO: delete or move actual breakpoint event
+//TODO: rename breakpoint and script
 export default class StorageManager {
 
     private storagePath: string;
@@ -236,9 +238,3 @@ export default class StorageManager {
     }
 
 }
-
-
-//Delete script from breakpoint
-//delete breakpoint (slug)
-//delete or move actual breakpoint event
-//rename breakpoint and script
