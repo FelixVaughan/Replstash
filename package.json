@@ -76,6 +76,11 @@
         "category": "Slugger"
       },
       {
+        "command": "slugger.deleteBreakpoint",
+        "title": "Delete Slug Breakpoint",
+        "category": "Slugger"
+      },
+      {
         "command": "slugger.activateSelected",
         "title": "Activate Selected",
         "enablement": "view == breakpointsView"
@@ -104,6 +109,11 @@
         "command": "slugger.removeBreakpointScripts",
         "title": "Delete",
         "enablement": "view == breakpointsView"
+      },
+      {
+        "command": "slugger.openScripts",
+        "title": "Open",
+        "enablement": "view == breakpointsView && !slugger.hasBreakpointSelected"
       }
       
     ],
@@ -141,7 +151,12 @@
         },
         {
           "command": "slugger.removeBreakpointScripts",
-          "when": "view == breakpointsView && viewItem == script",
+          "when": "view == breakpointsView",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.openScripts",
+          "when": "view == breakpointsView",
           "group": "navigation"
         }
       ],

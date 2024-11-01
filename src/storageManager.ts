@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import fs from 'fs';
 import path  from 'path';
 import { Breakpoint, BreakpointMetaData } from './utils';
-import {window, Script} from './utils';
+import {window, Script, refreshTree} from './utils';
 
 type FileMetadata = {
     size: number;
@@ -13,14 +13,18 @@ type FileMetadata = {
 export default class StorageManager {
 
     private storagePath: string;
-    private context: vscode.ExtensionContext;
+    private context: vscode.ExtensionContext | null;
     private loadedBreakpoints: Breakpoint[] = [];
 
-    constructor(context: vscode.ExtensionContext) {
-        this.storagePath = context.storageUri?.fsPath || "";
+    constructor(context: vscode.ExtensionContext | null = null) {
+        this.storagePath = context?.storageUri?.fsPath || "";
         this.context = context;
         
         // Ensure the base directory exists
+        if (!this.storagePath) {
+            return;
+        }
+
         if (!fs.existsSync(this.storagePath)) {
             fs.mkdirSync(this.storagePath, { recursive: true });
         }
@@ -69,8 +73,9 @@ export default class StorageManager {
     }
 
     updateBreakpoints = (breakpoints: Breakpoint[]) => {
-        this.context.workspaceState.update('breakpoints', breakpoints);
+        this.context?.workspaceState.update('breakpoints', breakpoints);
         this.loadBreakpoints(); //refresh
+        refreshTree();
     }
 
     // Update record
@@ -90,7 +95,7 @@ export default class StorageManager {
 
     // Load all breakpoints
     loadBreakpoints = (): Breakpoint[] => {
-        this.loadedBreakpoints = this.context.workspaceState.get('breakpoints', []);
+        this.loadedBreakpoints = this.context?.workspaceState.get('breakpoints', []) || [];
         return this.loadedBreakpoints;
     }
 
@@ -135,7 +140,7 @@ export default class StorageManager {
         });
     }
     
-    openBreakpointScript(fileName: string) {
+    openScript(fileName: string) {
         const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
         vscode.workspace.openTextDocument(fullPath).then((document: vscode.TextDocument) => {
             window.showTextDocument(document);
@@ -163,6 +168,12 @@ export default class StorageManager {
             }
             return bp;
         });
+        this.updateBreakpoints(updatedBreakpoints);
+    }
+
+    removeBreakpoint = (breakpoint: Breakpoint): void => { 
+        const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
+        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.filter((bp: Breakpoint) => bp.id !== breakpoint.id);
         this.updateBreakpoints(updatedBreakpoints);
     }
 

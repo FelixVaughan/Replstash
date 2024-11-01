@@ -14,7 +14,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
     const sessionManager: SessionManager = new SessionManager();
     const storageManager: StorageManager = new StorageManager(context);
     const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
-    const breakpointsTreeProvider: BreakpointsTreeProvider = new BreakpointsTreeProvider(storageManager);
+    const breakpointsTreeProvider: BreakpointsTreeProvider = BreakpointsTreeProvider.setStorage(storageManager);
     const treeView: vscode.TreeView<Breakpoint | Script> = breakpointsTreeProvider.createTreeView(); 
 
     const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
@@ -33,19 +33,21 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.startCapture', commandHandler.startCapture),
         registerCommand('slugger.stopCapture', commandHandler.stopCapture),
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
-        registerCommand('slugger.editSavedScript', commandHandler.editSavedScript),
+        registerCommand('slugger.editSavedScript', commandHandler.openScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
         registerCommand('slugger.loadScripts', commandHandler.activateScripts),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
         registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
         registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
         registerCommand('slugger.assignScriptsToBreakpoint', commandHandler.assignScriptsToBreakpoint),
+        registerCommand('slugger.deleteBreakpoint', commandHandler.deleteBreakpoint),
         //tree view commands
         registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),
         registerCommand('slugger.activateSelected', breakpointsTreeProvider.activateSelectedItems),
         registerCommand('slugger.copyScripts', breakpointsTreeProvider.copyScripts),
         registerCommand('slugger.pasteScripts', breakpointsTreeProvider.pasteScripts),
+        registerCommand('slugger.openScripts', breakpointsTreeProvider.openScripts),
         registerCommand('slugger.removeBreakpointScripts', breakpointsTreeProvider.removeBreakpointScripts),
     ];
 

@@ -201,10 +201,10 @@ class CommandHandler extends EventEmitter {
         return selection == "Yes"
     }
 
-    editSavedScript = async (): Promise<void> => {
+    openScript = async (): Promise<void> => {
         const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
-            this.storageManager.openBreakpointScript(selectedScript);
+            this.storageManager.openScript(selectedScript);
         }
     };
 
@@ -213,6 +213,14 @@ class CommandHandler extends EventEmitter {
         if (selectedScript) {
             this.storageManager.deleteScript(selectedScript);
             window.showInformationMessage(`Deleted: ${selectedScript}`);
+        }
+    }
+
+    deleteBreakpoint = async (): Promise<void> => {
+        const selectedBreakpoint: Breakpoint | void = await this._selectBreakpoint();
+        if (selectedBreakpoint) {
+            this.storageManager.removeBreakpoint(selectedBreakpoint);
+            window.showInformationMessage(`Deleted: ${selectedBreakpoint.file}`);
         }
     }
 

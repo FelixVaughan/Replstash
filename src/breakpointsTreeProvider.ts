@@ -9,8 +9,11 @@ import {
 } from './utils';
 import StorageManager from './storageManager';
 
+//TODO: Adopt tree-view context menu
+//TODO: Implement open file on right click
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
 
+    private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
     readonly onDidChangeTreeData: vscode.Event<Breakpoint | Script | undefined> = this._onDidChangeTreeData.event;
     private selectedItems: Set<Breakpoint | Script> = new Set();
@@ -20,11 +23,23 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     readonly dragMimeTypes = [this.mimeType]; // Custom mime type
     readonly dropMimeTypes = [this.mimeType]; 
 
-    constructor(private storageManager: StorageManager) {}
+    private constructor(private storageManager: StorageManager) {}
 
-    // Refresh the TreeView
     refresh = (): void => {
         this._onDidChangeTreeData.fire(undefined);
+    }
+
+    static setStorage(storageManager: StorageManager): BreakpointsTreeProvider {
+        this.instance.storageManager = storageManager;
+        return this.instance;
+    }
+
+
+    static get instance(): BreakpointsTreeProvider {
+        if (!this._instance) { 
+            return this._instance = new BreakpointsTreeProvider(new StorageManager());
+        }
+        return this._instance;
     }
 
     // Retrieve the item for the TreeView (either Breakpoint or Script)
@@ -122,6 +137,16 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             showWarningMessage("Scripts can only be dropped onto breakpoints.");
         }
     };
+
+    openScripts = (script: Script): void => {
+        const scripts = this.getSelectedItems() as Script[];
+        const uniqueScripts: Set<Script> = new Set([...scripts, script]);
+    
+        uniqueScripts.forEach(async (script: Script) => {
+            const document = await vscode.workspace.openTextDocument(script.uri);
+            vscode.window.showTextDocument(document, { preview: false }); // Ensure each opens in a new tab
+        });
+    }
     
 
     getSelectedItems(): (Breakpoint | Script)[] {
@@ -140,15 +165,19 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         });
     }
 
-    removeBreakpointScripts = (script: Script): void => {
-        //TODO: Modify to generic remove "element" method
+    removeBreakpointScripts = (element: Script): void => {
         //TODO: Hook up the delete icon to this method
-        const elements: (Breakpoint | Script)[] = this.getSelectedItems();
-        const selectedScripts: Script[] = elements.filter((elem): elem is Script => 'uri' in elem);
-        selectedScripts.push(script);
-        new Set(selectedScripts).forEach((s: Script) => {
-            const p: Breakpoint | null = this.getParent(s);
-            p && this.storageManager.removeBreakpointScript(p, s.uri);
+        const elements: (Breakpoint | Script)[] = [...this.getSelectedItems()];
+        elements.push(element);
+        new Set(elements).forEach((elem: Script | Breakpoint) => {
+            if (Object.hasOwn(elem, 'scripts')) {
+                const bp: Breakpoint = elem as Breakpoint;
+                this.storageManager.removeBreakpoint(bp);
+                return;
+            }
+            const script: Script = elem as Script;
+            const p: Breakpoint | null = this.getParent(script);
+            p && this.storageManager.removeBreakpointScript(p, script.uri);
         });
         this.refresh();
     }

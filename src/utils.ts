@@ -1,8 +1,11 @@
 import * as vscode from 'vscode';
+import BreakpointsTreeProvider from './breakpointsTreeProvider';
 
 export const _debugger = vscode.debug;
 export const window = vscode.window;
 export const commands = vscode.commands;
+export const EventEmitter = vscode.EventEmitter;
+
 
 export interface Script {
     uri: string;
@@ -38,3 +41,7 @@ export interface LabeledItem {
 
 
 export const showWarningMessage: any = vscode.window.showWarningMessage;
+
+export const refreshTree = (): void => {
+    BreakpointsTreeProvider.instance.refresh();
+}
