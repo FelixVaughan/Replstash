@@ -11,6 +11,7 @@ import StorageManager from './storageManager';
 
 //TODO: Hook up the delete an open icons
 //TODO: Run scripts by right click
+//TODO: Run all active scripts in a breakpoint
 //TODO: improve refresh functionality 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
     private static _instance: BreakpointsTreeProvider | null = null;

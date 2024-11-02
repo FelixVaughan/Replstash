@@ -7,8 +7,11 @@ import CommandHandler from './commandHandler';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
 import { _debugger, Breakpoint, Script, commands } from './utils';
 
+
+//TODO: Disappear error messages faster
 /**
- * @param {vscode.ExtensionContext} context
+ * 
+    * @param {vscode.ExtensionContext} context
  */
 export const activate = (context: vscode.ExtensionContext): void => {
     const sessionManager: SessionManager = new SessionManager();
@@ -41,6 +44,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
         registerCommand('slugger.assignScriptsToBreakpoint', commandHandler.assignScriptsToBreakpoint),
         registerCommand('slugger.deleteBreakpoint', commandHandler.deleteBreakpoint),
+        registerCommand('slugger.clearCapture', commandHandler.clearCapture),
+        registerCommand('slugger.clearLastExp', commandHandler.clearLastExpression),
         //tree view commands
         registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),

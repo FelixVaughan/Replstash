@@ -10,9 +10,10 @@ import {
     window, 
     commands,
     LabeledItem,
+    showWarningMessage,
+    showInformationMessage
 } from './utils';
 
-//TODO: clear capture
 //TODO: discard capture
 class CommandHandler extends EventEmitter {
 
@@ -35,29 +36,29 @@ class CommandHandler extends EventEmitter {
         else if(this.sessionManager.isCapturing()) err_msg = 'Already capturing debug console input.';
 
         if (err_msg) {
-            window.showWarningMessage(err_msg);
+            showWarningMessage(err_msg);
             return;
         }
         this.sessionManager.setCapturing(true);
         this.emit('captureStarted');  // Emit event when capturing starts
-        commands.executeCommand('workbench.debug.action.toggleRepl');
-        window.showInformationMessage('Started capturing debug console input.');
+        commands.executeCommand('workbench.debug.action.focusRepl');
+        showInformationMessage('Started capturing debug console input.');
     };
 
     pauseCapture = (): void => {
 
         if (this.sessionManager.capturePaused()) {
-            window.showWarningMessage('Capture already paused.');
+            showWarningMessage('Capture already paused.');
             return;
         }
 
         if (!this.sessionManager.isCapturing()) {
-            window.showWarningMessage('Not capturing console input.');
+            showWarningMessage('Not capturing console input.');
             return;
         }
 
         this.sessionManager.setCapturePaused(true);
-        window.showInformationMessage('Paused capturing debug console input.');
+        showInformationMessage('Paused capturing debug console input.');
     }
 
     _isValidFilename = (name: string): boolean => {
@@ -70,7 +71,7 @@ class CommandHandler extends EventEmitter {
 
     stopCapture = async (autoSave: boolean = false): Promise<void> => {
         if (!this.sessionManager.capturePaused() && !this.sessionManager.isCapturing()) {
-            window.showWarningMessage('Not capturing console input.');
+            showWarningMessage('Not capturing console input.');
             return;
         }
 
@@ -82,7 +83,7 @@ class CommandHandler extends EventEmitter {
         const currentBreakpoint: Breakpoint = this.sessionManager.getCurrentBreakpoint()!;
 
         if (!Object.keys(currentBreakpoint.content).length) {
-            window.showWarningMessage('Stopped: No console input captured.');
+            showWarningMessage('Stopped: No console input captured.');
             captureTerminationSignal()
             return;
         }
@@ -110,7 +111,7 @@ class CommandHandler extends EventEmitter {
 
             // If the user presses Escape or enters nothing, exit the loop and return
             if (!fileName) {
-                window.showWarningMessage('Capture in progress, termination aborted.');
+                showWarningMessage('Capture in progress, termination aborted.');
                 return;
             }
 
@@ -137,14 +138,14 @@ class CommandHandler extends EventEmitter {
         captureTerminationSignal()
         this.storageManager.saveBreakpoint(currentBreakpoint, fileName);
         this.sessionManager.resetCurrentBeakpointContent();
-        window.showInformationMessage(`Stopped capture: ${fileName}`);
+        showInformationMessage(`Stopped capture: ${fileName}`);
     
     };
 
     _selectScript = async (): Promise<string | void> => {
         const scriptsMetaData: BreakpointMetaData[] = this.storageManager.breakpointFilesMetaData(); // This should return an array of script paths
         if (!scriptsMetaData.length) {
-            window.showInformationMessage('No saved breakpoints found.');
+            showInformationMessage('No saved breakpoints found.');
             return;
         }
 
@@ -161,17 +162,38 @@ class CommandHandler extends EventEmitter {
     
         // If no script was selected (user canceled the QuickPick)
         if (!selectedScript) {
-            window.showInformationMessage('No script selected.');
+            showInformationMessage('No script selected.');
             return;
         }
         return selectedScript.label;
 
     }
 
+    clearCapture = async (): Promise<void> => {
+        if (!this.sessionManager.isCapturing()) {
+            showWarningMessage('Not capturing console input.');
+            return;
+        }
+        this.sessionManager.clearCapture();
+        showInformationMessage('Capture cleared.');
+    }
+
+    clearLastExpression = async (): Promise<void> => {
+        if (!this.sessionManager.isCapturing()) {
+            showWarningMessage('Not capturing console input.');
+            return;
+        }
+        if (Object.is(this.sessionManager.clearLastExpression(), null)) {
+            showWarningMessage('No expression entered.');
+            return;
+        }
+        showInformationMessage('Last expression cleared.');
+    }
+
     _selectBreakpoint = async (): Promise<Breakpoint | void> => {
         const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
         if (!breakpoints.length) {
-            window.showInformationMessage('No saved breakpoints found.');
+            showInformationMessage('No saved breakpoints found.');
             return;
         }
 
@@ -187,7 +209,7 @@ class CommandHandler extends EventEmitter {
         );
 
         if (!selectedBreakpoint) {
-            window.showInformationMessage('No breakpoint selected.');
+            showInformationMessage('No breakpoint selected.');
             return;
         }
         return breakpoints.find((bp: Breakpoint) => bp.id === selectedBreakpoint.label);
@@ -195,7 +217,7 @@ class CommandHandler extends EventEmitter {
 
 
     private _confirmWarning = async (message: string): Promise<boolean> => {
-        const selection = await vscode.window.showWarningMessage(
+        const selection = await showWarningMessage(
             message,
             { modal: true },
             "Yes"
@@ -215,7 +237,7 @@ class CommandHandler extends EventEmitter {
         const selectedScript: string | void = await this._selectScript();
         if (selectedScript) {
             this.storageManager.deleteScript(selectedScript);
-            window.showInformationMessage(`Deleted: ${selectedScript}`);
+            showInformationMessage(`Deleted: ${selectedScript}`);
         }
     }
 
@@ -223,7 +245,7 @@ class CommandHandler extends EventEmitter {
         const selectedBreakpoint: Breakpoint | void = await this._selectBreakpoint();
         if (selectedBreakpoint) {
             this.storageManager.removeBreakpoint(selectedBreakpoint);
-            window.showInformationMessage(`Deleted: ${selectedBreakpoint.file}`);
+            showInformationMessage(`Deleted: ${selectedBreakpoint.file}`);
         }
     }
 
@@ -257,7 +279,7 @@ class CommandHandler extends EventEmitter {
     setScriptRunnable = async (runnable: boolean): Promise<void> => {
         this.sessionManager.setScriptsRunnable(runnable);
         commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
-        window.showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
+        showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
     }
 
     assignScriptsToBreakpoint = async (): Promise<void> => {

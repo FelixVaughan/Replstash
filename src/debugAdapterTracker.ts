@@ -1,7 +1,7 @@
 import SessionManager from './sessionManager';
 import CommandHandler from './commandHandler';
 import StorageManager from './storageManager';
-import {_debugger, Breakpoint, window, Script} from './utils';
+import {_debugger, Breakpoint, showInformationMessage, Script} from './utils';
 import * as vscode from 'vscode';
 class DebugAdapterTracker {
 
@@ -33,7 +33,7 @@ class DebugAdapterTracker {
                         context: 'repl',
                         frameId: frameId,
                     });
-                    if (response.success) window.showInformationMessage(`Script: ${script.uri} evaluated successfully.`);
+                    if (response.success) showInformationMessage(`Script: ${script.uri} evaluated successfully.`);
                 }
             });
     }
@@ -83,7 +83,7 @@ class DebugAdapterTracker {
             if (this.sessionManager.isCapturing()) {
                 this.commandHandler.stopCapture(true);
             }
-            window.showInformationMessage('Debugger resumed from breakpoint.');
+            showInformationMessage('Debugger resumed from breakpoint.');
         }
 
     };

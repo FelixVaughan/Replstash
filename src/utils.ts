@@ -40,7 +40,8 @@ export interface LabeledItem {
 }
 
 
-export const showWarningMessage: any = vscode.window.showWarningMessage;
+export const { showWarningMessage, showInformationMessage } = vscode.window;
+
 
 export const refreshTree = (): void => {
     BreakpointsTreeProvider.instance.refresh();

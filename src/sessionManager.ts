@@ -8,14 +8,7 @@ export default class SessionManager {
     private captureIsPaused: boolean = false;
     private scriptsRunnable: boolean = false;
 
-    constructor() {
-        // this.sessionOutput = {};
-        // this.breakpoints = [];
-        // this.currentBreakpoint = null;
-        // this.capturing = false;
-        // this.captureIsPaused = false;
-        // this.scriptsRunnable = false;
-    }
+    constructor() {}
 
     addSessionOutput = (messageSeq: string, expression: string): void => {
         this.sessionOutput[messageSeq] = expression;
@@ -86,7 +79,26 @@ export default class SessionManager {
     isCapturing = (): boolean => this.capturing;
 
 
-    clearCapture = (): void => {}
+    
+    contentCaptured = (): boolean => {
+        return Boolean(Object.keys(this.currentBreakpoint?.content || []).length);
+    }
+    
+    clearCapture = (): void => {
+        if(this.contentCaptured()) {
+            this.currentBreakpoint!.content = {};
+        }
+    }
+
+    clearLastExpression = (): string | null => {
+        if (!this.contentCaptured()) return null;
+        const content: Record<string, string> = this.currentBreakpoint!.content;
+        const lastKey: string = Object.keys(content).pop()!;
+        const result: string = content[lastKey];
+        delete content[lastKey];
+        return result;
+    }
+
     discardCapture = (): void => {}
 
     setScriptsRunnable = (runnable: boolean): void => {

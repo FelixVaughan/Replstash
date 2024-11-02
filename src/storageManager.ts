@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import fs from 'fs';
 import path  from 'path';
 import { Breakpoint, BreakpointMetaData } from './utils';
-import {window, Script, refreshTree} from './utils';
+import {window, Script, refreshTree, showInformationMessage} from './utils';
 
 type FileMetadata = {
     size: number;
@@ -12,6 +12,7 @@ type FileMetadata = {
 
 //TODO: delete or move actual breakpoint event
 //TODO: rename breakpoint and script
+//TODO: Turn breakpoints green when active scripts
 export default class StorageManager {
 
     private storagePath: string;
@@ -43,7 +44,7 @@ export default class StorageManager {
         this.loadBreakpoints();
     }
 
-    // Helper function to get current timestamp
+    //TODO: Move to utils and tersify
     getCurrentTimestamp = (): string => {
         const now: Date = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
@@ -52,7 +53,7 @@ export default class StorageManager {
     // Save the contents to a file
     saveToFile = (fullPath: string, content: string): void => {
         fs.writeFileSync(fullPath, content);
-        window.showInformationMessage(`Saved to: ${fullPath}`);
+        showInformationMessage(`Saved to: ${fullPath}`);
     }
 
     // Read contents from a file

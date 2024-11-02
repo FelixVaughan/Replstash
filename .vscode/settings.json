@@ -18,5 +18,6 @@
         "titleBar.inactiveBackground": "#174b4299",
         "titleBar.inactiveForeground": "#e7e7e799"
     },
-    "peacock.color": "#174B42"
+    "peacock.color": "#174B42",
+    "todo-tree.tree.showBadges": true
 }

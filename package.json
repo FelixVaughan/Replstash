@@ -37,8 +37,18 @@
       },
       {
         "command": "slugger.stopCapture",
-        "title": "Stop Capturing Debug Console",
+        "title": "Stop Debug Capture",
         "category": "Slugger"
+      },
+      {
+        "command": "slugger.clearCapture",
+        "category": "Slugger",
+        "title": "Clear Debug Captured"
+      },
+      {
+        "command": "slugger.clearLastExp",
+        "category": "Slugger",
+        "title": "Pop Last Expression"
       },
       {
         "command": "slugger.editSavedScript",
@@ -185,6 +195,16 @@
       {
         "command": "slugger.stopCapture",
         "key": "ctrl+alt+s",
+        "when": "debugging"
+      },
+      {
+        "command": "slugger.clearCapture",
+        "key": "ctrl+alt+c",
+        "when": "debugging"
+      },
+      {
+        "command": "slugger.clearLastExp",
+        "key": "ctrl+alt+c",
         "when": "debugging"
       },
       {
