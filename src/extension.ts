@@ -46,6 +46,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.deleteBreakpoint', commandHandler.deleteBreakpoint),
         registerCommand('slugger.clearCapture', commandHandler.clearCapture),
         registerCommand('slugger.clearLastExp', commandHandler.clearLastExpression),
+        registerCommand('slugger.discardCapture', commandHandler.discardCapture),
         //tree view commands
         registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),

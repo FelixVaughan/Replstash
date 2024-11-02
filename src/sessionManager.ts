@@ -99,19 +99,11 @@ export default class SessionManager {
         return result;
     }
 
-    discardCapture = (): void => {}
-
     setScriptsRunnable = (runnable: boolean): void => {
         this.scriptsRunnable = runnable;
     }
 
     scriptsAreRunnable = (): boolean => this.scriptsRunnable;
-
-    resetCurrentBeakpointContent = (): void => {
-        if (this.currentBreakpoint) {
-            this.currentBreakpoint.content = {};
-        }
-    }   
 
     getCurrentBreakpoint = (): Breakpoint | null => this.currentBreakpoint;
 

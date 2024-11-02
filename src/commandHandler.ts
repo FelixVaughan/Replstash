@@ -69,22 +69,32 @@ class CommandHandler extends EventEmitter {
         return true;
     }
 
+    captureTerminationSignal = (): void => {
+        this.sessionManager.setCapturing(false);
+        this.emit('captureStopped');  // Emit event when capturing stops
+    }
+
+    discardCapture = async (): Promise<void> => {
+        if (!this.sessionManager.isCapturing()) {
+            showWarningMessage('Not capturing console input.');
+            return;
+        }
+        this.captureTerminationSignal()
+        this.sessionManager.clearCapture();
+        showInformationMessage(`Capture discarded.`);
+    }
+
     stopCapture = async (autoSave: boolean = false): Promise<void> => {
         if (!this.sessionManager.capturePaused() && !this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
         }
 
-        const captureTerminationSignal = (): void => {
-            this.sessionManager.setCapturing(false);
-            this.emit('captureStopped');  // Emit event when capturing stops
-        }
-
         const currentBreakpoint: Breakpoint = this.sessionManager.getCurrentBreakpoint()!;
 
-        if (!Object.keys(currentBreakpoint.content).length) {
+        if (!this.sessionManager.contentCaptured()) {
             showWarningMessage('Stopped: No console input captured.');
-            captureTerminationSignal()
+            this.captureTerminationSignal()
             return;
         }
 
@@ -131,13 +141,13 @@ class CommandHandler extends EventEmitter {
 
             // If the filename is valid and does not exist, break out of the loop
             break;
-    }
+        }
 
 
         // Stop capturing and save the breakpoint with the specified file name 
-        captureTerminationSignal()
+        this.captureTerminationSignal()
         this.storageManager.saveBreakpoint(currentBreakpoint, fileName);
-        this.sessionManager.resetCurrentBeakpointContent();
+        this.sessionManager.clearCapture();
         showInformationMessage(`Stopped capture: ${fileName}`);
     
     };
