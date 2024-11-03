@@ -68,7 +68,6 @@ class DebugAdapterTracker {
             const line: number = topFrame.line;
             const column: number = topFrame.column;
             const threadId: number = message.body.threadId
-
             this.sessionManager.addBreakpoint(source, line, column, threadId);
             this.commandHandler.setPausedOnBreakpoint(true);
 

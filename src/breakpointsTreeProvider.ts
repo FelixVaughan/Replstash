@@ -5,7 +5,8 @@ import {
     Script, 
     window, 
     commands, 
-    showWarningMessage
+    showWarningMessage,
+    evaluateScripts,
 } from './utils';
 import StorageManager from './storageManager';
 
@@ -68,7 +69,6 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             treeItem.contextValue = 'script';
             treeItem.label = `<${path.basename(element.uri)}>`;
         }
-
         return treeItem;
     }
     
@@ -76,7 +76,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     // Retrieve children for the Breakpoint (the scripts), or return the top-level breakpoints
     getChildren = (element?: Breakpoint): Thenable<Breakpoint[] | Script[]> => {
         if (!element) {
-            return Promise.resolve(this.storageManager.loadBreakpoints());  // Load breakpoints from StorageManager
+            return Promise.resolve(this.storageManager.loadBreakpoints());
         }
         return Promise.resolve(element.scripts);  // Return scripts for a given breakpoint
     }
@@ -188,6 +188,15 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             this.copiedScripts = selectedScripts;
             const nonEmpty: boolean = selectedScripts.length > 0;
             commands.executeCommand('setContext', 'slugger.hasCopiedScripts', nonEmpty);
+        }
+    }
+
+    runScripts = (): void => {
+        const selectedScripts: Script[] = this.getSelectedItems() as Script[];
+        if (selectedScripts.length) {
+            selectedScripts.forEach(async (script: Script) => {
+                evaluateScripts([script.uri]);
+            });
         }
     }
 

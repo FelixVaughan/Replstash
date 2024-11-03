@@ -14,7 +14,6 @@ import {
     showInformationMessage
 } from './utils';
 
-//TODO: discard capture
 class CommandHandler extends EventEmitter {
 
     private sessionManager: SessionManager;

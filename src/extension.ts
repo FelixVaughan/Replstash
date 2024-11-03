@@ -54,6 +54,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.copyScripts', breakpointsTreeProvider.copyScripts),
         registerCommand('slugger.pasteScripts', breakpointsTreeProvider.pasteScripts),
         registerCommand('slugger.openScripts', breakpointsTreeProvider.openScripts),
+        registerCommand('slugger.runScripts', breakpointsTreeProvider.runScripts),
         registerCommand('slugger.removeBreakpointScripts', breakpointsTreeProvider.removeBreakpointScripts),
     ];
 
