@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
+import StorageManager from './storageManager';
 
 export const _debugger = vscode.debug;
 export const window = vscode.window;
 export const commands = vscode.commands;
 export const EventEmitter = vscode.EventEmitter;
 
-//TODO: Enums for messages
 export interface Script {
     uri: string;
     active: boolean;
@@ -50,34 +50,40 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
     const activeSession = _debugger?.activeDebugSession;
     if (!activeSession) return;
 
-    try {
-        if(!threadId){
-            const threadsResponse = await activeSession.customRequest('threads');
-            const threads = threadsResponse.threads;
-            if (threads.length === 0) return;
+    const _getThreadId = async (): Promise<number | null> => {
+        const threadsResponse = await activeSession.customRequest('threads');
+        const threads = threadsResponse.threads;
+        if (threads?.length) return null;
+        const activeThread = threads[0];
+        return activeThread.id;
+    }
 
-            const activeThread = threads[0];
-            threadId = activeThread.id;
-        }
-
-        const stackTraceResponse = await activeSession.customRequest('stackTrace', { threadId });
-        if (!stackTraceResponse?.stackFrames?.length) return;
-        const topFrame = stackTraceResponse.stackFrames[0];
-        const frameId = topFrame.id;
-
-        for (const uri of uris) {
-            const scriptContent = storageManager.getScriptContent(script.uri)
-            const response = await activeSession.customRequest('evaluate', {
+    const _evaluate = async (uri: string, frameId: number): Promise<number> => {
+    const scriptContent: string | null = StorageManager.instance.getScriptContent(uri)
+        if (!scriptContent) return -1;
+        try{
+            await activeSession.customRequest('evaluate', {
                 expression: scriptContent,
                 context: 'repl',
                 frameId: frameId,
             });
-            if (response.success) {
-                showInformationMessage(`${uri} ran successfully.`);
-                continue;
-            }
-            showWarningMessage(`${uri} failed to run.`);
-        }
+        }catch(err){
+            return 0;
+        } return 1;
+    }
+
+    try {
+        threadId = threadId || await _getThreadId();
+        const stackTraceResponse = await activeSession.customRequest('stackTrace', { threadId });
+        if (!stackTraceResponse?.stackFrames?.length) return;
+        const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
+        const frameId = topFrame.id;
+        uris.forEach(async (uri: string) => {
+            const status: number = await _evaluate(uri, frameId);
+            if (status === -1) showWarningMessage(`Script: ${uri} is empty.`);
+            else if (status === 0) showWarningMessage(`An error occurred on: ${uri}`);
+            else showInformationMessage(`Successfully ran: ${uri}`);
+        });
     } catch (error) {
         showWarningMessage(`An error occurred`);
     }

@@ -16,16 +16,25 @@ import {
 
 class CommandHandler extends EventEmitter {
 
+    private static _instance: CommandHandler | null = null;
     private sessionManager: SessionManager;
     private storageManager: StorageManager;
     private pausedOnBreakpoint: boolean;
 
-    constructor (sessionManager: SessionManager, storageManager: StorageManager) {
+    private constructor () {
         super();
-        this.sessionManager = sessionManager;
-        this.storageManager = storageManager;
+        this.sessionManager = SessionManager.instance;
+        this.storageManager = StorageManager.instance;
         this.pausedOnBreakpoint = false;
     }
+
+    static get instance(): CommandHandler {
+        if (!this._instance) {
+            return this._instance = new CommandHandler();
+        }
+        return this._instance;
+    }
+
 
     startCapture = (): void => {
         const activeSession: vscode.DebugSession = _debugger.activeDebugSession!;  //!: Non-null assertion operator  

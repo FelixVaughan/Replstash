@@ -1,6 +1,7 @@
 import { Breakpoint } from './utils';
 export default class SessionManager {
 
+    private static _instance: SessionManager | null = null;
     private sessionOutput: Record<string, string> = {};
     private breakpoints: Breakpoint[] = [];
     private currentBreakpoint: Breakpoint | null = null;
@@ -8,7 +9,14 @@ export default class SessionManager {
     private captureIsPaused: boolean = false;
     private scriptsRunnable: boolean = false;
 
-    constructor() {}
+    private constructor() {}
+
+    static get instance(): SessionManager {
+        if (!this._instance) { 
+            return this._instance = new SessionManager();
+        }
+        return this._instance;
+    }
 
     addSessionOutput = (messageSeq: string, expression: string): void => {
         this.sessionOutput[messageSeq] = expression;

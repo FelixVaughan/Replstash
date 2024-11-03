@@ -1,7 +1,13 @@
 import SessionManager from './sessionManager';
 import CommandHandler from './commandHandler';
 import StorageManager from './storageManager';
-import {_debugger, Breakpoint, showInformationMessage, Script} from './utils';
+import {
+    _debugger, 
+    Breakpoint, 
+    showInformationMessage, 
+    Script,
+    evaluateScripts,
+} from './utils';
 import * as vscode from 'vscode';
 class DebugAdapterTracker {
 
@@ -10,32 +16,13 @@ class DebugAdapterTracker {
     private storageManager: StorageManager;
 
     constructor(
-        sessionManager: SessionManager, 
         commandHandler: CommandHandler,
-        storageManager: StorageManager
     ) {
-        this.sessionManager = sessionManager;
+        this.sessionManager = SessionManager.instance;
         this.commandHandler = commandHandler;
-        this.storageManager = storageManager;
+        this.storageManager = StorageManager.instance;
         this.commandHandler.on('captureStarted', () => {this.sessionManager.setCapturing(true)});
         this.commandHandler.on('captureStopped', () => {this.sessionManager.setCapturing(false)});
-    }
-
-    _evaluateBreakpointScripts = async (breakpointId : string, frameId: number,  session: vscode.DebugSession) => {
-        const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
-            const existingBreakpoint: Breakpoint | undefined = loadedBreakpoints.find((breakpoint) => breakpoint.id === breakpointId);
-            existingBreakpoint?.scripts.forEach(async (script: Script) => {
-                if (!script.active) return;
-                const scriptContent: string | null = this.storageManager.getScriptContent(script.uri);
-                if (scriptContent) {
-                    const response: any = await session.customRequest('evaluate', {
-                        expression: scriptContent,
-                        context: 'repl',
-                        frameId: frameId,
-                    });
-                    if (response.success) showInformationMessage(`Script: ${script.uri} evaluated successfully.`);
-                }
-            });
     }
 
     onWillReceiveMessage = async (message: any): Promise<void> => {
@@ -62,7 +49,6 @@ class DebugAdapterTracker {
             });
 
             if (stackTraceResponse?.stackFrames.length < 1) return 
-
             const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
             const source: string = topFrame.source.path;
             const line: number = topFrame.line;
@@ -70,10 +56,12 @@ class DebugAdapterTracker {
             const threadId: number = message.body.threadId
             this.sessionManager.addBreakpoint(source, line, column, threadId);
             this.commandHandler.setPausedOnBreakpoint(true);
-
             if (this.sessionManager.scriptsAreRunnable()) {
-                const breakpointId: string = this.sessionManager.constructBreakpointId(source, line, column, threadId);
-                this._evaluateBreakpointScripts(breakpointId, topFrame.id, activeSession);
+                const bId: string = this.sessionManager.constructBreakpointId(source, line, column, threadId);
+                const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+                const existingBreakpoint = loadedBreakpoints.find((b: Breakpoint) => b.id === bId);
+                const scripts: Script[] = existingBreakpoint?.scripts || [];
+                evaluateScripts(scripts.filter(s => s.active).map(s => s.uri), threadId);
             }
         }
 

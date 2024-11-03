@@ -15,33 +15,44 @@ type FileMetadata = {
 //TODO: Turn breakpoints green when active scripts
 export default class StorageManager {
 
-    private storagePath: string;
-    private context: vscode.ExtensionContext | null;
+    private storagePath: string = "";
+    private context: vscode.ExtensionContext | null = null;
     private loadedBreakpoints: Breakpoint[] = [];
+    private static _instance: StorageManager | null = null;
 
-    constructor(context: vscode.ExtensionContext | null = null) {
-        this.storagePath = context?.storageUri?.fsPath || "";
-        this.context = context;
+    private constructor() {}
+
+    static get instance(): StorageManager {
+        if (!this._instance) { 
+            return this._instance = new StorageManager();
+        }
+        return this._instance;
+    }
+
+    static setContext = (context: vscode.ExtensionContext): void => {
+        const instance: StorageManager = this.instance;
+        instance.storagePath = context?.storageUri?.fsPath || "";
+        instance.context = context;
         
         // Ensure the base directory exists
-        if (!this.storagePath) {
+        if (!instance.storagePath) {
             return;
         }
 
-        if (!fs.existsSync(this.storagePath)) {
-            fs.mkdirSync(this.storagePath, { recursive: true });
+        if (!fs.existsSync(instance.storagePath)) {
+            fs.mkdirSync(instance.storagePath, { recursive: true });
         }
 
         // Subdirectories to create
         const subdirs: string[] = ['session', 'breakpoints'];
 
         subdirs.forEach((dir: string) => {
-            const fullPath: string = path.join(this.storagePath, dir);
+            const fullPath: string = path.join(instance.storagePath, dir);
             if (!fs.existsSync(fullPath)) {
                 fs.mkdirSync(fullPath, { recursive: true });
             }
         });
-        this.loadBreakpoints();
+        instance.loadBreakpoints();
     }
 
     //TODO: Move date functtion to utils and tersify

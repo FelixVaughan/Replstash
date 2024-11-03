@@ -57,7 +57,7 @@
       },
       {
         "command": "slugger.editSavedScript",
-        "title": "Edit Capture Script",
+        "title": "Open Script",
         "category": "Slugger"
       },
       {
@@ -118,7 +118,7 @@
       {
         "command": "slugger.copyScripts",
         "title": "Copy Scripts",
-        "enablement": "view == breakpointsView && slugger.multipleSelectedItems && !slugger.hasBreakpointSelected"
+        "enablement": "view == breakpointsView && slugger.multipleSelectedItems && !slugger.breakpointSelected"
       },
       {
         "command": "slugger.pasteScripts",
@@ -133,7 +133,12 @@
       {
         "command": "slugger.openScripts",
         "title": "Open",
-        "enablement": "view == breakpointsView && !slugger.hasBreakpointSelected"
+        "enablement": "view == breakpointsView && !slugger.breakpointSelected"
+      },
+      {
+        "command": "slugger.runAllBreakpointScripts",
+        "title": "Run All",
+        "enablement": "view == breakpointsView && !slugger.multipleSelectedItems"
       }
       
     ],
@@ -182,6 +187,11 @@
         {
           "command": "slugger.openScripts",
           "when": "view == breakpointsView",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.runAllBreakpointScripts",
+          "when": "view == breakpointsView && viewItem == breakpoint",
           "group": "navigation"
         }
       ],

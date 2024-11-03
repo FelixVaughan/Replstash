@@ -7,39 +7,35 @@ import {
     commands, 
     showWarningMessage,
     evaluateScripts,
+    _debugger
 } from './utils';
 import StorageManager from './storageManager';
 
 //TODO: Hook up the delete an open icons
-//TODO: Run scripts by right click
-//TODO: Run all active scripts in a breakpoint
 //TODO: improve refresh functionality 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
     private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
     readonly onDidChangeTreeData: vscode.Event<Breakpoint | Script | undefined> = this._onDidChangeTreeData.event;
     private selectedItems: Set<Breakpoint | Script> = new Set();
+    private storageManager: StorageManager;
     // @ts-ignore
     private copiedScripts: Script[] = [];
     readonly mimeType = "application/vnd.code.tree.breakpointsView";
     readonly dragMimeTypes = [this.mimeType]; // Custom mime type
     readonly dropMimeTypes = [this.mimeType]; 
 
-    private constructor(private storageManager: StorageManager) {}
+    private constructor() {
+        this.storageManager = StorageManager.instance;
+    }
 
     refresh = (): void => {
         this._onDidChangeTreeData.fire(undefined);
     }
 
-    static setStorage(storageManager: StorageManager): BreakpointsTreeProvider {
-        this.instance.storageManager = storageManager;
-        return this.instance;
-    }
-
-
     static get instance(): BreakpointsTreeProvider {
         if (!this._instance) { 
-            return this._instance = new BreakpointsTreeProvider(new StorageManager());
+            return this._instance = new BreakpointsTreeProvider();
         }
         return this._instance;
     }
@@ -191,13 +187,24 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         }
     }
 
-    runScripts = (): void => {
-        const selectedScripts: Script[] = this.getSelectedItems() as Script[];
-        if (selectedScripts.length) {
-            selectedScripts.forEach(async (script: Script) => {
-                evaluateScripts([script.uri]);
-            });
+    runScripts = (script: Script): void => {
+        if (!_debugger?.activeDebugSession) {
+            showWarningMessage('No active debug session.');
+            return;
         }
+        const selectedScripts: Script[] = this.getSelectedItems() as Script[];
+        const scripts: Set<Script> = new Set([...selectedScripts, script]);
+        scripts.forEach(async (script: Script) => {
+            evaluateScripts([script.uri]);
+        });
+    }
+
+    runAllBreakpointScripts = (breakpoint: Breakpoint): void => {
+        if (!_debugger?.activeDebugSession) {
+            showWarningMessage('No active debug session.');
+            return;
+        }
+        evaluateScripts(breakpoint.scripts.map(script => script.uri));
     }
 
     pasteScripts = (breakpoint: Breakpoint): void => {
@@ -222,7 +229,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             const breakpointSelected: boolean = selection.some((elem: Breakpoint | Script) => Object.hasOwn(elem, 'scripts'));
             this.selectedItems = new Set(selection);
             commands.executeCommand('setContext', 'slugger.multipleSelectedItems', isMultipleSelect);
-            commands.executeCommand('setContext', 'slugger.hasBreakpointSelected', breakpointSelected);
+            commands.executeCommand('setContext', 'slugger.breakpointSelected', breakpointSelected);
         });
 
         treeView.onDidChangeCheckboxState((event: vscode.TreeCheckboxChangeEvent<Script | Breakpoint>) => {

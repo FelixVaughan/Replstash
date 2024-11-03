@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
 import { Disposable, DebugSession } from 'vscode';
 import StorageManager from './storageManager';
-import SessionManager from './sessionManager';
 import DebugAdapterTracker from './debugAdapterTracker';
 import CommandHandler from './commandHandler';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
-import { _debugger, Breakpoint, Script, commands } from './utils';
+import { _debugger, commands } from './utils';
 
 
 //TODO: Disappear error messages faster
@@ -14,16 +13,15 @@ import { _debugger, Breakpoint, Script, commands } from './utils';
     * @param {vscode.ExtensionContext} context
  */
 export const activate = (context: vscode.ExtensionContext): void => {
-    const sessionManager: SessionManager = new SessionManager();
-    const storageManager: StorageManager = new StorageManager(context);
-    const commandHandler: CommandHandler = new CommandHandler(sessionManager, storageManager);
-    const breakpointsTreeProvider: BreakpointsTreeProvider = BreakpointsTreeProvider.setStorage(storageManager);
-    const treeView: vscode.TreeView<Breakpoint | Script> = breakpointsTreeProvider.createTreeView(); 
+    StorageManager.setContext(context);
+    const commandHandler: CommandHandler = CommandHandler.instance;
+    const breakpointsTreeProvider: BreakpointsTreeProvider = BreakpointsTreeProvider.instance;
+    const treeView = breakpointsTreeProvider.createTreeView();
 
     const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session: DebugSession) {
             console.log(`Tracking Session: ${session.id}`);
-            return new DebugAdapterTracker(sessionManager, commandHandler, storageManager); // Pass commandHandler to track capturing state
+            return new DebugAdapterTracker(commandHandler); // Pass commandHandler to track capturing state
         }
     });
 
@@ -56,6 +54,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.openScripts', breakpointsTreeProvider.openScripts),
         registerCommand('slugger.runScripts', breakpointsTreeProvider.runScripts),
         registerCommand('slugger.removeBreakpointScripts', breakpointsTreeProvider.removeBreakpointScripts),
+        registerCommand('slugger.runAllBreakpointScripts', breakpointsTreeProvider.runAllBreakpointScripts),
     ];
 
     commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
