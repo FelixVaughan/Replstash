@@ -7,7 +7,7 @@ import BreakpointsTreeProvider from './breakpointsTreeProvider';
 import { _debugger, commands } from './utils';
 
 
-//TODO: Disappear error messages faster
+//TODO: -> Disappear error messages faster
 /**
  * 
     * @param {vscode.ExtensionContext} context

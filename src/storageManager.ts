@@ -2,7 +2,13 @@ import * as vscode from 'vscode';
 import fs from 'fs';
 import path  from 'path';
 import { Breakpoint, BreakpointMetaData } from './utils';
-import {window, Script, refreshTree, showInformationMessage} from './utils';
+import {
+    window, 
+    Script, 
+    refreshTree, 
+    showInformationMessage,
+    getCurrentTimestamp
+} from './utils';
 
 type FileMetadata = {
     size: number;
@@ -55,11 +61,6 @@ export default class StorageManager {
         instance.loadBreakpoints();
     }
 
-    //TODO: Move date functtion to utils and tersify
-    getCurrentTimestamp = (): string => {
-        const now: Date = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-    }
 
     // Save the contents to a file
     saveToFile = (fullPath: string, content: string): void => {
@@ -98,10 +99,10 @@ export default class StorageManager {
         const existingBreakpoint: Breakpoint | undefined = loadedBreakpoints.find((b: Breakpoint) => b.id === bp.id);
         if (existingBreakpoint) {
             existingBreakpoint.scripts.push({ uri: fullPath, active: false });
-            existingBreakpoint.modifiedAt = this.getCurrentTimestamp();
+            existingBreakpoint.modifiedAt = getCurrentTimestamp();
         } else {
             bp.scripts.push({ uri: fullPath, active: true });
-            bp.createdAt = this.getCurrentTimestamp();
+            bp.createdAt = getCurrentTimestamp();
             loadedBreakpoints.push(bp);
         }
         this.updateBreakpoints(loadedBreakpoints);
@@ -120,7 +121,7 @@ export default class StorageManager {
     // Save session output
     saveSessionOutput = (sessionOutput: string, sessionId: string): void => {
         const content: string = Object.values(sessionOutput).join('\n');
-        const sessionFilename: string = `${sessionId}_${this.getCurrentTimestamp()}`;
+        const sessionFilename: string = `${sessionId}_${getCurrentTimestamp()}`;
         const fullPath: string = path.join(this.storagePath, 'session', sessionFilename);
         this.saveToFile(fullPath, content);
     }

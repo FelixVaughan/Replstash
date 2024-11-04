@@ -46,6 +46,11 @@ export const refreshTree = (): void => {
     BreakpointsTreeProvider.instance.refresh();
 }
 
+export const getCurrentTimestamp = (): string => {
+    return new Date().toISOString().replace('T', '_').slice(0, 19).replace(/:/g, '-');
+};
+
+
 export const evaluateScripts = async (uris: string[], threadId: number | null = null): Promise<void> => {
     const activeSession = _debugger?.activeDebugSession;
     if (!activeSession) return;

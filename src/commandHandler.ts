@@ -11,7 +11,8 @@ import {
     commands,
     LabeledItem,
     showWarningMessage,
-    showInformationMessage
+    showInformationMessage,
+    getCurrentTimestamp
 } from './utils';
 
 class CommandHandler extends EventEmitter {
@@ -109,7 +110,7 @@ class CommandHandler extends EventEmitter {
         const defaultFileName: string = `${path.basename(currentBreakpoint.file)}_` +
                         `${currentBreakpoint.line}_` +
                         `${currentBreakpoint.column}_` +
-                        `${this.storageManager.getCurrentTimestamp()}`;
+                        `${getCurrentTimestamp()}`;
 
         let fileName: string | undefined;
         let invalidReason: string = "";
