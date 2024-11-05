@@ -64,7 +64,7 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
     }
 
     const _evaluate = async (uri: string, frameId: number): Promise<number> => {
-    const scriptContent: string | null = StorageManager.instance.getScriptContent(uri)
+        const scriptContent: string | null = StorageManager.instance.getScriptContent(uri)
         if (!scriptContent) return -1;
         try{
             await activeSession.customRequest('evaluate', {

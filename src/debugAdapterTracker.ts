@@ -8,7 +8,6 @@ import {
     Script,
     evaluateScripts,
 } from './utils';
-import * as vscode from 'vscode';
 class DebugAdapterTracker {
 
     private sessionManager: SessionManager;
