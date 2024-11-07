@@ -96,6 +96,11 @@
         "category": "Slugger"
       },
       {
+        "command": "slugger.renameSavedScript",
+        "title": "Rename Capture Script",
+        "category": "Slugger"
+      },
+      {
         "command": "slugger.activateSelected",
         "title": "Activate",
         "enablement": "view == breakpointsView"

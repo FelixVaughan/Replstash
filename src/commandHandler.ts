@@ -12,7 +12,8 @@ import {
     LabeledItem,
     showWarningMessage,
     showInformationMessage,
-    getCurrentTimestamp
+    getCurrentTimestamp,
+    isValidFilename
 } from './utils';
 
 class CommandHandler extends EventEmitter {
@@ -68,14 +69,6 @@ class CommandHandler extends EventEmitter {
 
         this.sessionManager.setCapturePaused(true);
         showInformationMessage('Paused capturing debug console input.');
-    }
-
-    _isValidFilename = (name: string): boolean => {
-        const invalidChars: RegExp = /[<>:"\/\\|?*\x00-\x1F]/g;
-        const reservedNames: RegExp = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
-        if (invalidChars.test(name) || reservedNames.test(name) || name.length > 255)
-            return false;
-        return true;
     }
 
     captureTerminationSignal = (): void => {
@@ -143,7 +136,7 @@ class CommandHandler extends EventEmitter {
             }
 
             // Check if the filename is valid
-            if (!this._isValidFilename(fileName)) {
+            if (!isValidFilename(fileName)) {
                 invalidReason = 'Invalid file name.';
                 continue;
             }
@@ -174,7 +167,7 @@ class CommandHandler extends EventEmitter {
                 description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
             })),
             {
-                placeHolder: 'Select a saved breakpoint script to edit',
+                placeHolder: 'Select a saved captured script to edit',
                 canPickMany: false
             }
         );
@@ -275,6 +268,19 @@ class CommandHandler extends EventEmitter {
             });
     };
 
+    renameSavedScript = async (): Promise<void> => {
+        const selectedScript: string | void = await this._selectScript();
+        if (!selectedScript) return;
+        const newFileName: string | void = await window.showInputBox({
+            prompt: 'Enter a new name for the script',
+            value: selectedScript,
+            placeHolder: selectedScript
+        });
+
+        if (!newFileName) return;
+        this.storageManager.renameScript(selectedScript, newFileName);
+    }
+
     setPausedOnBreakpoint = (paused: boolean): void => {
         this.pausedOnBreakpoint = paused;
     };
@@ -308,8 +314,7 @@ class CommandHandler extends EventEmitter {
         if (!selectedBreakpoint) return;
         this.storageManager.assignScriptsToBreakpoint(selectedBreakpoint, [selected]);
     }
-        
-
+    
 } 
 
 export default CommandHandler;

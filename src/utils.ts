@@ -40,7 +40,7 @@ export interface LabeledItem {
 }
 
 
-export const { showWarningMessage, showInformationMessage } = vscode.window;
+export const { showWarningMessage, showInformationMessage, showErrorMessage} = vscode.window;
 
 export const refreshTree = (): void => {
     BreakpointsTreeProvider.instance.refresh();
@@ -93,3 +93,11 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
         showWarningMessage(`An error occurred`);
     }
 };
+
+export const isValidFilename = (name: string): boolean => {
+    const invalidChars: RegExp = /[<>:"\/\\|?*\x00-\x1F]/g;
+    const reservedNames: RegExp = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+    if (invalidChars.test(name) || reservedNames.test(name) || name.length > 255)
+        return false;
+    return true;
+}

@@ -1,13 +1,14 @@
 import * as vscode from 'vscode';
 import fs from 'fs';
 import path  from 'path';
-import { Breakpoint, BreakpointMetaData } from './utils';
+import { Breakpoint, BreakpointMetaData, isValidFilename } from './utils';
 import {
     window, 
     Script, 
     refreshTree, 
     showInformationMessage,
-    getCurrentTimestamp
+    getCurrentTimestamp,
+    showErrorMessage,
 } from './utils';
 
 type FileMetadata = {
@@ -17,7 +18,7 @@ type FileMetadata = {
 };
 
 //TODO: delete or move actual breakpoint event
-//TODO: rename breakpoint and script
+//TODO: -> rename script
 //TODO: Turn breakpoints green when active scripts
 export default class StorageManager {
 
@@ -74,7 +75,7 @@ export default class StorageManager {
         if (fs.existsSync(filePath)) {
             return fs.readFileSync(filePath, 'utf8');
         } else {
-            window.showErrorMessage(`File not found: ${filePath}`);
+            showErrorMessage(`File not found: ${filePath}`);
             return null;
         }
     }
@@ -173,6 +174,36 @@ export default class StorageManager {
             return bp.scripts.length > 0; // Remove if no scripts are left
         });
         this.updateBreakpoints(updatedBreakpoints);
+    }
+
+    renameScript = (oldFilename: string, newFilename: string): void => {
+        const [oldUri, newUri] = [oldFilename, newFilename].map(filename =>
+            path.join(this.storagePath, 'breakpoints', filename)
+        );
+
+        if (!isValidFilename(newFilename)) {
+            showErrorMessage(`Invalid filename: ${newFilename}`);
+            return;
+        }
+        if (fs.existsSync(newUri)) {
+            showErrorMessage(`File already exists: ${newUri}`);
+            return;
+        }
+
+        try {
+            fs.renameSync(oldUri, newUri);
+            this.updateBreakpoints(this.loadBreakpoints().map((bp: Breakpoint) => {
+                bp.scripts.forEach((script) => {
+                    if (script.uri === oldUri) {
+                        script.uri = newUri;
+                    }
+                });
+                return bp;
+            }));
+        } catch(err) {
+            showErrorMessage(`Error renaming file: ${oldFilename} -> ${newFilename}`);
+        }
+        showInformationMessage(`Renamed: ${newFilename}`);
     }
 
     removeBreakpointScript = (breakpoint: Breakpoint, uri: string): void => {
