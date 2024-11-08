@@ -281,8 +281,8 @@ class CommandHandler extends EventEmitter {
         this.storageManager.renameScript(selectedScript, newFileName);
     }
 
-    setPausedOnBreakpoint = (paused: boolean): void => {
-        this.pausedOnBreakpoint = paused;
+    setStoppedOnBreakpoint = (stopped: boolean): void => {
+        this.pausedOnBreakpoint = stopped;
     };
 
     // Methods using the reusable function

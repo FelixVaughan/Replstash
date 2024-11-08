@@ -55,7 +55,7 @@ class DebugAdapterTracker {
             const column: number = topFrame.column;
             const threadId: number = message.body.threadId
 
-            const vscodeBreakpoint = vscode.debug.breakpoints.find((bp) => {
+            const vscodeBreakpoint = _debugger.breakpoints.find((bp) => {
                 if (bp instanceof vscode.SourceBreakpoint) {
                     return (
                         bp.location.uri.fsPath === source &&
@@ -65,15 +65,11 @@ class DebugAdapterTracker {
                 }
                 return false;
             });
-        
-            if (vscodeBreakpoint) {
-                console.log(`Found VS Code Breakpoint ID: ${vscodeBreakpoint.id}`);
-            }
-            
-            this.sessionManager.addBreakpoint(source, line, column, threadId);
-            this.commandHandler.setPausedOnBreakpoint(true);
+
+            const bId: string = vscodeBreakpoint!.id;
+            this.sessionManager.addBreakpoint(source, line, column, threadId, bId);
+            this.commandHandler.setStoppedOnBreakpoint(true);
             if (this.sessionManager.scriptsAreRunnable()) {
-                const bId: string = this.sessionManager.constructBreakpointId(source, line, column, threadId);
                 const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
                 const existingBreakpoint = loadedBreakpoints.find((b: Breakpoint) => b.id === bId);
                 const scripts: Script[] = existingBreakpoint?.scripts || [];
@@ -82,7 +78,7 @@ class DebugAdapterTracker {
         }
 
         if (message.type === 'event' && message.event === 'continued') {
-            this.commandHandler.setPausedOnBreakpoint(false);
+            this.commandHandler.setStoppedOnBreakpoint(false);
             if (this.sessionManager.isCapturing()) {
                 this.commandHandler.stopCapture(true);
             }
