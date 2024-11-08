@@ -1,4 +1,4 @@
-import { Breakpoint } from './utils';
+import { _debugger, Breakpoint } from './utils';
 export default class SessionManager {
 
     private static _instance: SessionManager | null = null;
@@ -117,7 +117,10 @@ export default class SessionManager {
 
 }
 
-// const breakpointDisposable = vscode.debug.onDidChangeBreakpoints(event => {
-//     //use this to handle changes to breakpoints
-//     vscode.DebugStackFrame
-// });
+_debugger.onDidChangeBreakpoints((event: object) => {
+    //@ts-ignore
+    const changed = event.changed
+    changed.forEach((breakpoint: any) => {
+        console.log(`${breakpoint.id} ${breakpoint.location.range}`);
+    });
+});

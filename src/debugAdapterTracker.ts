@@ -8,6 +8,7 @@ import {
     Script,
     evaluateScripts,
 } from './utils';
+import * as vscode from 'vscode';
 class DebugAdapterTracker {
 
     private sessionManager: SessionManager;
@@ -53,6 +54,22 @@ class DebugAdapterTracker {
             const line: number = topFrame.line;
             const column: number = topFrame.column;
             const threadId: number = message.body.threadId
+
+            const vscodeBreakpoint = vscode.debug.breakpoints.find((bp) => {
+                if (bp instanceof vscode.SourceBreakpoint) {
+                    return (
+                        bp.location.uri.fsPath === source &&
+                        bp.location.range.start.line + 1 === line &&
+                        bp.location.range.start.character + 1 === column
+                    );
+                }
+                return false;
+            });
+        
+            if (vscodeBreakpoint) {
+                console.log(`Found VS Code Breakpoint ID: ${vscodeBreakpoint.id}`);
+            }
+            
             this.sessionManager.addBreakpoint(source, line, column, threadId);
             this.commandHandler.setPausedOnBreakpoint(true);
             if (this.sessionManager.scriptsAreRunnable()) {
