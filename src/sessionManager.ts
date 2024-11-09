@@ -45,14 +45,16 @@ export default class SessionManager {
     ): string => `${file}_${line}_${column}_${threadId}`;
     
 
-    addBreakpoint = (file: string, line: number, column: number, threadId: number): void => {
-        const breakpointId: string = this.constructBreakpointId(file, line, column, threadId);
-        const existingBreakpoint: Breakpoint | undefined  = this.breakpoints.find((breakpoint) => 
-            breakpoint.id === breakpointId
-        );
+    addBreakpoint = (
+        file: string, 
+        line: number, 
+        column: number, threadId: number,
+        bId: string
+    ): void => {
+        const existingBreakpoint = this.breakpoints.find((b) => b.id === bId);
         if (!existingBreakpoint) {
             this.currentBreakpoint = {
-                id: breakpointId,
+                id: bId,
                 threadId: threadId,
                 line: line,
                 active: true,
