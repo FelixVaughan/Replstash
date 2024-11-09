@@ -17,7 +17,6 @@ type FileMetadata = {
     mtime: Date;
 };
 
-//TODO: delete or move actual breakpoint event
 //TODO: -> rename script
 //TODO: Turn breakpoints green when active scripts
 export default class StorageManager {
@@ -221,6 +220,16 @@ export default class StorageManager {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
         const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.filter((bp: Breakpoint) => bp.id !== breakpoint.id);
         this.updateBreakpoints(updatedBreakpoints);
+    }
+
+    unlinkBreakpoint = (breakpoint: Breakpoint): void => {
+        const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
+        this.updateBreakpoints(loadedBreakpoints.map((bp: Breakpoint) => {
+            if (bp.id === breakpoint.id) {
+                bp.linked = false;
+            }
+            return bp;
+        }));
     }
 
 

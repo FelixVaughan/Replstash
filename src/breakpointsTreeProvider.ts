@@ -204,6 +204,9 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             showWarningMessage('No active debug session.');
             return;
         }
+        if (!breakpoint.linked) {
+            showWarningMessage('Breakpoint is not linked to any source file.');
+        }
         evaluateScripts(breakpoint.scripts.map(script => script.uri));
     }
 
@@ -225,8 +228,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
         treeView.onDidChangeSelection(event => {
             const selection: readonly (Breakpoint | Script)[] = event.selection;
-            const isMultipleSelect: boolean = selection.length > 1;
-            const breakpointSelected: boolean = selection.some((elem: Breakpoint | Script) => Object.hasOwn(elem, 'scripts'));
+            const isMultipleSelect = selection.length > 1;
+            const breakpointSelected = selection.some((elem: Breakpoint | Script) => Object.hasOwn(elem, 'scripts'));
             this.selectedItems = new Set(selection);
             commands.executeCommand('setContext', 'slugger.multipleSelectedItems', isMultipleSelect);
             commands.executeCommand('setContext', 'slugger.breakpointSelected', breakpointSelected);

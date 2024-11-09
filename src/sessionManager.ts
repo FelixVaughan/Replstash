@@ -1,4 +1,5 @@
 import { _debugger, Breakpoint } from './utils';
+import StorageManager from './storageManager';
 export default class SessionManager {
 
     private static _instance: SessionManager | null = null;
@@ -8,8 +9,20 @@ export default class SessionManager {
     private capturing: boolean = false;
     private captureIsPaused: boolean = false;
     private scriptsRunnable: boolean = false;
+    private storageManager: StorageManager = StorageManager.instance; 
 
-    private constructor() {}
+    private constructor() {
+        //why does this run for every breakpoint with the same list of breakpoints?
+        //How can we make activateable only if actual breakpoint is active 
+        _debugger.onDidChangeBreakpoints((event: object) => {
+            //@ts-ignore
+            const removed = event.removed;
+            removed.forEach((breakpoint: any) => {
+                const bId = breakpoint.id;
+                this.storageManager.unlinkBreakpoint(bId);
+            });
+        });        
+    }
 
     static get instance(): SessionManager {
         if (!this._instance) { 
@@ -60,6 +73,7 @@ export default class SessionManager {
                 active: true,
                 column: column,
                 file: file,
+                linked: true,
                 scripts: [],
                 content: {},
             };
@@ -118,11 +132,3 @@ export default class SessionManager {
     getCurrentBreakpoint = (): Breakpoint | null => this.currentBreakpoint;
 
 }
-
-_debugger.onDidChangeBreakpoints((event: object) => {
-    //@ts-ignore
-    const changed = event.changed
-    changed.forEach((breakpoint: any) => {
-        console.log(`${breakpoint.id} ${breakpoint.location.range}`);
-    });
-});
