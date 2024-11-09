@@ -17,6 +17,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
     readonly onDidChangeTreeData: vscode.Event<Breakpoint | Script | undefined> = this._onDidChangeTreeData.event;
+    private collapsibleStates: Map<string, vscode.TreeItemCollapsibleState> = new Map();
     private selectedItems: Set<Breakpoint | Script> = new Set();
     private storageManager: StorageManager;
     // @ts-ignore
@@ -54,7 +55,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
         if (isBreakpoint) {
             element = element as Breakpoint;
-            treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+            const collState = this.collapsibleStates.get(element.id) || vscode.TreeItemCollapsibleState.Collapsed;
+            treeItem.collapsibleState = collState;
             treeItem.contextValue = 'breakpoint';
             treeItem.label = `[${element.file}] (${element.scripts.length})`;
             treeItem.tooltip = element.id;
@@ -162,13 +164,14 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         });
     }
 
-    removeBreakpointScripts = (element: Script): void => {
+    removeSelectedItems = (element: Script): void => {
         const elements: (Breakpoint | Script)[] = [...this.getSelectedItems()];
         elements.push(element);
         new Set(elements).forEach((elem: Script | Breakpoint) => {
             if (Object.hasOwn(elem, 'scripts')) {
                 const bp: Breakpoint = elem as Breakpoint;
                 this.storageManager.removeBreakpoint(bp);
+                this.collapsibleStates.delete(bp.id);
                 return;
             }
             const script: Script = elem as Script;
@@ -215,7 +218,12 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         this.refresh();
     }
 
+    private setCollapsibleState = (element: Breakpoint, state: vscode.TreeItemCollapsibleState): void => {
+        this.collapsibleStates.set(element.id, state);
+    }
+
     createTreeView = (): vscode.TreeView<Breakpoint | Script> => {
+
         const treeView = window.createTreeView('breakpointsView', {
             treeDataProvider: this,
             manageCheckboxStateManually: true,
@@ -237,6 +245,18 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
                 const isChecked: boolean = checked === vscode.TreeItemCheckboxState.Checked;
                 this.setElementActivation(elem, isChecked);
             });
+        });
+
+        type ExpansionEvent = vscode.TreeViewExpansionEvent<Breakpoint | Script>;
+
+        treeView.onDidCollapseElement((event: ExpansionEvent): void => {
+            const isBreakpoint: boolean = Object.hasOwn(event.element, 'scripts');
+            isBreakpoint && this.setCollapsibleState(event.element as Breakpoint, vscode.TreeItemCollapsibleState.Collapsed);
+        });
+
+        treeView.onDidExpandElement((event: ExpansionEvent): void => {
+            const isBreakpoint: boolean = Object.hasOwn(event.element, 'scripts');
+            isBreakpoint && this.setCollapsibleState(event.element as Breakpoint, vscode.TreeItemCollapsibleState.Expanded);
         });
 
         return treeView;
