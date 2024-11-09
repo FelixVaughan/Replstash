@@ -7,11 +7,13 @@ import {
     commands, 
     showWarningMessage,
     evaluateScripts,
-    _debugger
+    _debugger,
+    isBreakpoint
 } from './utils';
 import StorageManager from './storageManager';
 
 //TODO: Hook up the delete an open icons
+//TODO: Right click to open recently saved scripts when they appear in information success toast
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
     private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
@@ -42,7 +44,6 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     // Retrieve the item for the TreeView (either Breakpoint or Script)
     getTreeItem = (element: Breakpoint | Script): vscode.TreeItem => {
-        const isBreakpoint: boolean = Object.hasOwn(element, 'scripts');
         const treeItem: vscode.TreeItem = new vscode.TreeItem(
             'uri' in element ? element.uri : element.file
         );
@@ -52,7 +53,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             : vscode.TreeItemCheckboxState.Unchecked;
 
 
-        if (isBreakpoint) {
+        if (isBreakpoint(element)) {
             element = element as Breakpoint;
             const collState = this.collapsibleStates.get(element.id) || vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.collapsibleState = collState;
@@ -88,7 +89,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         // Compute the status value: use provided status or toggle current state
         const statusValue: boolean = status !== undefined ? status : !element.active;
     
-        if (Object.hasOwn(element, 'scripts')) {
+        if (isBreakpoint(element)) {
             // Element is a Breakpoint
             const breakpoint = element as Breakpoint;
             this.storageManager.changeBreakpointActivation(breakpoint, statusValue);
@@ -123,7 +124,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     };
 
     handleDrop = async (target: Breakpoint | Script | undefined, dataTransfer: vscode.DataTransfer): Promise<void> => {
-        if (target?.hasOwnProperty('scripts')) {
+        if (target && isBreakpoint(target)) {
             const droppedData: vscode.DataTransferItem | undefined = dataTransfer.get(this.mimeType);
             if (droppedData) {
                 const droppedUris: string = await droppedData.asString(); // Await the data as a string
@@ -167,7 +168,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         const elements: (Breakpoint | Script)[] = [...this.getSelectedItems()];
         elements.push(element);
         new Set(elements).forEach((elem: Script | Breakpoint) => {
-            if (Object.hasOwn(elem, 'scripts')) {
+            if (isBreakpoint(elem)) {
                 const bp: Breakpoint = elem as Breakpoint;
                 this.storageManager.removeBreakpoint(bp);
                 this.collapsibleStates.delete(bp.id);
@@ -217,8 +218,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         this.refresh();
     }
 
-    private setCollapsibleState = (element: Breakpoint, state: vscode.TreeItemCollapsibleState): void => {
-        this.collapsibleStates.set(element.id, state);
+    private setCollapsibleState = (element: Breakpoint | Script, state: vscode.TreeItemCollapsibleState): void => {
+        isBreakpoint(element) && this.collapsibleStates.set((element as Breakpoint).id, state);
     }
 
     createTreeView = (): vscode.TreeView<Breakpoint | Script> => {
@@ -233,7 +234,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         treeView.onDidChangeSelection(event => {
             const selection: readonly (Breakpoint | Script)[] = event.selection;
             const isMultipleSelect: boolean = selection.length > 1;
-            const breakpointSelected: boolean = selection.some((elem: Breakpoint | Script) => Object.hasOwn(elem, 'scripts'));
+            const breakpointSelected: boolean = selection.some((elem: Breakpoint | Script) => isBreakpoint(elem));
             this.selectedItems = new Set(selection);
             commands.executeCommand('setContext', 'slugger.multipleSelectedItems', isMultipleSelect);
             commands.executeCommand('setContext', 'slugger.breakpointSelected', breakpointSelected);
@@ -245,17 +246,15 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
                 this.setElementActivation(elem, isChecked);
             });
         });
-
+        
         type ExpansionEvent = vscode.TreeViewExpansionEvent<Breakpoint | Script>;
 
         treeView.onDidCollapseElement((event: ExpansionEvent): void => {
-            const isBreakpoint: boolean = Object.hasOwn(event.element, 'scripts');
-            isBreakpoint && this.setCollapsibleState(event.element as Breakpoint, vscode.TreeItemCollapsibleState.Collapsed);
+            this.setCollapsibleState(event.element, vscode.TreeItemCollapsibleState.Collapsed);
         });
 
         treeView.onDidExpandElement((event: ExpansionEvent): void => {
-            const isBreakpoint: boolean = Object.hasOwn(event.element, 'scripts');
-            isBreakpoint && this.setCollapsibleState(event.element as Breakpoint, vscode.TreeItemCollapsibleState.Expanded);
+            this.setCollapsibleState(event.element, vscode.TreeItemCollapsibleState.Expanded);
         });
 
         return treeView;

@@ -101,3 +101,5 @@ export const isValidFilename = (name: string): boolean => {
         return false;
     return true;
 }
+
+export const isBreakpoint = (e: Script | Breakpoint): boolean => Object.hasOwn(e, 'scripts')
