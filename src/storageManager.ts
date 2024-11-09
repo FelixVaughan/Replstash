@@ -83,7 +83,7 @@ export default class StorageManager {
     //save breakpoint
     saveBreakpoint = (bp: Breakpoint, fileName: string): void => {
         const content: string = Object.values(bp.content).join('\n');
-        const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
+        const fullPath: string = path.join(this.storagePath, 'scripts', fileName);
         this.saveToFile(fullPath, content);
         this.upsertBreakpointScripts(bp, fullPath);
     }
@@ -147,9 +147,9 @@ export default class StorageManager {
             });
         }
 
-        const breakpointsPath: string = path.join(this.storagePath, 'breakpoints');
-        return fs.readdirSync(breakpointsPath).map((file: string) => {
-            const fullPath: string = path.join(breakpointsPath, file);
+        const scriptsPath: string = path.join(this.storagePath, 'scripts');
+        return fs.readdirSync(scriptsPath).map((file: string) => {
+            const fullPath: string = path.join(scriptsPath, file);
             const { size, birthtime: _createdAt, mtime: _modifiedAt }: FileMetadata = fs.statSync(fullPath);
             const [createdAt, modifiedAt]: [string, string] = [_createdAt, _modifiedAt].map(_formatDate) as [string, string];
             return { fileName: file, fullPath, size, createdAt, modifiedAt };
@@ -157,14 +157,14 @@ export default class StorageManager {
     }
     
     openScript(fileName: string) {
-        const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
+        const fullPath: string = path.join(this.storagePath, 'scripts', fileName);
         vscode.workspace.openTextDocument(fullPath).then((document: vscode.TextDocument) => {
             window.showTextDocument(document);
         });
     }
 
     deleteScript(fileName: string) {
-        const fullPath: string = path.join(this.storagePath, 'breakpoints', fileName);
+        const fullPath: string = path.join(this.storagePath, 'scripts', fileName);
         fs.unlinkSync(fullPath);
 
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
@@ -178,7 +178,7 @@ export default class StorageManager {
 
     renameScript = (oldFilename: string, newFilename: string): void => {
         const [oldUri, newUri] = [oldFilename, newFilename].map(filename =>
-            path.join(this.storagePath, 'breakpoints', filename)
+            path.join(this.storagePath, 'scripts', filename)
         );
 
         if (!isValidFilename(newFilename)) {
@@ -229,7 +229,7 @@ export default class StorageManager {
     }
 
     purgeScripts = (): void => {
-        const breakpointsPath: string = path.join(this.storagePath, 'breakpoints');
+        const breakpointsPath: string = path.join(this.storagePath, 'scripts');
         fs.readdirSync(breakpointsPath).forEach((file: string) => {
             fs.unlinkSync(path.join(breakpointsPath, file));
         });

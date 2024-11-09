@@ -71,8 +71,13 @@
         "category": "Slugger"
       },
       {
+        "command": "slugger.purgeScripts",
+        "title": "Purge all Scripts",
+        "category": "Slugger"
+      },
+      {
         "command": "slugger.purgeBreakpoints",
-        "title": "Purge Breakpoints",
+        "title": "Purge all Breakpoints",
         "category": "Slugger"
       },
       {

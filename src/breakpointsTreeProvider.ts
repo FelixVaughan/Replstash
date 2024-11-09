@@ -12,7 +12,6 @@ import {
 import StorageManager from './storageManager';
 
 //TODO: Hook up the delete an open icons
-//TODO: improve refresh functionality 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
     private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
