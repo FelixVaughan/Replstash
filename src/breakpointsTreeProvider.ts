@@ -11,8 +11,6 @@ import {
 } from './utils';
 import StorageManager from './storageManager';
 
-//TODO: Hook up the delete an open icons
-//TODO: improve refresh functionality 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
     private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
@@ -53,17 +51,24 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
 
         if (isBreakpoint) {
-            element = element as Breakpoint;
+            //name, proj path, line, col, scripts.length
+            const breakpoint = element as Breakpoint;
+            const iconColor = breakpoint.linked
+                ? 'charts.yellow' : breakpoint.active
+                ? 'charts.green' : 'errorForeground';
+            treeItem.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(iconColor));
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.contextValue = 'breakpoint';
-            treeItem.label = `[${element.file}] (${element.scripts.length})`;
-            treeItem.tooltip = element.id;
-            treeItem.description = `Ln ${element.line}, Col ${element.column}`;
+            treeItem.label = `[${breakpoint.file}] (${breakpoint.scripts.length})`;
+            treeItem.tooltip = breakpoint.id;
+            treeItem.description = `Ln ${breakpoint.line}, Col ${breakpoint.column}`;
         }else {
-            element = element as Script
+            const script = element as Script
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
             treeItem.contextValue = 'script';
-            treeItem.label = `<${path.basename(element.uri)}>`;
+            treeItem.label = `<${path.basename(script.uri)}>`;
+            const iconColor = script.active ? 'charts.green' : 'errorForeground';
+            treeItem.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(iconColor));
         }
         return treeItem;
     }

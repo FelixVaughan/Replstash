@@ -17,8 +17,8 @@ type FileMetadata = {
     mtime: Date;
 };
 
-//TODO: -> rename script
-//TODO: Turn breakpoints green when active scripts
+//TODO: delete or move actual breakpoint event
+//TODO: Jump to breakpoint in editor when clicked in tree view
 export default class StorageManager {
 
     private storagePath: string = "";

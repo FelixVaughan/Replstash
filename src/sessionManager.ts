@@ -16,11 +16,17 @@ export default class SessionManager {
         //How can we make activateable only if actual breakpoint is active 
         _debugger.onDidChangeBreakpoints((event: object) => {
             //@ts-ignore
-            const removed = event.removed;
+            const {removed, changed} = event;
             removed.forEach((breakpoint: any) => {
                 const bId = breakpoint.id;
                 this.storageManager.unlinkBreakpoint(bId);
             });
+            changed.forEach((breakpoint: any) => {
+                const bId = breakpoint.id;
+                const point: Breakpoint | undefined = this.breakpoints.find((b) => b.id === bId);
+                point && this.storageManager.changeBreakpointActivation(point, false);
+            });
+            
         });        
     }
 
