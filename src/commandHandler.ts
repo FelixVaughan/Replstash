@@ -5,7 +5,7 @@ import SessionManager from './sessionManager';
 import StorageManager from './storageManager';
 import { 
     Breakpoint, 
-    BreakpointMetaData, 
+    ScriptsMetaData, 
     _debugger, 
     window, 
     commands,
@@ -154,14 +154,14 @@ class CommandHandler extends EventEmitter {
     };
 
     _selectScript = async (): Promise<string | void> => {
-        const scriptsMetaData: BreakpointMetaData[] = this.storageManager.breakpointFilesMetaData(); // This should return an array of script paths
+        const scriptsMetaData: ScriptsMetaData[] = this.storageManager.scriptMetaData(); // This should return an array of script paths
         if (!scriptsMetaData.length) {
             showInformationMessage('No saved breakpoints found.');
             return;
         }
 
         const selectedScript: LabeledItem | undefined = await window.showQuickPick(
-            scriptsMetaData.map((meta: BreakpointMetaData) => ({
+            scriptsMetaData.map((meta: ScriptsMetaData) => ({
                 label: meta.fileName,
                 description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
             })),

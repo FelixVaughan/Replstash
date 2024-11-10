@@ -27,7 +27,7 @@ export interface Breakpoint {
 }
 
 
-export interface BreakpointMetaData {
+export interface ScriptsMetaData {
     fileName: string;
     fullPath: string;
     size: number;

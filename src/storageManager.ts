@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import fs from 'fs';
 import path  from 'path';
-import { Breakpoint, BreakpointMetaData, isValidFilename } from './utils';
+import { Breakpoint, ScriptsMetaData, isValidFilename } from './utils';
 import {
     window, 
     Script, 
@@ -138,7 +138,7 @@ export default class StorageManager {
     }
     
 
-    breakpointFilesMetaData(): BreakpointMetaData[] {
+    scriptMetaData(): ScriptsMetaData[] {
         const _formatDate = (date: Date): string => {
             return date.toLocaleString('en-US', {
                 timeZoneName: 'short',

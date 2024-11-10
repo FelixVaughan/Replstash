@@ -60,9 +60,9 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             const collState = this.collapsibleStates.get(breakpoint.id) || vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.collapsibleState = collState;
             treeItem.contextValue = 'breakpoint';
-            treeItem.label = `[${breakpoint.file}] (${breakpoint.scripts.length})`;
+            treeItem.label = path.basename(breakpoint.file);
             treeItem.tooltip = breakpoint.id;
-            treeItem.description = `Ln ${breakpoint.line}, Col ${breakpoint.column}`;
+            treeItem.description = `${path.dirname(breakpoint.file)}@Ln ${breakpoint.line}, Col ${breakpoint.column} - (${breakpoint.scripts.length})`;
         }else {
             const script = element as Script
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
