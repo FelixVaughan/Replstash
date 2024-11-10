@@ -23,6 +23,7 @@ export interface Breakpoint {
     createdAt?: string;
     modifiedAt?: string;
     content: Record<string, string>;
+    linked: boolean;
 }
 
 

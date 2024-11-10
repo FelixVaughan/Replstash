@@ -50,21 +50,26 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             ? vscode.TreeItemCheckboxState.Checked 
             : vscode.TreeItemCheckboxState.Unchecked;
 
-
         if (isBreakpoint(element)) {
-            element = element as Breakpoint;
-            const collState = this.collapsibleStates.get(element.id) || vscode.TreeItemCollapsibleState.Collapsed;
+            //name, proj path, line, col, scripts.length
+            const breakpoint = element as Breakpoint;
+            const iconColor = breakpoint.linked
+                ? 'charts.yellow' : breakpoint.active
+                ? 'charts.green' : 'errorForeground';
+            treeItem.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(iconColor));
+            const collState = this.collapsibleStates.get(breakpoint.id) || vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.collapsibleState = collState;
             treeItem.contextValue = 'breakpoint';
-            treeItem.label = `[${element.file}] (${element.scripts.length})`;
-            treeItem.tooltip = element.id;
-            treeItem.description = `Ln ${element.line}, Col ${element.column}`;
+            treeItem.label = `[${breakpoint.file}] (${breakpoint.scripts.length})`;
+            treeItem.tooltip = breakpoint.id;
+            treeItem.description = `Ln ${breakpoint.line}, Col ${breakpoint.column}`;
         }else {
-            element = element as Script
+            const script = element as Script
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
             treeItem.contextValue = 'script';
-            treeItem.iconPath = new vscode.ThemeIcon('file-code');
-            treeItem.label = `<${path.basename(element.uri)}>`;
+            treeItem.label = path.basename(script.uri);
+            const iconColor = script.active ? 'charts.green' : 'errorForeground';
+            treeItem.iconPath = new vscode.ThemeIcon('file-code', new vscode.ThemeColor(iconColor));
         }
         return treeItem;
     }
@@ -205,6 +210,9 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         if (!_debugger?.activeDebugSession) {
             showWarningMessage('No active debug session.');
             return;
+        }
+        if (!breakpoint.linked) {
+            showWarningMessage('Breakpoint is not linked to any source file.');
         }
         evaluateScripts(breakpoint.scripts.map(script => script.uri));
     }

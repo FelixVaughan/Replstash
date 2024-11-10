@@ -18,7 +18,7 @@ type FileMetadata = {
 };
 
 //TODO: delete or move actual breakpoint event
-//TODO: Turn breakpoints green when active scripts
+//TODO: Jump to breakpoint in editor when clicked in tree view
 export default class StorageManager {
 
     private storagePath: string = "";
@@ -219,6 +219,16 @@ export default class StorageManager {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
         const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.filter((bp: Breakpoint) => bp.id !== breakpoint.id);
         this.updateBreakpoints(updatedBreakpoints);
+    }
+
+    unlinkBreakpoint = (breakpoint: Breakpoint): void => {
+        const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
+        this.updateBreakpoints(loadedBreakpoints.map((bp: Breakpoint) => {
+            if (bp.id === breakpoint.id) {
+                bp.linked = false;
+            }
+            return bp;
+        }));
     }
 
 
