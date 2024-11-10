@@ -18,7 +18,6 @@ type FileMetadata = {
 };
 
 //TODO: delete or move actual breakpoint event
-//TODO: -> rename script
 //TODO: Turn breakpoints green when active scripts
 export default class StorageManager {
 

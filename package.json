@@ -149,8 +149,13 @@
         "command": "slugger.runAllBreakpointScripts",
         "title": "Run All",
         "enablement": "view == breakpointsView && !slugger.multipleSelectedItems"
+      },
+      {
+        "command": "slugger.treeRenameSavedScript",
+        "title": "Rename",
+        "enablement": "view == breakpointsView && !slugger.multipleSelectedItems"
       }
-      
+
     ],
     "menus": {
       "view/item/context": [
@@ -202,6 +207,11 @@
         {
           "command": "slugger.runAllBreakpointScripts",
           "when": "view == breakpointsView && viewItem == breakpoint",
+          "group": "navigation"
+        },
+        {
+          "command": "slugger.treeRenameSavedScript",
+          "when": "view == breakpointsView && viewItem == script",
           "group": "navigation"
         }
       ],

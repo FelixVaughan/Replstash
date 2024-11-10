@@ -11,6 +11,7 @@ import {
     isBreakpoint
 } from './utils';
 import StorageManager from './storageManager';
+import CommandHandler from './commandHandler';
 
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
     private static _instance: BreakpointsTreeProvider | null = null;
@@ -256,5 +257,9 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         });
 
         return treeView;
+    }
+
+    renameSavedScript = async (script: Script): Promise<void> => {
+        CommandHandler.instance.renameSavedScript(path.basename(script.uri));
     }
 }

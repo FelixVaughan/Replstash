@@ -118,11 +118,3 @@ export default class SessionManager {
     getCurrentBreakpoint = (): Breakpoint | null => this.currentBreakpoint;
 
 }
-
-_debugger.onDidChangeBreakpoints((event: object) => {
-    //@ts-ignore
-    const changed = event.changed
-    changed.forEach((breakpoint: any) => {
-        console.log(`${breakpoint.id} ${breakpoint.location.range}`);
-    });
-});

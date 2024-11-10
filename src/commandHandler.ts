@@ -267,8 +267,8 @@ class CommandHandler extends EventEmitter {
             });
     };
 
-    renameSavedScript = async (): Promise<void> => {
-        const selectedScript: string | void = await this._selectScript();
+    renameSavedScript = async (selectedScript: string | void): Promise<void> => {
+        selectedScript = selectedScript || await this._selectScript();
         if (!selectedScript) return;
         const newFileName: string | void = await window.showInputBox({
             prompt: 'Enter a new name for the script',
