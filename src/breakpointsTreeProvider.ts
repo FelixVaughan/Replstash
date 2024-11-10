@@ -12,7 +12,6 @@ import {
 } from './utils';
 import StorageManager from './storageManager';
 
-//TODO: Hook up the delete an open icons
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
     private static _instance: BreakpointsTreeProvider | null = null;
     private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
@@ -20,7 +19,6 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     private collapsibleStates: Map<string, vscode.TreeItemCollapsibleState> = new Map();
     private selectedItems: Set<Breakpoint | Script> = new Set();
     private storageManager: StorageManager;
-    // @ts-ignore
     private copiedScripts: Script[] = [];
     readonly mimeType = "application/vnd.code.tree.breakpointsView";
     readonly dragMimeTypes = [this.mimeType]; // Custom mime type
@@ -64,6 +62,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             element = element as Script
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
             treeItem.contextValue = 'script';
+            treeItem.iconPath = new vscode.ThemeIcon('file-code');
             treeItem.label = `<${path.basename(element.uri)}>`;
         }
         return treeItem;
