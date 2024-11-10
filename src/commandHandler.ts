@@ -145,13 +145,12 @@ class CommandHandler extends EventEmitter {
             break;
         }
 
-
         // Stop capturing and save the breakpoint with the specified file name 
         this.captureTerminationSignal()
         this.storageManager.saveBreakpoint(currentBreakpoint, fileName);
         this.sessionManager.clearCapture();
-        showInformationMessage(`Stopped capture: ${fileName}`);
-    
+        const action = await showInformationMessage(`Stopped capture: ${fileName}`, 'Open File');
+        action === 'Open File' && this.storageManager.openScript(fileName);
     };
 
     _selectScript = async (): Promise<string | void> => {

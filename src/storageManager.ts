@@ -51,7 +51,7 @@ export default class StorageManager {
         }
 
         // Subdirectories to create
-        const subdirs: string[] = ['session', 'breakpoints'];
+        const subdirs: string[] = ['session', 'scripts'];
 
         subdirs.forEach((dir: string) => {
             const fullPath: string = path.join(instance.storagePath, dir);
@@ -66,7 +66,6 @@ export default class StorageManager {
     // Save the contents to a file
     saveToFile = (fullPath: string, content: string): void => {
         fs.writeFileSync(fullPath, content);
-        showInformationMessage(`Saved to: ${fullPath}`);
     }
 
     // Read contents from a file
@@ -128,7 +127,7 @@ export default class StorageManager {
     }
 
     fileExists = (filename: string): boolean => {
-        const paths: [string, string] = ['session', 'breakpoints'].map(
+        const paths: [string, string] = ['session', 'scripts'].map(
             (dir: string): string => {
                 return path.join(this.storagePath, dir, filename);
             }
