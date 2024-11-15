@@ -12,11 +12,12 @@ import { _debugger, commands } from './utils';
     * @param {vscode.ExtensionContext} context
  */
 
-//TODO: Test and find issues
-//TODO: Add comments
-//TODO: Convert classes to ES6 syntax
-//TODO: Publisher name
-//TODO: Create logo
+//TODO: Long: Test and find issues - 2 hrs
+//TODO: -> Convert classes to ES6 syntax - 1 hr
+//TODO: -> Add comments - 1.25 hrs
+//TODO: -> Long: Clean up package.json - 2 hrs
+//TODO: Publisher name - 1 hr
+//TODO: Create logo - 30 mins
 export const activate = (context: vscode.ExtensionContext): void => {
     StorageManager.setContext(context);
     const commandHandler: CommandHandler = CommandHandler.instance;
