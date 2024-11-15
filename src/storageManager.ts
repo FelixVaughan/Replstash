@@ -17,8 +17,6 @@ type FileMetadata = {
     mtime: Date;
 };
 
-//TODO: delete or move actual breakpoint event
-//TODO: Jump to breakpoint in editor when clicked in tree view
 export default class StorageManager {
 
     private storagePath: string = "";
@@ -221,10 +219,10 @@ export default class StorageManager {
         this.updateBreakpoints(updatedBreakpoints);
     }
 
-    unlinkBreakpoint = (breakpoint: Breakpoint): void => {
+    unlinkBreakpoint = (bId: string): void => {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
         this.updateBreakpoints(loadedBreakpoints.map((bp: Breakpoint) => {
-            if (bp.id === breakpoint.id) {
+            if (bp.id === bId) {
                 bp.linked = false;
             }
             return bp;
@@ -264,8 +262,25 @@ export default class StorageManager {
 
     changeBreakpointActivation = (breakpoint: Breakpoint, active: boolean) => {
         const loaded: Breakpoint[] = this.loadBreakpoints();
-        breakpoint.active = active;
+        breakpoint.active = breakpoint.linked && active;
         this.updateBreakpoints(loaded.map((bp: Breakpoint) => bp.id === breakpoint.id ? breakpoint : bp));
+    }
+
+    changeBreakpointLocation = (breakpoint: Breakpoint, location: any): void => {
+
+        //@ts-ignore
+        const loaded: Breakpoint[] = this.loadBreakpoints();
+        this.updateBreakpoints(loaded.map((bp: Breakpoint) => {
+            if (bp.id === breakpoint.id) {
+                breakpoint.file = location.uri.fsPath;
+                breakpoint.line = location.range.start.line;
+                breakpoint.column = location.range.start.character;
+
+            }
+            return bp;
+        }));
+        console.log(breakpoint, location);
+
     }
 
     getScriptContent = (uri: string): string | null => {

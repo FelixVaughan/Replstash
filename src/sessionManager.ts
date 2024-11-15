@@ -1,5 +1,7 @@
-import { _debugger, Breakpoint } from './utils';
+import { _debugger, Breakpoint, refreshTree } from './utils';
 import StorageManager from './storageManager';
+import * as vscode from 'vscode';
+
 export default class SessionManager {
 
     private static _instance: SessionManager | null = null;
@@ -17,16 +19,21 @@ export default class SessionManager {
         _debugger.onDidChangeBreakpoints((event: object) => {
             //@ts-ignore
             const {removed, changed} = event;
-            removed.forEach((breakpoint: any) => {
+            removed.forEach((breakpoint: vscode.SourceBreakpoint) => {
                 const bId = breakpoint.id;
                 this.storageManager.unlinkBreakpoint(bId);
             });
-            changed.forEach((breakpoint: any) => {
+
+            changed.forEach((breakpoint: vscode.SourceBreakpoint) => {
                 const bId = breakpoint.id;
-                const point: Breakpoint | undefined = this.breakpoints.find((b) => b.id === bId);
-                point && this.storageManager.changeBreakpointActivation(point, false);
+                const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+                const point: Breakpoint | undefined = breakpoints.find((b) => b.id === bId);
+                if (point){
+                    this.storageManager.changeBreakpointActivation(point, false);
+                    this.storageManager.changeBreakpointLocation(point, breakpoint.location)
+                }
             });
-            
+            refreshTree();
         });        
     }
 
@@ -55,14 +62,6 @@ export default class SessionManager {
         this.captureIsPaused = paused
         this.capturing = false;
     }
-
-    constructBreakpointId = (
-        file: string, 
-        line: number, 
-        column: number, 
-        threadId: number
-    ): string => `${file}_${line}_${column}_${threadId}`;
-    
 
     addBreakpoint = (
         file: string, 
@@ -102,14 +101,8 @@ export default class SessionManager {
         }
     }
 
-    getBreakpoints = (): Breakpoint[] => {
-        return this.breakpoints;
-    }
-
     isCapturing = (): boolean => this.capturing;
 
-
-    
     contentCaptured = (): boolean => {
         return Boolean(Object.keys(this.currentBreakpoint?.content || []).length);
     }

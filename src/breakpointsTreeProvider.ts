@@ -51,9 +51,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             : vscode.TreeItemCheckboxState.Unchecked;
 
         if (isBreakpoint(element)) {
-            //name, proj path, line, col, scripts.length
             const breakpoint = element as Breakpoint;
-            const iconColor = breakpoint.linked
+            const iconColor = !breakpoint.linked
                 ? 'charts.yellow' : breakpoint.active
                 ? 'charts.green' : 'errorForeground';
             treeItem.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(iconColor));
@@ -61,8 +60,20 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             treeItem.collapsibleState = collState;
             treeItem.contextValue = 'breakpoint';
             treeItem.label = path.basename(breakpoint.file);
-            treeItem.tooltip = breakpoint.id;
+            treeItem.tooltip = !breakpoint.linked ? 'Unlinked' : breakpoint.active ? 'Active' : 'Inactive';
             treeItem.description = `${path.dirname(breakpoint.file)}@Ln ${breakpoint.line}, Col ${breakpoint.column} - (${breakpoint.scripts.length})`;
+            const position = new vscode.Position(Math.max(breakpoint.line - 1, 0), 0);
+            treeItem.command = {
+                command: 'vscode.open',
+                title: 'Open Breakpoint Location',
+                arguments: [
+                    vscode.Uri.file(breakpoint.file),
+                    {
+                        viewColumn: vscode.ViewColumn.One,
+                        selection: new vscode.Range(position, position)
+                    }
+                ]
+            };
         }else {
             const script = element as Script
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;

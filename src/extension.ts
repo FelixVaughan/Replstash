@@ -11,6 +11,12 @@ import { _debugger, commands } from './utils';
  * 
     * @param {vscode.ExtensionContext} context
  */
+
+//TODO: Test and find issues
+//TODO: Add comments
+//TODO: Convert classes to ES6 syntax
+//TODO: Publisher name
+//TODO: Create logo
 export const activate = (context: vscode.ExtensionContext): void => {
     StorageManager.setContext(context);
     const commandHandler: CommandHandler = CommandHandler.instance;
