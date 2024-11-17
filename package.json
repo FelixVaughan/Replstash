@@ -155,7 +155,6 @@
         "title": "Rename",
         "enablement": "view == breakpointsView && !slugger.multipleSelectedItems"
       }
-
     ],
     "menus": {
       "view/item/context": [
@@ -278,7 +277,8 @@
     "lint": "eslint .",
     "pretest": "npm run lint",
     "test": "vscode-test",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "doc": "npx typedoc"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.7",
@@ -287,6 +287,7 @@
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.4.0",
     "eslint": "^8.57.0",
+    "typedoc": "^0.26.11",
     "typescript": "^5.4.5"
   }
 }

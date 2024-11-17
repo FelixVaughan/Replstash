@@ -1,76 +1,147 @@
 import { _debugger, Breakpoint, refreshTree } from './utils';
 import StorageManager from './storageManager';
-import * as vscode from 'vscode';
 
+/**
+ * Manages debugging sessions, breakpoints, and captured session output.
+ * @class
+ */
 export default class SessionManager {
-
+    
+    /**
+     * Singleton instance of SessionManager.
+     * Ensures that only one instance of SessionManager is created and reused throughout the application.
+     */
     private static _instance: SessionManager | null = null;
-    private sessionOutput: Record<string, string> = {};
-    private breakpoints: Breakpoint[] = [];
-    private currentBreakpoint: Breakpoint | null = null;
-    private capturing: boolean = false;
-    private captureIsPaused: boolean = false;
-    private scriptsRunnable: boolean = false;
-    private storageManager: StorageManager = StorageManager.instance; 
 
+    /**
+     * Stores session output messages, mapping message sequences to expressions.
+     */
+    private sessionOutput: Record<string, string> = {};
+
+    /**
+     * Stores all breakpoints managed by this session.
+     */
+    private breakpoints: Breakpoint[] = [];
+
+    /**
+     * The currently active breakpoint, if any.
+     */
+    private currentBreakpoint: Breakpoint | null = null;
+
+     /**
+     * Indicates if the session is currently capturing.
+     */
+    private capturing: boolean = false;
+
+    /**
+     * Indicates if capturing is paused.
+     */
+    private captureIsPaused: boolean = false;
+
+    /**
+     * Indicates if scripts are runnable.
+     */
+    private scriptsRunnable: boolean = false;
+
+    /**
+     * Reference to the storage manager for handling breakpoints.
+     */
+    private storageManager: StorageManager = StorageManager.instance;
+
+    /**
+     * Private constructor to ensure Singleton pattern.
+     * Initializes event listeners for breakpoint changes.
+     */
     private constructor() {
-        //why does this run for every breakpoint with the same list of breakpoints?
-        //How can we make activateable only if actual breakpoint is active 
-        _debugger.onDidChangeBreakpoints((event: object) => {
-            //@ts-ignore
-            const {removed, changed} = event;
-            removed.forEach((breakpoint: vscode.SourceBreakpoint) => {
-                const bId = breakpoint.id;
+        _debugger.onDidChangeBreakpoints(({removed, changed}) => {
+
+            // Handle removed breakpoints
+            removed.forEach((brkt: any) => {
+                const bId = brkt.id;
                 this.storageManager.unlinkBreakpoint(bId);
             });
 
-            changed.forEach((breakpoint: vscode.SourceBreakpoint) => {
-                const bId = breakpoint.id;
+            // Handle changed breakpoints
+            changed.forEach((brkt: any) => {
+                const bId = brkt.id;
                 const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
                 const point: Breakpoint | undefined = breakpoints.find((b) => b.id === bId);
                 if (point){
                     this.storageManager.changeBreakpointActivation(point, false);
-                    this.storageManager.changeBreakpointLocation(point, breakpoint.location)
+                    this.storageManager.changeBreakpointLocation(point, brkt.location)
                 }
             });
+
+            // Refresh the UI tree to reflect changes
             refreshTree();
-        });        
+        });
     }
 
+    /**
+     * Returns the singleton instance of SessionManager.
+     * @returns {SessionManager} The singleton instance.
+     */
     static get instance(): SessionManager {
-        if (!this._instance) { 
-            return this._instance = new SessionManager();
+        if (!this._instance) {
+            this._instance = new SessionManager();
         }
         return this._instance;
     }
 
-    addSessionOutput = (messageSeq: string, expression: string): void => {
+    /**
+     * Adds session output mapped by the message sequence.
+     * @param {string} messageSeq - The sequence identifier of the message.
+     * @param {string} expression - The output expression to store.
+     */
+    addSessionOutput(messageSeq: string, expression: string): void {
         this.sessionOutput[messageSeq] = expression;
     }
 
-    getSessionOutput = (): object => this.sessionOutput;
+    /**
+     * Retrieves all session output.
+     * @returns {object} The session output.
+     */
+    getSessionOutput(): object {
+        return this.sessionOutput;
+    }
 
-
-    setCapturing = (capturing: boolean): void => {
+    /**
+     * Sets the capturing state and resets the paused state.
+     * @param {boolean} capturing - The capturing state to set.
+     */
+    setCapturing(capturing: boolean): void {
         this.capturing = capturing;
         this.captureIsPaused = false;
     }
 
-    capturePaused = (): boolean => this.captureIsPaused;
+    /**
+     * Checks if capturing is currently paused.
+     * @returns {boolean} True if capturing is paused, otherwise false.
+     */
+    capturePaused(): boolean {
+        return this.captureIsPaused;
+    }
 
-    setCapturePaused = (paused: boolean): void => {
-        this.captureIsPaused = paused
+    /**
+     * Pauses capturing and sets the capturing state to false.
+     * @param {boolean} paused - The paused state to set.
+     */
+    setCapturePaused(paused: boolean): void {
+        this.captureIsPaused = paused;
         this.capturing = false;
     }
 
-    addBreakpoint = (
-        file: string, 
-        line: number, 
-        column: number, threadId: number,
-        bId: string
-    ): void => {
-        const existingBreakpoint = this.breakpoints.find((b) => b.id === bId);
-        if (!existingBreakpoint) {
+    /**
+     * Adds a new breakpoint or sets the current one if it already exists.
+     * @param {string} file - The file where the breakpoint is set.
+     * @param {number} line - The line number of the breakpoint.
+     * @param {number} column - The column number of the breakpoint.
+     * @param {number} threadId - The thread ID associated with the breakpoint.
+     * @param {string} bId - The unique ID of the breakpoint.
+     */
+    addBreakpoint(file: string, line: number, column: number, threadId: number, bId: string): void {
+        const existing = this.breakpoints.find((b) => b.id === bId);
+        if (!existing) {
             this.currentBreakpoint = {
                 id: bId,
                 threadId: threadId,
@@ -84,36 +155,62 @@ export default class SessionManager {
             };
             this.breakpoints.push(this.currentBreakpoint);
         } else {
-            this.currentBreakpoint = existingBreakpoint;
+            this.currentBreakpoint = existing;
         }
     }
 
-    addBreakpointContent = (messageSeq: string, expression: string): void => {
+    /**
+     * Adds content to the current breakpoint.
+     * @param {string} messageSeq - The sequence identifier of the message.
+     * @param {string} expression - The content expression to add.
+     */
+    addBreakpointContent(messageSeq: string, expression: string): void {
         if (this.currentBreakpoint) {
             this.currentBreakpoint.content[messageSeq] = expression;
         }
     }
 
-    removeBreakpointContent = (messageSeq: string): void => {
+    /**
+     * Removes content from the current breakpoint and session output.
+     * @param {string} messageSeq - The sequence identifier of the message to remove.
+     */
+    removeBreakpointContent(messageSeq: string): void {
         if (this.currentBreakpoint) {
             delete this.currentBreakpoint.content[messageSeq];
             delete this.sessionOutput[messageSeq];
         }
     }
 
-    isCapturing = (): boolean => this.capturing;
+    /**
+     * Checks if the session is currently capturing.
+     * @returns {boolean} True if capturing, otherwise false.
+     */
+    isCapturing(): boolean {
+        return this.capturing;
+    }
 
-    contentCaptured = (): boolean => {
+    /**
+     * Checks if there is any content captured for the current breakpoint.
+     * @returns {boolean} True if content is captured, otherwise false.
+     */
+    contentCaptured(): boolean {
         return Boolean(Object.keys(this.currentBreakpoint?.content || []).length);
     }
-    
-    clearCapture = (): void => {
-        if(this.contentCaptured()) {
+
+    /**
+     * Clears the captured content of the current breakpoint.
+     */
+    clearCapture(): void {
+        if (this.contentCaptured()) {
             this.currentBreakpoint!.content = {};
         }
     }
 
-    clearLastExpression = (): string | null => {
+    /**
+     * Clears the last expression from the current breakpoint's content.
+     * @returns {string | null} The cleared expression or null if no content was found.
+     */
+    clearLastExpression(): string | null {
         if (!this.contentCaptured()) return null;
         const content: Record<string, string> = this.currentBreakpoint!.content;
         const lastKey: string = Object.keys(content).pop()!;
@@ -122,12 +219,27 @@ export default class SessionManager {
         return result;
     }
 
-    setScriptsRunnable = (runnable: boolean): void => {
+    /**
+     * Sets whether scripts are runnable.
+     * @param {boolean} runnable - The runnable state to set.
+     */
+    setScriptsRunnable(runnable: boolean): void {
         this.scriptsRunnable = runnable;
     }
 
-    scriptsAreRunnable = (): boolean => this.scriptsRunnable;
+    /**
+     * Checks if scripts are runnable.
+     * @returns {boolean} True if scripts are runnable, otherwise false.
+     */
+    scriptsAreRunnable(): boolean {
+        return this.scriptsRunnable;
+    }
 
-    getCurrentBreakpoint = (): Breakpoint | null => this.currentBreakpoint;
-
+    /**
+     * Retrieves the current breakpoint.
+     * @returns {Breakpoint | null} The current breakpoint or null.
+     */
+    getCurrentBreakpoint(): Breakpoint | null {
+        return this.currentBreakpoint;
+    }
 }

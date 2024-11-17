@@ -52,6 +52,13 @@ export const getCurrentTimestamp = (): string => {
 };
 
 
+/**
+ * Evaluates scripts by executing them in the active debug session.
+ * 
+ * @param uris - An array of script URIs to evaluate.
+ * @param threadId - The ID of the thread to evaluate the scripts in. If not provided, the active thread ID will be used.
+ * @returns A Promise that resolves to void.
+ */
 export const evaluateScripts = async (uris: string[], threadId: number | null = null): Promise<void> => {
     const activeSession = _debugger?.activeDebugSession;
     if (!activeSession) return;
