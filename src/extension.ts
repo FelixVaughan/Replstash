@@ -6,24 +6,25 @@ import CommandHandler from './commandHandler';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
 import { _debugger, commands } from './utils';
 
-
 /**
+ * Activates the VS Code extension, setting up commands, tree views, and debug trackers.
  * 
-    * @param {vscode.ExtensionContext} context
+ * @param context - The extension context provided by VS Code during activation.
  */
-
-//TODO: Long: Test and find issues - 2 hrs
-//TODO: -> Convert classes to ES6 syntax - 1 hr
-//TODO: -> Add comments - 1.25 hrs
-//TODO: -> Long: Clean up package.json - 2 hrs
-//TODO: Publisher name - 1 hr
-//TODO: Create logo - 30 mins
 export const activate = (context: vscode.ExtensionContext): void => {
+    // Initialize the storage manager with the extension context
     StorageManager.setContext(context);
+
+    // Singleton instances of command and tree providers
     const commandHandler: CommandHandler = CommandHandler.instance;
     const breakpointsTreeProvider: BreakpointsTreeProvider = BreakpointsTreeProvider.instance;
+
+    // Create the tree view for breakpoints
     const treeView = breakpointsTreeProvider.createTreeView();
 
+    /**
+     * Registers a debug adapter tracker factory to monitor debug sessions.
+     */
     const debugAdapterTrackerFactory: Disposable = _debugger.registerDebugAdapterTrackerFactory('*', {
         createDebugAdapterTracker(session: DebugSession) {
             console.log(`Tracking Session: ${session.id}`);
@@ -31,12 +32,20 @@ export const activate = (context: vscode.ExtensionContext): void => {
         }
     });
 
+    /**
+     * Helper function to register a command in VS Code.
+     * 
+     * @param commandId - The unique identifier for the command.
+     * @param commandFunction - The function to execute when the command is invoked.
+     * @returns A disposable representing the registered command.
+     */
     const registerCommand = (commandId: string, commandFunction: (...args: any[]) => any) => {
         return commands.registerCommand(commandId, commandFunction);
     };
 
+    // List of commands registered in the extension
     const disposableCommands: Disposable[] = [
-        //command palette commands
+        // Command palette commands
         registerCommand('slugger.startCapture', commandHandler.startCapture),
         registerCommand('slugger.stopCapture', commandHandler.stopCapture),
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
@@ -53,7 +62,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.discardCapture', commandHandler.discardCapture),
         registerCommand('slugger.renameSavedScript', commandHandler.renameSavedScript),
         registerCommand('slugger.purgeScripts', commandHandler.purgeScripts),
-        //tree view commands
+        // Tree view commands
         registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('slugger.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),
         registerCommand('slugger.activateSelected', breakpointsTreeProvider.activateSelectedItems),
@@ -63,17 +72,28 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.runScripts', breakpointsTreeProvider.runScripts),
         registerCommand('slugger.removeBreakpointScripts', breakpointsTreeProvider.removeSelectedItems),
         registerCommand('slugger.runAllBreakpointScripts', breakpointsTreeProvider.runAllBreakpointScripts),
-        registerCommand('slugger.treeRenameSavedScript', breakpointsTreeProvider.renameSavedScript),    
+        registerCommand('slugger.treeRenameSavedScript', breakpointsTreeProvider.renameSavedScript),
     ];
 
+    // Set the initial context for scripts' runnability
     commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
 
+    // Add disposables and other subscriptions to the extension's lifecycle
     context.subscriptions.push(
-        ...disposableCommands, 
-        debugAdapterTrackerFactory, 
+        ...disposableCommands,
+        debugAdapterTrackerFactory,
         treeView
     );
-
 };
 
+/**
+ * Deactivates the extension. This function is called when the extension is unloaded.
+ */
 export const deactivate = (): void => {};
+
+
+//TODO: Long: Test and find issues - 2 hrs
+//TODO: -> Long: Clean up package.json - 2 hrs
+//Flatten tree view - 2 hr
+//TODO: Publisher name - 1 hr
+//TODO: Create logo - 30 mins

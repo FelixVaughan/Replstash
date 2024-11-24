@@ -16,13 +16,40 @@ import {
     isValidFilename
 } from './utils';
 
-class CommandHandler extends EventEmitter {
-
+/**
+ * Handles commands related to managing breakpoints, scripts, and session operations.
+ * Extends EventEmitter for emitting capture events.
+ * @class
+ */
+export default class CommandHandler extends EventEmitter {
+    /**
+     * Singleton instance of CommandHandler.
+     * Ensures only one instance of CommandHandler exists.
+     * @type {CommandHandler | null}
+     */
     private static _instance: CommandHandler | null = null;
+
+    /**
+     * Reference to the SessionManager instance.
+     * @type {SessionManager}
+     */
     private sessionManager: SessionManager;
+
+    /**
+     * Reference to the StorageManager instance.
+     * @type {StorageManager}
+     */
     private storageManager: StorageManager;
+
+    /**
+     * Indicates whether the debugger is paused on a breakpoint.
+     * @type {boolean}
+     */
     private pausedOnBreakpoint: boolean;
 
+    /**
+     * Private constructor for the Singleton pattern.
+     */
     private constructor () {
         super();
         this.sessionManager = SessionManager.instance;
@@ -30,33 +57,44 @@ class CommandHandler extends EventEmitter {
         this.pausedOnBreakpoint = false;
     }
 
+    /**
+     * Returns the singleton CommandHandler instance.
+     * @returns {CommandHandler} The singleton instance.
+     */
     static get instance(): CommandHandler {
         if (!this._instance) {
-            return this._instance = new CommandHandler();
+            this._instance = new CommandHandler();
         }
         return this._instance;
     }
 
-
-    startCapture = (): void => {
-        const activeSession: vscode.DebugSession = _debugger.activeDebugSession!;  //!: Non-null assertion operator  
-        let err_msg: string = "";
+    /**
+     * Starts capturing console input during debugging.
+     * Emits `captureStarted` if successful.
+     * @returns {void}
+     */
+    startCapture(): void {
+        const activeSession: vscode.DebugSession = _debugger.activeDebugSession!;
+        let err_msg = "";
         if (!activeSession) err_msg = 'No active debug session.';
         else if (!this.pausedOnBreakpoint) err_msg = 'Not paused on a breakpoint.';
-        else if(this.sessionManager.isCapturing()) err_msg = 'Already capturing debug console input.';
+        else if (this.sessionManager.isCapturing()) err_msg = 'Already capturing debug console input.';
 
         if (err_msg) {
             showWarningMessage(err_msg);
             return;
         }
         this.sessionManager.setCapturing(true);
-        this.emit('captureStarted');  // Emit event when capturing starts
+        this.emit('captureStarted');
         commands.executeCommand('workbench.debug.action.focusRepl');
         showInformationMessage('Started capturing debug console input.');
-    };
+    }
 
-    pauseCapture = (): void => {
-
+    /**
+     * Pauses capturing of console input.
+     * @returns {void}
+     */
+    pauseCapture(): void {
         if (this.sessionManager.capturePaused()) {
             showWarningMessage('Capture already paused.');
             return;
@@ -71,32 +109,45 @@ class CommandHandler extends EventEmitter {
         showInformationMessage('Paused capturing debug console input.');
     }
 
-    captureTerminationSignal = (): void => {
+    /**
+     * Stops capturing and emits `captureStopped`.
+     * @returns {void}
+     */
+    private captureTerminationSignal(): void {
         this.sessionManager.setCapturing(false);
-        this.emit('captureStopped');  // Emit event when capturing stops
+        this.emit('captureStopped');
     }
 
-    discardCapture = async (): Promise<void> => {
+    /**
+     * Discards the currently captured console input.
+     * @returns {Promise<void>}
+     */
+    async discardCapture(): Promise<void> {
         if (!this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
         }
-        this.captureTerminationSignal()
+        this.captureTerminationSignal();
         this.sessionManager.clearCapture();
-        showInformationMessage(`Capture discarded.`);
+        showInformationMessage('Capture discarded.');
     }
 
-    stopCapture = async (autoSave: boolean = false): Promise<void> => {
+    /**
+     * Stops capturing and saves the captured input to a file.
+     * Allows auto-save with default file names.
+     * @param {boolean} [autoSave=false] Whether to auto-save the captured input.
+     * @returns {Promise<void>}
+     */
+    async stopCapture(autoSave: boolean = false): Promise<void> {
         if (!this.sessionManager.capturePaused() && !this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
         }
 
         const currentBreakpoint: Breakpoint = this.sessionManager.getCurrentBreakpoint()!;
-
         if (!this.sessionManager.contentCaptured()) {
             showWarningMessage('Stopped: No console input captured.');
-            this.captureTerminationSignal()
+            this.captureTerminationSignal();
             return;
         }
 
@@ -108,60 +159,62 @@ class CommandHandler extends EventEmitter {
         let fileName: string | undefined;
         let invalidReason: string = "";
 
+        // Prompt the user for a file name until valid input (optional back-out)
         while (true) {
             if (autoSave) {
                 fileName = defaultFileName;
                 break;
             }
 
-            // Show input box to get the file name from the user
+            // Show an input box for the user to enter a file name
             fileName = await window.showInputBox({
                 prompt: invalidReason || 'Save console input:',
                 value: defaultFileName,
                 placeHolder: defaultFileName
             });
 
-            // If the user presses Escape or enters nothing, exit the loop and return
+            // If the user cancels, abort the termination
             if (!fileName) {
                 showWarningMessage('Capture in progress, termination aborted.');
                 return;
             }
 
+            // Validate the file name
             fileName = fileName.trim();
 
-            // Check if the file already exists
             if (this.storageManager.fileExists(fileName)) {
                 invalidReason = `File already exists: ${fileName}`;
                 continue;
             }
 
-            // Check if the filename is valid
             if (!isValidFilename(fileName)) {
                 invalidReason = 'Invalid file name.';
                 continue;
             }
 
-            // If the filename is valid and does not exist, break out of the loop
             break;
         }
 
-        // Stop capturing and save the breakpoint with the specified file name 
-        this.captureTerminationSignal()
+        this.captureTerminationSignal();
         this.storageManager.saveBreakpoint(currentBreakpoint, fileName);
         this.sessionManager.clearCapture();
         const action = await showInformationMessage(`Stopped capture: ${fileName}`, 'Open File');
         action === 'Open File' && this.storageManager.openScript(fileName);
-    };
+    }
 
-    _selectScript = async (): Promise<string | void> => {
-        const scriptsMetaData: ScriptsMetaData[] = this.storageManager.scriptMetaData(); // This should return an array of script paths
+    /**
+     * Selects a script file from available saved scripts using the QuickPick UI.
+     * @returns {Promise<string | void>} The selected script file name, or void if canceled.
+     */
+    private async selectScript(): Promise<string | void> {
+        const scriptsMetaData: ScriptsMetaData[] = this.storageManager.scriptMetaData();
         if (!scriptsMetaData.length) {
             showInformationMessage('No saved breakpoints found.');
             return;
         }
 
         const selectedScript: LabeledItem | undefined = await window.showQuickPick(
-            scriptsMetaData.map((meta: ScriptsMetaData) => ({
+            scriptsMetaData.map((meta) => ({
                 label: meta.fileName,
                 description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
             })),
@@ -170,17 +223,19 @@ class CommandHandler extends EventEmitter {
                 canPickMany: false
             }
         );
-    
-        // If no script was selected (user canceled the QuickPick)
+
         if (!selectedScript) {
             showInformationMessage('No script selected.');
             return;
         }
         return selectedScript.label;
-
     }
 
-    clearCapture = async (): Promise<void> => {
+    /**
+     * Clears all captured console input.
+     * @returns {Promise<void>}
+     */
+    async clearCapture(): Promise<void> {
         if (!this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
@@ -189,7 +244,11 @@ class CommandHandler extends EventEmitter {
         showInformationMessage('Capture cleared.');
     }
 
-    clearLastExpression = async (): Promise<void> => {
+    /**
+     * Clears the last entered expression from the capture session.
+     * @returns {Promise<void>}
+     */
+    async clearLastExpression(): Promise<void> {
         if (!this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
@@ -201,13 +260,25 @@ class CommandHandler extends EventEmitter {
         showInformationMessage('Last expression cleared.');
     }
 
-    _selectBreakpoint = async (): Promise<Breakpoint | void> => {
+    /**
+     * Prompts the user to select a saved breakpoint.
+     * 
+     * Displays a list of breakpoints using the quick pick UI. Each breakpoint is listed with its file,
+     * line, and column information.
+     * 
+     * @returns {Promise<Breakpoint | void>} The selected breakpoint or `void` if no selection was made.
+     */
+    private selectBreakpoint = async (): Promise<Breakpoint | void> => {
+        // Load all stored breakpoints
         const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+
+        // If no breakpoints are available, show an informational message
         if (!breakpoints.length) {
             showInformationMessage('No saved breakpoints found.');
             return;
         }
 
+        // Present a quick pick UI for selecting a breakpoint
         const selectedBreakpoint: LabeledItem | undefined = await window.showQuickPick(
             breakpoints.map((bp: Breakpoint) => ({
                 label: bp.id,
@@ -219,57 +290,104 @@ class CommandHandler extends EventEmitter {
             }
         );
 
+        // If no selection is made, exit the function
         if (!selectedBreakpoint) {
             showInformationMessage('No breakpoint selected.');
             return;
         }
+
+        // Find and return the selected breakpoint
         return breakpoints.find((bp: Breakpoint) => bp.id === selectedBreakpoint.label);
-    }
+    };
 
-
-    private _confirmWarning = async (message: string): Promise<boolean> => {
+    /**
+     * Displays a confirmation dialog with a warning message.
+     * 
+     * This method presents a modal warning dialog with "Yes" and "Cancel" options, allowing the user
+     * to confirm or decline an action.
+     * 
+     * @param {string} message - The warning message to display in the confirmation dialog.
+     * @returns {Promise<boolean>} A promise that resolves to `true` if the user confirms, or `false` otherwise.
+     */
+    private confirmWarning = async (message: string): Promise<boolean> => {
+        // Show the modal warning dialog and wait for the user's selection
         const selection = await showWarningMessage(
             message,
-            { modal: true },
-            "Yes"
+            { modal: true }, // Ensures the dialog is presented as a modal
+            'Yes' // Option for the user to confirm
         );
-    
-        return selection == "Yes"
-    }
 
+        // Return true if the user selects "Yes", false otherwise
+        return selection === 'Yes';
+    };
+
+
+    
+    /**
+     * Opens a selected script in the editor.
+     * Allows the user to select a saved script and opens it for viewing or editing.
+     * 
+     * @returns {Promise<void>} A promise that resolves when the script is opened.
+     */
     openScript = async (): Promise<void> => {
-        const selectedScript: string | void = await this._selectScript();
+        // Prompt the user to select a script
+        const selectedScript: string | void = await this.selectScript();
         if (selectedScript) {
+            // Open the script in the editor
             this.storageManager.openScript(selectedScript);
         }
     };
 
+    /**
+     * Deletes a saved script selected by the user.
+     * Prompts the user to select a script and removes it from storage.
+     * Displays an informational message upon successful deletion.
+     * @returns {Promise<void>}
+     */
     deleteSavedScript = async (): Promise<void> => {
-        const selectedScript: string | void = await this._selectScript();
+        const selectedScript: string | void = await this.selectScript();
         if (selectedScript) {
             this.storageManager.deleteScript(selectedScript);
             showInformationMessage(`Deleted: ${selectedScript}`);
         }
-    }
+    };
 
+    /**
+     * Deletes a breakpoint selected by the user.
+     * Prompts the user to select a breakpoint and removes it from storage.
+     * Displays an informational message upon successful deletion.
+     * @returns {Promise<void>}
+     */
     deleteBreakpoint = async (): Promise<void> => {
-        const selectedBreakpoint: Breakpoint | void = await this._selectBreakpoint();
+        const selectedBreakpoint: Breakpoint | void = await this.selectBreakpoint();
         if (selectedBreakpoint) {
             this.storageManager.removeBreakpoint(selectedBreakpoint);
             showInformationMessage(`Deleted: ${selectedBreakpoint.file}`);
         }
-    }
-
-    activateScripts = (): void => {
-        const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
-            breakpoints.forEach((bp: Breakpoint) => {
-                bp.active
-            });
     };
 
+    /**
+     * Activates all scripts associated with the loaded breakpoints.
+     * Iterates over all breakpoints and activates their scripts.
+     * @returns {void}
+     */
+    activateScripts = (): void => {
+        const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+        breakpoints.forEach((bp: Breakpoint) => {
+            bp.active = true;
+        });
+    };
+
+    /**
+     * Renames a saved script selected by the user.
+     * Prompts the user to select a script and enter a new name for it.
+     * @param {string | void} [selectedScript] - The script to rename, or `void` to prompt the user.
+     * @returns {Promise<void>}
+     */
     renameSavedScript = async (selectedScript: string | void): Promise<void> => {
-        selectedScript = selectedScript || await this._selectScript();
+        selectedScript = selectedScript || await this.selectScript();
         if (!selectedScript) return;
+
         const newFileName: string | void = await window.showInputBox({
             prompt: 'Enter a new name for the script',
             value: selectedScript,
@@ -278,42 +396,72 @@ class CommandHandler extends EventEmitter {
 
         if (!newFileName) return;
         this.storageManager.renameScript(selectedScript, newFileName);
-    }
+    };
 
+    /**
+     * Sets whether the debugger is currently paused on a breakpoint.
+     * @param {boolean} stopped - True if the debugger is paused, otherwise false.
+     */
     setStoppedOnBreakpoint = (stopped: boolean): void => {
         this.pausedOnBreakpoint = stopped;
     };
 
-    // Methods using the reusable function
+    /**
+     * Purges all saved breakpoints after user confirmation.
+     * Displays a warning message to confirm the action before proceeding.
+     * @returns {Promise<void>}
+     */
     purgeBreakpoints = async (): Promise<void> => {
-        const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all breakpoints?")
+        const proceed: boolean = await this.confirmWarning("Are you sure you want to purge all breakpoints?");
         proceed && this.storageManager.purgeBreakpoints();
-    }
+    };
 
+    /**
+     * Purges all saved scripts after user confirmation.
+     * Displays a warning message to confirm the action before proceeding.
+     * @returns {Promise<void>}
+     */
     purgeScripts = async (): Promise<void> => {
-        const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all scripts?")
+        const proceed: boolean = await this.confirmWarning("Are you sure you want to purge all scripts?");
         proceed && this.storageManager.purgeScripts();
-    }
+    };
 
+    /**
+     * Purges all breakpoints and scripts after user confirmation.
+     * Displays a warning message to confirm the action before proceeding.
+     * Currently unused.
+     * @returns {Promise<void>}
+     */
     purgeAll = async (): Promise<void> => {
-        const proceed: boolean = await this._confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?")
+        const proceed: boolean = await this.confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?");
         proceed && this.storageManager.purgeAll();
-    }
+    };
 
+    /**
+     * Sets whether scripts are runnable.
+     * Updates the session state and notifies the user.
+     * @param {boolean} runnable - True to make scripts runnable, otherwise false.
+     * @returns {Promise<void>}
+     */
     setScriptRunnable = async (runnable: boolean): Promise<void> => {
         this.sessionManager.setScriptsRunnable(runnable);
         commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
         showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
-    }
+    };
 
+    /**
+     * Assigns a script to a breakpoint.
+     * Prompts the user to select a script and a breakpoint, then links them.
+     * @returns {Promise<void>}
+     */
     assignScriptsToBreakpoint = async (): Promise<void> => {
-        const selected: string | void = await this._selectScript();
+        const selected: string | void = await this.selectScript();
         if (!selected) return;
-        const selectedBreakpoint: Breakpoint | void = await this._selectBreakpoint();
-        if (!selectedBreakpoint) return;
-        this.storageManager.assignScriptsToBreakpoint(selectedBreakpoint, [selected]);
-    }
-    
-} 
 
-export default CommandHandler;
+        const selectedBreakpoint: Breakpoint | void = await this.selectBreakpoint();
+        if (!selectedBreakpoint) return;
+
+        this.storageManager.assignScriptsToBreakpoint(selectedBreakpoint, [selected]);
+    };
+
+}

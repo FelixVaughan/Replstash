@@ -98,14 +98,6 @@ export default class SessionManager {
     }
 
     /**
-     * Retrieves all session output.
-     * @returns {object} The session output.
-     */
-    getSessionOutput(): object {
-        return this.sessionOutput;
-    }
-
-    /**
      * Sets the capturing state and resets the paused state.
      * @param {boolean} capturing - The capturing state to set.
      */

@@ -1,53 +1,122 @@
 import * as vscode from 'vscode';
 import path from 'path';
-import { 
-    Breakpoint, 
-    Script, 
-    window, 
-    commands, 
+import {
+    Breakpoint,
+    Script,
+    window,
+    commands,
     showWarningMessage,
     evaluateScripts,
     _debugger,
-    isBreakpoint
+    isBreakpoint,
 } from './utils';
 import StorageManager from './storageManager';
 import CommandHandler from './commandHandler';
 
+/**
+ * Provides a Tree View for managing breakpoints and their associated scripts in the extension.
+ * Supports actions like activation, drag-and-drop, and selection of breakpoints and scripts.
+ * @class
+ */
 export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script> {
-    private static _instance: BreakpointsTreeProvider | null = null;
-    private _onDidChangeTreeData: vscode.EventEmitter<Breakpoint | Script | undefined> = new vscode.EventEmitter<Breakpoint | Script | undefined>();
-    readonly onDidChangeTreeData: vscode.Event<Breakpoint | Script | undefined> = this._onDidChangeTreeData.event;
-    private collapsibleStates: Map<string, vscode.TreeItemCollapsibleState> = new Map();
-    private selectedItems: Set<Breakpoint | Script> = new Set();
-    private storageManager: StorageManager;
-    private copiedScripts: Script[] = [];
-    readonly mimeType = "application/vnd.code.tree.breakpointsView";
-    readonly dragMimeTypes = [this.mimeType]; // Custom mime type
-    readonly dropMimeTypes = [this.mimeType]; 
 
+    /**
+     * Singleton instance of BreakpointsTreeProvider.
+     * Ensures only one instance is created and reused.
+     */
+    private static _instance: BreakpointsTreeProvider | null = null;
+
+    /**
+     * Event emitter to signal changes in the TreeView data.
+     * Used to refresh the UI when breakpoints or scripts are updated.
+     */
+    private _onDidChangeTreeData = new vscode.EventEmitter<Breakpoint | Script | undefined>();
+
+    /**
+     * Event that clients can subscribe to for changes in TreeView data.
+     */
+    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+    /**
+     * Maps breakpoint IDs to their collapsible state in the TreeView.
+     * Tracks expanded or collapsed states for breakpoints.
+     * Used to maintain the state of the TreeView when refreshing.
+     */
+    private collapsibleStates: Map<string, vscode.TreeItemCollapsibleState> = new Map();
+
+    /**
+     * Set of currently selected items in the TreeView.
+     * Used for multi-selection operations.
+     */
+    private selectedItems: Set<Breakpoint | Script> = new Set();
+
+    /**
+     * Instance of the StorageManager for managing breakpoint and script data.
+     * Provides methods for persisting and retrieving data.
+     */
+    private storageManager: StorageManager;
+
+    /**
+     * List of copied scripts for drag-and-drop or clipboard operations.
+     * Used for assigning or duplicating scripts.
+     */
+    private copiedScripts: Script[] = [];
+
+    /**
+     * MIME type for TreeView drag-and-drop operations.
+     * Specifies the type of data that can be dragged or dropped within the TreeView.
+     */
+    readonly mimeType = 'application/vnd.code.tree.breakpointsView';
+
+    /**
+     * MIME types supported for dragging items from the TreeView.
+     * Limits drag-and-drop operations to the specified MIME type.
+     */
+    readonly dragMimeTypes = [this.mimeType];
+
+    /**
+     * MIME types supported for dropping items into the TreeView.
+     * Ensures dropped data matches the expected format.
+     */
+
+readonly dropMimeTypes = [this.mimeType];
+    /**
+     * Private constructor to enforce the singleton pattern.
+     */
     private constructor() {
         this.storageManager = StorageManager.instance;
     }
 
-    refresh = (): void => {
-        this._onDidChangeTreeData.fire(undefined);
-    }
-
+    /**
+     * Retrieves the singleton instance of the `BreakpointsTreeProvider`.
+     * @returns {BreakpointsTreeProvider} The singleton instance.
+     */
     static get instance(): BreakpointsTreeProvider {
-        if (!this._instance) { 
-            return this._instance = new BreakpointsTreeProvider();
+        if (!this._instance) {
+            this._instance = new BreakpointsTreeProvider();
         }
         return this._instance;
     }
 
-    // Retrieve the item for the TreeView (either Breakpoint or Script)
-    getTreeItem = (element: Breakpoint | Script): vscode.TreeItem => {
+    /**
+     * Refreshes the Tree View by triggering the `onDidChangeTreeData` event.
+     */
+    refresh(): void {
+        this._onDidChangeTreeData.fire(undefined);
+    }
+
+    /**
+     * Retrieves a Tree Item representation of the given element (Breakpoint or Script).
+     * @param {Breakpoint | Script} element - The element to create the Tree Item for.
+     * @returns {vscode.TreeItem} A VS Code Tree Item with properties such as label, icon, and command.
+     */
+    getTreeItem(element: Breakpoint | Script): vscode.TreeItem {
         const treeItem: vscode.TreeItem = new vscode.TreeItem(
             'uri' in element ? element.uri : element.file
         );
 
-        treeItem.checkboxState = element.active 
-            ? vscode.TreeItemCheckboxState.Checked 
+        treeItem.checkboxState = element.active
+            ? vscode.TreeItemCheckboxState.Checked
             : vscode.TreeItemCheckboxState.Unchecked;
 
         if (isBreakpoint(element)) {
@@ -84,44 +153,57 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         }
         return treeItem;
     }
-    
 
-    // Retrieve children for the Breakpoint (the scripts), or return the top-level breakpoints
-    getChildren = (element?: Breakpoint): Thenable<Breakpoint[] | Script[]> => {
+    /**
+     * Retrieves the children of the given Breakpoint element or the top-level Breakpoints.
+     * @param {Breakpoint} [element] - The parent Breakpoint to fetch children for.
+     * @returns {Thenable<Breakpoint[] | Script[]>} A promise resolving to the list of children.
+     */
+    getChildren(element?: Breakpoint): Thenable<Breakpoint[] | Script[]> {
         if (!element) {
             return Promise.resolve(this.storageManager.loadBreakpoints());
         }
-        return Promise.resolve(element.scripts);  // Return scripts for a given breakpoint
+        return Promise.resolve(element.scripts);
     }
 
-    // Get the parent element of the given script (to support nested hierarchy)
-    getParent = (element: Script): Breakpoint | null => {
-        const breakpoints : Breakpoint[] = this.storageManager.loadBreakpoints();
-        return breakpoints.find(bp => bp.scripts.includes(element)) || null;
+    /**
+     * Retrieves the parent Breakpoint for the given Script.
+     * @param {Script} element - The Script for which to find the parent Breakpoint.
+     * @returns {Breakpoint | null} The parent Breakpoint or `null` if not found.
+     */
+    getParent(element: Script): Breakpoint | null {
+        const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+        return breakpoints.find((bp) => bp.scripts.includes(element)) || null;
     }
 
-    setElementActivation = (element: Breakpoint | Script, status?: boolean): void => {
-        // Compute the status value: use provided status or toggle current state
+    /**
+     * Activates or deactivates the given Breakpoint or Script.
+     * @param {Breakpoint | Script} element - The element to activate or deactivate.
+     * @param {boolean} [status] - The desired activation status. If not provided, toggles the current state.
+     */
+    setElementActivation(element: Breakpoint | Script, status?: boolean): void {
         const statusValue: boolean = status !== undefined ? status : !element.active;
-    
+
         if (isBreakpoint(element)) {
-            // Element is a Breakpoint
             const breakpoint = element as Breakpoint;
             this.storageManager.changeBreakpointActivation(breakpoint, statusValue);
         } else {
-            // Element is a Script
             const script = element as Script;
             const parentBreakpoint = this.getParent(script);
             if (parentBreakpoint) {
                 this.storageManager.changeScriptActivation(parentBreakpoint, script, statusValue);
             }
         }
-    
-        // Refresh the tree view to reflect changes
+
         this.refresh();
     }
 
-    handleDrag = (source: readonly (Breakpoint | Script)[], dataTransfer: vscode.DataTransfer): void => {
+    /**
+     * Handles the drag-and-drop operation for scripts.
+     * @param {readonly (Breakpoint | Script)[]} source - The dragged elements.
+     * @param {vscode.DataTransfer} dataTransfer - The data transfer object.
+     */
+    handleDrag(source: readonly (Breakpoint | Script)[], dataTransfer: vscode.DataTransfer): void {
         const scriptsToDrag: Script[] = source.filter((e): e is Script => 'uri' in e);
         if (scriptsToDrag.length !== source.length) {
             showWarningMessage('Only scripts can be dragged.');
@@ -129,74 +211,102 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         }
         if (scriptsToDrag.length) {
             dataTransfer.set(
-                this.mimeType, 
+                this.mimeType,
                 new vscode.DataTransferItem(
-                    JSON.stringify(scriptsToDrag.map(script => script.uri))
+                    JSON.stringify(scriptsToDrag.map(s => s.uri))
                 )
             );
         }
-        console.log(dataTransfer)
-    };
+    }
 
-    handleDrop = async (target: Breakpoint | Script | undefined, dataTransfer: vscode.DataTransfer): Promise<void> => {
+    /**
+     * Handles the drop operation for scripts onto Breakpoints.
+     * @param {Breakpoint | Script | undefined} target - The target Breakpoint for the drop operation.
+     * @param {vscode.DataTransfer} dataTransfer - The data transfer object containing dropped data.
+     */
+    async handleDrop(
+        target: Breakpoint | Script | undefined,
+        dataTransfer: vscode.DataTransfer
+    ): Promise<void> {
         if (target && isBreakpoint(target)) {
             const droppedData: vscode.DataTransferItem | undefined = dataTransfer.get(this.mimeType);
             if (droppedData) {
-                const droppedUris: string = await droppedData.asString(); // Await the data as a string
+                const droppedUris: string = await droppedData.asString();
                 const scriptsToCopy: string[] = JSON.parse(droppedUris) as string[];
                 this.storageManager.assignScriptsToBreakpoint(target as Breakpoint, scriptsToCopy);
                 this.refresh();
             }
         } else {
-            showWarningMessage("Scripts can only be dropped onto breakpoints.");
+            showWarningMessage('Scripts can only be dropped onto breakpoints.');
         }
-    };
-
-    openScripts = (script: Script): void => {
-        const scripts = this.getSelectedItems() as Script[];
-        const uniqueScripts: Set<Script> = new Set([...scripts, script]);
-    
-        uniqueScripts.forEach(async (script: Script) => {
-            const document = await vscode.workspace.openTextDocument(script.uri);
-            vscode.window.showTextDocument(document, { preview: false }); // Ensure each opens in a new tab
-        });
     }
-    
 
+    /**
+     * Opens the specified script in a new editor tab.
+     * @param {Script} script - The script to open.
+     */
+openScripts = (script: Script): void => {
+    const scripts = this.getSelectedItems() as Script[];
+    const uniqueScripts: Set<Script> = new Set([...scripts, script]);
+
+    uniqueScripts.forEach(async (script: Script) => {
+        const document = await vscode.workspace.openTextDocument(script.uri);
+        vscode.window.showTextDocument(document, { preview: false }); // Ensure each opens in a new tab
+    });
+};
+
+
+    /**
+     * Gets the currently selected items from the Tree View.
+     * @returns {(Breakpoint | Script)[]} The currently selected Breakpoints or Scripts.
+     */
     getSelectedItems(): (Breakpoint | Script)[] {
         return Array.from(this.selectedItems);
     }
-    
-    deactivateSelectedItems = (): void => {
+
+    /**
+     * Deactivates all currently selected items in the Tree View.
+     */
+    deactivateSelectedItems(): void {
         this.getSelectedItems().forEach((item: Breakpoint | Script) => {
             this.setElementActivation(item, false);
         });
     }
 
-    activateSelectedItems = (): void => {
+    /**
+     * Activates all currently selected items in the Tree View.
+     */
+    activateSelectedItems(): void {
         this.getSelectedItems().forEach((item: Breakpoint | Script) => {
             this.setElementActivation(item, true);
         });
     }
 
-    removeSelectedItems = (element: Script): void => {
-        const elements: (Breakpoint | Script)[] = [...this.getSelectedItems()];
-        elements.push(element);
-        new Set(elements).forEach((elem: Script | Breakpoint) => {
+    /**
+     * Removes the specified Script from the Tree View.
+     * @param {Script} element - The Script to remove.
+     */
+    removeSelectedItems(element: Script): void {
+        const elements: (Breakpoint | Script)[] = [...this.getSelectedItems(), element];
+        new Set(elements).forEach((elem: Breakpoint | Script) => {
             if (isBreakpoint(elem)) {
-                const bp: Breakpoint = elem as Breakpoint;
+                const bp = elem as Breakpoint;
                 this.storageManager.removeBreakpoint(bp);
                 this.collapsibleStates.delete(bp.id);
                 return;
             }
-            const script: Script = elem as Script;
-            const p: Breakpoint | null = this.getParent(script);
-            p && this.storageManager.removeBreakpointScript(p, script.uri);
+            const script = elem as Script;
+            const parentBreakpoint = this.getParent(script);
+            parentBreakpoint &&
+                this.storageManager.removeBreakpointScript(parentBreakpoint, script.uri);
         });
         this.refresh();
     }
 
-    copyScripts = (): void => {
+    /**
+     * Copies selected scripts and sets the context for them.
+     */
+    copyScripts(): void {
         const selectedScripts: Script[] = this.getSelectedItems() as Script[];
         if (selectedScripts.length) {
             this.copiedScripts = selectedScripts;
@@ -205,7 +315,11 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         }
     }
 
-    runScripts = (script: Script): void => {
+    /**
+     * Runs the provided script along with all selected scripts.
+     * @param {Script} script - The script to execute.
+     */
+    runScripts(script: Script): void {
         if (!_debugger?.activeDebugSession) {
             showWarningMessage('No active debug session.');
             return;
@@ -217,7 +331,11 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         });
     }
 
-    runAllBreakpointScripts = (breakpoint: Breakpoint): void => {
+    /**
+     * Runs all scripts associated with the specified breakpoint.
+     * @param {Breakpoint} breakpoint - The breakpoint whose scripts to run.
+     */
+    runAllBreakpointScripts(breakpoint: Breakpoint): void {
         if (!_debugger?.activeDebugSession) {
             showWarningMessage('No active debug session.');
             return;
@@ -225,46 +343,71 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         if (!breakpoint.linked) {
             showWarningMessage('Breakpoint is not linked to any source file.');
         }
-        evaluateScripts(breakpoint.scripts.map(script => script.uri));
+        evaluateScripts(breakpoint.scripts.map(s => s.uri));
     }
 
-    pasteScripts = (breakpoint: Breakpoint): void => {
+    /**
+     * Pastes the copied scripts into the specified breakpoint.
+     * @param {Breakpoint} breakpoint - The breakpoint to assign copied scripts to.
+     */
+    pasteScripts(breakpoint: Breakpoint): void {
         this.storageManager.assignScriptsToBreakpoint(
-            breakpoint, 
-            this.copiedScripts.map(script => script.uri)
+            breakpoint,
+            this.copiedScripts.map(s => s.uri)
         );
         this.refresh();
     }
 
-    private setCollapsibleState = (element: Breakpoint | Script, state: vscode.TreeItemCollapsibleState): void => {
+    /**
+     * Sets the collapsible state for a given element in the TreeView.
+     * @private
+     * @param {Breakpoint | Script} element - The element for which the collapsible state should be set.
+     * @param {vscode.TreeItemCollapsibleState} state - The collapsible state to assign to the element.
+     */
+    private setCollapsibleState(element: Breakpoint | Script, state: vscode.TreeItemCollapsibleState): void {
         isBreakpoint(element) && this.collapsibleStates.set((element as Breakpoint).id, state);
     }
 
-    createTreeView = (): vscode.TreeView<Breakpoint | Script> => {
-
+    /**
+     * Creates and registers the Tree View for breakpoints.
+     * @returns {vscode.TreeView<Breakpoint | Script>} The created Tree View.
+     */
+    createTreeView(): vscode.TreeView<Breakpoint | Script> {
         const treeView = window.createTreeView('breakpointsView', {
             treeDataProvider: this,
             manageCheckboxStateManually: true,
             dragAndDropController: this,
-            canSelectMany: true
+            canSelectMany: true,
         });
 
-        treeView.onDidChangeSelection(event => {
+        treeView.onDidChangeSelection((event) => {
             const selection: readonly (Breakpoint | Script)[] = event.selection;
             const isMultipleSelect: boolean = selection.length > 1;
-            const breakpointSelected: boolean = selection.some((elem: Breakpoint | Script) => isBreakpoint(elem));
+            const breakpointSelected: boolean = selection.some((elem) =>
+                isBreakpoint(elem)
+            );
             this.selectedItems = new Set(selection);
-            commands.executeCommand('setContext', 'slugger.multipleSelectedItems', isMultipleSelect);
-            commands.executeCommand('setContext', 'slugger.breakpointSelected', breakpointSelected);
+            commands.executeCommand(
+                'setContext',
+                'slugger.multipleSelectedItems',
+                isMultipleSelect
+            );
+            commands.executeCommand(
+                'setContext',
+                'slugger.breakpointSelected',
+                breakpointSelected
+            );
         });
 
-        treeView.onDidChangeCheckboxState((event: vscode.TreeCheckboxChangeEvent<Script | Breakpoint>) => {
-            event.items.forEach(([elem, checked]: [Script | Breakpoint, number]) => {
-                const isChecked: boolean = checked === vscode.TreeItemCheckboxState.Checked;
-                this.setElementActivation(elem, isChecked);
-            });
-        });
-        
+        treeView.onDidChangeCheckboxState(
+            (event: vscode.TreeCheckboxChangeEvent<Script | Breakpoint>) => {
+                event.items.forEach(([elem, checked]: [Script | Breakpoint, number]) => {
+                    const isChecked: boolean = checked === vscode.TreeItemCheckboxState.Checked;
+                    this.setElementActivation(elem, isChecked);
+                });
+            }
+        );
+
         type ExpansionEvent = vscode.TreeViewExpansionEvent<Breakpoint | Script>;
 
         treeView.onDidCollapseElement((event: ExpansionEvent): void => {
@@ -277,8 +420,13 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
         return treeView;
     }
-
+    
+    /**
+     * Delegates the script renaming operation to the CommandHandler.
+     * @param {Script} script - The script to rename.
+     * @returns {Promise<void>}
+     */
     renameSavedScript = async (script: Script): Promise<void> => {
         CommandHandler.instance.renameSavedScript(path.basename(script.uri));
-    }
+    };
 }

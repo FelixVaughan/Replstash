@@ -9,22 +9,57 @@ import {
     evaluateScripts,
 } from './utils';
 import * as vscode from 'vscode';
-class DebugAdapterTracker {
 
+/**
+ * Manages interaction with the debug adapter, including tracking messages and events.
+ * Handles integration with session management, breakpoint management, and script evaluation.
+ * @class DebugAdapterTracker
+ */
+export default class DebugAdapterTracker {
+
+    /**
+     * Manages the related state of the current debugging session.
+     * @type {SessionManager}
+     */
     private sessionManager: SessionManager;
+
+    /**
+     * Handles commands and user interactions.
+     * @type {CommandHandler}
+     */
     private commandHandler: CommandHandler;
+
+    /**
+     * Manages storage and persistence of breakpoints and scripts.
+     * @type {StorageManager}
+     */
     private storageManager: StorageManager;
 
-    constructor(
-        commandHandler: CommandHandler,
-    ) {
+    /**
+     * Initializes a new instance of DebugAdapterTracker.
+     * Sets up event listeners for command handling.
+     * @param {CommandHandler} commandHandler - The command handler instance.
+     */
+    constructor(commandHandler: CommandHandler) {
         this.sessionManager = SessionManager.instance;
-        this.commandHandler = commandHandler;
         this.storageManager = StorageManager.instance;
-        this.commandHandler.on('captureStarted', () => {this.sessionManager.setCapturing(true)});
-        this.commandHandler.on('captureStopped', () => {this.sessionManager.setCapturing(false)});
+        this.commandHandler = commandHandler;
+
+        // Listen for capture events
+        this.commandHandler.on('captureStarted', () => {
+            this.sessionManager.setCapturing(true);
+        });
+        this.commandHandler.on('captureStopped', () => {
+            this.sessionManager.setCapturing(false);
+        });
     }
 
+    /**
+     * Handles incoming messages from the debug adapter.
+     * Processes REPL expressions during captures.
+     * @param {any} message - The message received from the debug adapter.
+     * @returns {Promise<void>}
+     */
     onWillReceiveMessage = async (message: any): Promise<void> => {
         if (this.sessionManager.isCapturing() && message.arguments?.context === 'repl') {
             const expression: string = message.arguments.expression;
@@ -33,13 +68,21 @@ class DebugAdapterTracker {
         }
     };
 
+    /**
+     * Handles messages sent by the debug adapter.
+     * Processes responses, breakpoint stops, and continuation events.
+     * @param {any} message - The message sent by the debug adapter.
+     * @returns {Promise<void>}
+     */
     onDidSendMessage = async (message: any): Promise<void> => {
+        // Handle failed evaluations
         if (this.sessionManager.isCapturing() && message.type === 'response' && message.command === 'evaluate') {
             if (!message?.success) {
                 this.sessionManager.removeBreakpointContent(message.request_seq);
             }
         }
 
+        // Handle breakpoint stops
         if (message.type === 'event' && message.event === 'stopped' && message.body.reason === 'breakpoint') {
             const activeSession = _debugger?.activeDebugSession;
             if (!activeSession) return;
@@ -48,12 +91,12 @@ class DebugAdapterTracker {
                 threadId: message.body.threadId,
             });
 
-            if (stackTraceResponse?.stackFrames.length < 1) return 
+            if (stackTraceResponse?.stackFrames.length < 1) return;
             const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
             const source: string = topFrame.source.path;
             const line: number = topFrame.line;
             const column: number = topFrame.column;
-            const threadId: number = message.body.threadId
+            const threadId: number = message.body.threadId;
 
             const vscodeBreakpoint = _debugger.breakpoints.find((bp) => {
                 if (bp instanceof vscode.SourceBreakpoint) {
@@ -69,6 +112,7 @@ class DebugAdapterTracker {
             const bId: string = vscodeBreakpoint!.id;
             this.sessionManager.addBreakpoint(source, line, column, threadId, bId);
             this.commandHandler.setStoppedOnBreakpoint(true);
+
             if (this.sessionManager.scriptsAreRunnable()) {
                 const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
                 const existingBreakpoint = loadedBreakpoints.find((b: Breakpoint) => b.id === bId);
@@ -77,6 +121,7 @@ class DebugAdapterTracker {
             }
         }
 
+        // Handle continued execution
         if (message.type === 'event' && message.event === 'continued') {
             this.commandHandler.setStoppedOnBreakpoint(false);
             if (this.sessionManager.isCapturing()) {
@@ -84,16 +129,24 @@ class DebugAdapterTracker {
             }
             showInformationMessage('Debugger resumed from breakpoint.');
         }
-
     };
 
-    onError = (error: any) => {
+    /**
+     * Handles errors encountered by the debug adapter.
+     * Logs the error to the console.
+     * @param {any} error - The error encountered.
+     */
+    onError = (error: any): void => {
         console.error(`Debug Adapter Tracker Error: ${error}`);
     };
 
-    onExit = (code: number, signal: any) => {
+    /**
+     * Handles the debug adapter's exit event.
+     * Logs the exit code and signal.
+     * @param {number} code - The exit code of the debug adapter.
+     * @param {any} signal - The signal received by the debug adapter.
+     */
+    onExit = (code: number, signal: any): void => {
         console.log(`Debug Adapter exited with code: ${code}, signal: ${signal}`);
     };
 }
-
-export default DebugAdapterTracker;
