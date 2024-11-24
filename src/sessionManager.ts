@@ -2,7 +2,7 @@ import { _debugger, Breakpoint, refreshTree } from './utils';
 import StorageManager from './storageManager';
 
 /**
- * Manages debugging sessions, breakpoints, and captured session output.
+ * Manages debugging sessions, breakpoints, and captured expression ouputs.
  * @class
  */
 export default class SessionManager {

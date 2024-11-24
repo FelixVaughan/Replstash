@@ -19,5 +19,11 @@
         "titleBar.inactiveForeground": "#e7e7e799"
     },
     "peacock.color": "#174B42",
-    "todo-tree.tree.showBadges": true
+    "todo-tree.tree.showBadges": true,
+    "favorites.resources": [
+        {
+            "filePath": "",
+            "group": "Default"
+        }
+    ]
 }
