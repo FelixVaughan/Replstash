@@ -25,25 +25,21 @@ export default class CommandHandler extends EventEmitter {
     /**
      * Singleton instance of CommandHandler.
      * Ensures only one instance of CommandHandler exists.
-     * @type {CommandHandler | null}
      */
     private static _instance: CommandHandler | null = null;
 
     /**
      * Reference to the SessionManager instance.
-     * @type {SessionManager}
      */
     private sessionManager: SessionManager;
 
     /**
      * Reference to the StorageManager instance.
-     * @type {StorageManager}
      */
     private storageManager: StorageManager;
 
     /**
      * Indicates whether the debugger is paused on a breakpoint.
-     * @type {boolean}
      */
     private pausedOnBreakpoint: boolean;
 
@@ -364,18 +360,6 @@ export default class CommandHandler extends EventEmitter {
             this.storageManager.removeBreakpoint(selectedBreakpoint);
             showInformationMessage(`Deleted: ${selectedBreakpoint.file}`);
         }
-    };
-
-    /**
-     * Activates all scripts associated with the loaded breakpoints.
-     * Iterates over all breakpoints and activates their scripts.
-     * @returns {void}
-     */
-    activateScripts = (): void => {
-        const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
-        breakpoints.forEach((bp: Breakpoint) => {
-            bp.active = true;
-        });
     };
 
     /**

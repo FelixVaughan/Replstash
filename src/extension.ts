@@ -51,7 +51,6 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
         registerCommand('slugger.editSavedScript', commandHandler.openScript),
         registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
-        registerCommand('slugger.loadScripts', commandHandler.activateScripts),
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
         registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
         registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
@@ -93,8 +92,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = (): void => {};
 
 
-//TODO: Minor test -> 30 mins
-//TODO: Clean up package.json - 2 hrs
-//TODO: Long: Test and find issues - 2 hrs
+//TODO: -> Minor test - 30 mins
+//TODO: Clean up package.json 2 hrs
+//TODO: Change save-debug tp save-repl - 1 hr
 //TODO: Publisher name - 1 hr
 //TODO: Create logo - 30 mins
+//TODO: Long: Test and find issues - 2 hrs

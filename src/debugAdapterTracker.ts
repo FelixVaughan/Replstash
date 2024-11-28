@@ -19,19 +19,16 @@ export default class DebugAdapterTracker {
 
     /**
      * Manages the related state of the current debugging session.
-     * @type {SessionManager}
      */
     private sessionManager: SessionManager;
 
     /**
      * Handles commands and user interactions.
-     * @type {CommandHandler}
      */
     private commandHandler: CommandHandler;
 
     /**
      * Manages storage and persistence of breakpoints and scripts.
-     * @type {StorageManager}
      */
     private storageManager: StorageManager;
 

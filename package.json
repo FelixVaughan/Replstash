@@ -82,12 +82,12 @@
       },
       {
         "command": "slugger.enableScriptsRunnable",
-        "title": "Set Scripts Runnable",
+        "title": "Enable Scripts Runnable",
         "category": "Slugger"
       },
       {
         "command": "slugger.disableScriptsRunnable",
-        "title": "Set Scripts Not Runnable",
+        "title": "Disable Scripts Runnable",
         "category": "Slugger"
       },
       {
