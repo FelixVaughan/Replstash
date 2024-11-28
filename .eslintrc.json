@@ -6,21 +6,22 @@
 		"node": true,
 		"mocha": true
 	},
+	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
-		"ecmaVersion": 2018,
-		"ecmaFeatures": {
-			"jsx": true
-		},
-		"sourceType": "module"
+		"ecmaVersion": 2020,
+		"sourceType": "module",
+		"project": "./tsconfig.json"
 	},
+	"plugins": ["@typescript-eslint"],
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/recommended",
+		"plugin:@typescript-eslint/recommended-requiring-type-checking"
+	],
 	"rules": {
-		"no-const-assign": "warn",
-		"no-this-before-super": "warn",
-		"no-undef": "warn",
-		"no-unreachable": "warn",
-		"no-unused-vars": "warn",
-		"constructor-super": "warn",
-		"valid-typeof": "warn"
-	},
-	"extends": ["plugin:prettier/recommended"]
+		"@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+		"@typescript-eslint/no-explicit-any": "warn",
+		"@typescript-eslint/explicit-function-return-type": "off"
+	}
+	
 }

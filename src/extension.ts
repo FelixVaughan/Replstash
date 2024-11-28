@@ -92,8 +92,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = (): void => {};
 
 
+//TODO: Minor test -> merge -> Flatten tree view - 3.5 hr
+//TODO: Clean up package.json - 2 hrs
 //TODO: Long: Test and find issues - 2 hrs
-//TODO: -> Long: Clean up package.json - 2 hrs
-//Flatten tree view - 2 hr
 //TODO: Publisher name - 1 hr
 //TODO: Create logo - 30 mins

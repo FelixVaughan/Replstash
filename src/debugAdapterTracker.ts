@@ -84,13 +84,14 @@ export default class DebugAdapterTracker {
 
         // Handle breakpoint stops
         if (message.type === 'event' && message.event === 'stopped' && message.body.reason === 'breakpoint') {
-            const activeSession = _debugger?.activeDebugSession;
+            const activeSession = _debugger?.activeDebugSession;5
             if (!activeSession) return;
 
             const stackTraceResponse: any = await activeSession.customRequest('stackTrace', {
                 threadId: message.body.threadId,
             });
 
+            // Get the top frame of the stack and its location metadata
             if (stackTraceResponse?.stackFrames.length < 1) return;
             const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
             const source: string = topFrame.source.path;
@@ -98,6 +99,7 @@ export default class DebugAdapterTracker {
             const column: number = topFrame.column;
             const threadId: number = message.body.threadId;
 
+            //Get the vscode breakpoint currently hit using the location metadata
             const vscodeBreakpoint = _debugger.breakpoints.find((bp) => {
                 if (bp instanceof vscode.SourceBreakpoint) {
                     return (
@@ -109,11 +111,17 @@ export default class DebugAdapterTracker {
                 return false;
             });
 
+            // Add the breakpoint to the session manager
             const bId: string = vscodeBreakpoint!.id;
             this.sessionManager.addBreakpoint(source, line, column, threadId, bId);
             this.commandHandler.setStoppedOnBreakpoint(true);
 
             if (this.sessionManager.scriptsAreRunnable()) {
+                
+                /**
+                 * Find the possibly existing breakpoint in the storage manager,
+                 * run its active scripts
+                 */
                 const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
                 const existingBreakpoint = loadedBreakpoints.find((b: Breakpoint) => b.id === bId);
                 const scripts: Script[] = existingBreakpoint?.scripts || [];
