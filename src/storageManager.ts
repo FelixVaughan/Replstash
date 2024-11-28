@@ -126,10 +126,10 @@ export default class StorageManager {
         const loadedBreakpoints = this.loadBreakpoints();
         const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
         if (existingBreakpoint) {
-            existingBreakpoint.scripts.push({ uri: fullPath, active: false });
+            existingBreakpoint.scripts.push({ uri: fullPath, active: false, bId: bp.id });
             existingBreakpoint.modifiedAt = getCurrentTimestamp();
         } else {
-            bp.scripts.push({ uri: fullPath, active: true });
+            bp.scripts.push({ uri: fullPath, active: true, bId: bp.id });
             bp.createdAt = getCurrentTimestamp();
             loadedBreakpoints.push(bp);
         }
@@ -386,7 +386,7 @@ export default class StorageManager {
                     return !bp.scripts.some((s: Script) => s.uri === uri);
                 });
                 bp.scripts.push(
-                    ...newScripts.map((uri) => ({ uri, active: false }))
+                    ...newScripts.map((uri) => ({ uri, active: false, bId: bp.id }))
                 );
             }
             return bp;

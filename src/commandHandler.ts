@@ -73,7 +73,7 @@ export default class CommandHandler extends EventEmitter {
      * Emits `captureStarted` if successful.
      * @returns {void}
      */
-    startCapture(): void {
+    startCapture = (): void => {
         const activeSession: vscode.DebugSession = _debugger.activeDebugSession!;
         let err_msg = "";
         if (!activeSession) err_msg = 'No active debug session.';
@@ -94,7 +94,7 @@ export default class CommandHandler extends EventEmitter {
      * Pauses capturing of console input.
      * @returns {void}
      */
-    pauseCapture(): void {
+    pauseCapture =(): void => {
         if (this.sessionManager.capturePaused()) {
             showWarningMessage('Capture already paused.');
             return;
@@ -122,7 +122,7 @@ export default class CommandHandler extends EventEmitter {
      * Discards the currently captured console input.
      * @returns {Promise<void>}
      */
-    async discardCapture(): Promise<void> {
+    discardCapture = async (): Promise<void> => {
         if (!this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
@@ -138,7 +138,7 @@ export default class CommandHandler extends EventEmitter {
      * @param {boolean} [autoSave=false] Whether to auto-save the captured input.
      * @returns {Promise<void>}
      */
-    async stopCapture(autoSave: boolean = false): Promise<void> {
+    stopCapture = async (autoSave: boolean = false): Promise<void> => {
         if (!this.sessionManager.capturePaused() && !this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
@@ -235,7 +235,7 @@ export default class CommandHandler extends EventEmitter {
      * Clears all captured console input.
      * @returns {Promise<void>}
      */
-    async clearCapture(): Promise<void> {
+    clearCapture = async (): Promise<void> => {
         if (!this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;
@@ -248,7 +248,7 @@ export default class CommandHandler extends EventEmitter {
      * Clears the last entered expression from the capture session.
      * @returns {Promise<void>}
      */
-    async clearLastExpression(): Promise<void> {
+    clearLastExpression = async (): Promise<void> => {
         if (!this.sessionManager.isCapturing()) {
             showWarningMessage('Not capturing console input.');
             return;

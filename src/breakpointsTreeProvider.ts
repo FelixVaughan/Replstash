@@ -62,6 +62,12 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      */
     private copiedScripts: Script[] = [];
 
+
+    /**
+     * Boolean to indicate whether the TreeView is flattened or hierarchical.
+     */
+    private isFlattened: boolean = false
+
     /**
      * MIME type for TreeView drag-and-drop operations.
      * Specifies the type of data that can be dragged or dropped within the TreeView.
@@ -78,8 +84,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * MIME types supported for dropping items into the TreeView.
      * Ensures dropped data matches the expected format.
      */
+    readonly dropMimeTypes = [this.mimeType];
 
-readonly dropMimeTypes = [this.mimeType];
     /**
      * Private constructor to enforce the singleton pattern.
      */
@@ -105,7 +111,18 @@ readonly dropMimeTypes = [this.mimeType];
         this._onDidChangeTreeData.fire(undefined);
     }
 
+
     /**
+     * Toggles the Tree View between hierarchical and flattened modes.
+     */
+    toggleFlattenedView = (): void => {
+        this.isFlattened = !this.isFlattened;
+        this.refresh();
+    };
+
+    /**
+     * @inheritdoc
+     * 
      * Retrieves a Tree Item representation of the given element (Breakpoint or Script).
      * @param {Breakpoint | Script} element - The element to create the Tree Item for.
      * @returns {vscode.TreeItem} A VS Code Tree Item with properties such as label, icon, and command.
@@ -115,10 +132,13 @@ readonly dropMimeTypes = [this.mimeType];
             'uri' in element ? element.uri : element.file
         );
 
+        const describe = (bp: Breakpoint) => 
+            `${path.dirname(bp.file)}@Ln ${bp.line}, Col ${bp.column} - (${bp.scripts.length})`;
+    
         treeItem.checkboxState = element.active
             ? vscode.TreeItemCheckboxState.Checked
             : vscode.TreeItemCheckboxState.Unchecked;
-
+    
         if (isBreakpoint(element)) {
             const breakpoint = element as Breakpoint;
             const iconColor = !breakpoint.linked
@@ -130,7 +150,7 @@ readonly dropMimeTypes = [this.mimeType];
             treeItem.contextValue = 'breakpoint';
             treeItem.label = path.basename(breakpoint.file);
             treeItem.tooltip = !breakpoint.linked ? 'Unlinked' : breakpoint.active ? 'Active' : 'Inactive';
-            treeItem.description = `${path.dirname(breakpoint.file)}@Ln ${breakpoint.line}, Col ${breakpoint.column} - (${breakpoint.scripts.length})`;
+            treeItem.description = describe(breakpoint);
             const position = new vscode.Position(Math.max(breakpoint.line - 1, 0), 0);
             treeItem.command = {
                 command: 'vscode.open',
@@ -143,37 +163,75 @@ readonly dropMimeTypes = [this.mimeType];
                     }
                 ]
             };
-        }else {
-            const script = element as Script
+        } else {
+            const script = element as Script;
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
             treeItem.contextValue = 'script';
             treeItem.label = path.basename(script.uri);
+
+            if (this.isFlattened) {
+                const parentBreakpoint: Breakpoint | null = this._getParent(script);
+                treeItem.description = parentBreakpoint ? describe(parentBreakpoint) : '';
+            }
+
             const iconColor = script.active ? 'charts.green' : 'errorForeground';
             treeItem.iconPath = new vscode.ThemeIcon('file-code', new vscode.ThemeColor(iconColor));
         }
+    
         return treeItem;
     }
+    
 
     /**
-     * Retrieves the children of the given Breakpoint element or the top-level Breakpoints.
+     * @inheritdoc
+     * 
+     * If hierarchical, returns the children of the given Breakpoint element.
+     * If flattened, returns all scripts from all Breakpoints.
      * @param {Breakpoint} [element] - The parent Breakpoint to fetch children for.
      * @returns {Thenable<Breakpoint[] | Script[]>} A promise resolving to the list of children.
      */
     getChildren(element?: Breakpoint): Thenable<Breakpoint[] | Script[]> {
+
+        if(this.isFlattened){
+            // Return all scripts if the flattened view is enabled
+            const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+            const allScripts: Script[] = breakpoints.flatMap(bp => bp.scripts);
+            return Promise.resolve(allScripts);
+        }
+
         if (!element) {
+            // Return top-level breakpoints in the hierarchical view
             return Promise.resolve(this.storageManager.loadBreakpoints());
         }
+
+        // Return top-level breakpoints in the hierarchical view
         return Promise.resolve(element.scripts);
     }
 
     /**
      * Retrieves the parent Breakpoint for the given Script.
-     * @param {Script} element - The Script for which to find the parent Breakpoint.
+     * @param {Script} script - The Script for which to find the parent Breakpoint.
      * @returns {Breakpoint | null} The parent Breakpoint or `null` if not found.
      */
-    getParent(element: Script): Breakpoint | null {
+    private _getParent(script: Script): Breakpoint | null {
         const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
-        return breakpoints.find((bp) => bp.scripts.includes(element)) || null;
+        return breakpoints.find(bp => bp.scripts.some(s => s.uri === script.uri)) || null;
+    }
+
+    /**
+     * @inheritdoc
+     * 
+     * Retrieves the parent Breakpoint for the given Script if not flattened.
+     * @param {Script} script - The Script for which to find the parent Breakpoint.
+     * @returns {Breakpoint | null} The parent Breakpoint or `null` if not found.
+     */
+    getParent(script: Script): Breakpoint | null {
+        
+        if (this.isFlattened) {
+            return null;
+        }
+
+        return this._getParent(script);
     }
 
     /**
@@ -181,7 +239,7 @@ readonly dropMimeTypes = [this.mimeType];
      * @param {Breakpoint | Script} element - The element to activate or deactivate.
      * @param {boolean} [status] - The desired activation status. If not provided, toggles the current state.
      */
-    setElementActivation(element: Breakpoint | Script, status?: boolean): void {
+    setElementActivation = (element: Breakpoint | Script, status?: boolean): void => {
         const statusValue: boolean = status !== undefined ? status : !element.active;
 
         if (isBreakpoint(element)) {
@@ -189,7 +247,7 @@ readonly dropMimeTypes = [this.mimeType];
             this.storageManager.changeBreakpointActivation(breakpoint, statusValue);
         } else {
             const script = element as Script;
-            const parentBreakpoint = this.getParent(script);
+            const parentBreakpoint = this._getParent(script);
             if (parentBreakpoint) {
                 this.storageManager.changeScriptActivation(parentBreakpoint, script, statusValue);
             }
@@ -267,7 +325,7 @@ openScripts = (script: Script): void => {
     /**
      * Deactivates all currently selected items in the Tree View.
      */
-    deactivateSelectedItems(): void {
+    deactivateSelectedItems = () :void => {
         this.getSelectedItems().forEach((item: Breakpoint | Script) => {
             this.setElementActivation(item, false);
         });
@@ -276,7 +334,7 @@ openScripts = (script: Script): void => {
     /**
      * Activates all currently selected items in the Tree View.
      */
-    activateSelectedItems(): void {
+    activateSelectedItems = () :void => {
         this.getSelectedItems().forEach((item: Breakpoint | Script) => {
             this.setElementActivation(item, true);
         });
@@ -286,7 +344,7 @@ openScripts = (script: Script): void => {
      * Removes the specified Script from the Tree View.
      * @param {Script} element - The Script to remove.
      */
-    removeSelectedItems(element: Script): void {
+    removeSelectedItems = (element: Script): void => {
         const elements: (Breakpoint | Script)[] = [...this.getSelectedItems(), element];
         new Set(elements).forEach((elem: Breakpoint | Script) => {
             if (isBreakpoint(elem)) {
@@ -296,7 +354,7 @@ openScripts = (script: Script): void => {
                 return;
             }
             const script = elem as Script;
-            const parentBreakpoint = this.getParent(script);
+            const parentBreakpoint = this._getParent(script);
             parentBreakpoint &&
                 this.storageManager.removeBreakpointScript(parentBreakpoint, script.uri);
         });

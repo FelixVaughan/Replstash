@@ -19,6 +19,7 @@ export interface Script {
     uri: string;
     /** Indicates whether the script is active. */
     active: boolean;
+    bId: string;
 }
 
 /**

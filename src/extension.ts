@@ -73,6 +73,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.removeBreakpointScripts', breakpointsTreeProvider.removeSelectedItems),
         registerCommand('slugger.runAllBreakpointScripts', breakpointsTreeProvider.runAllBreakpointScripts),
         registerCommand('slugger.treeRenameSavedScript', breakpointsTreeProvider.renameSavedScript),
+        registerCommand('slugger.toggleTreeViewMode', breakpointsTreeProvider.toggleFlattenedView),
     ];
 
     // Set the initial context for scripts' runnability
@@ -92,7 +93,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = (): void => {};
 
 
-//TODO: Minor test -> merge -> Flatten tree view - 3.5 hr
+//TODO: Minor test -> 30 mins
 //TODO: Clean up package.json - 2 hrs
 //TODO: Long: Test and find issues - 2 hrs
 //TODO: Publisher name - 1 hr

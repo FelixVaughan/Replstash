@@ -154,9 +154,22 @@
         "command": "slugger.treeRenameSavedScript",
         "title": "Rename",
         "enablement": "view == breakpointsView && !slugger.multipleSelectedItems"
+      },
+      {
+        "command": "slugger.toggleTreeViewMode",
+        "title": "Toggle View Mode",
+        "icon": "$(list-tree)"
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "slugger.toggleTreeViewMode",
+          "when": "view == breakpointsView",
+          "group": "navigation"
+        }
+      ],
+
       "view/item/context": [
         {
           "command": "slugger.toggleElementActive",
