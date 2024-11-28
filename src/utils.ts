@@ -74,6 +74,8 @@ export interface LabeledItem {
     label: any;
     /** Description text for the item. */
     description: string;
+    /** Unique idetifier*/
+    id: string;
 }
 
 /** Show a warning message in the VS Code UI. */

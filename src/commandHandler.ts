@@ -40,7 +40,7 @@ export default class CommandHandler extends EventEmitter {
 
     /**
      * Indicates whether the debugger is paused on a breakpoint.
-     */
+     */ 
     private pausedOnBreakpoint: boolean;
 
     /**
@@ -212,7 +212,8 @@ export default class CommandHandler extends EventEmitter {
         const selectedScript: LabeledItem | undefined = await window.showQuickPick(
             scriptsMetaData.map((meta) => ({
                 label: meta.fileName,
-                description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`
+                description: `Created: ${meta.createdAt} | Modified: ${meta.modifiedAt} | Size: ${meta.size} bytes`,
+                id: meta.fileName
             })),
             {
                 placeHolder: 'Select a saved captured script to edit',
@@ -224,7 +225,7 @@ export default class CommandHandler extends EventEmitter {
             showInformationMessage('No script selected.');
             return;
         }
-        return selectedScript.label;
+        return selectedScript.id;
     }
 
     /**
@@ -277,8 +278,9 @@ export default class CommandHandler extends EventEmitter {
         // Present a quick pick UI for selecting a breakpoint
         const selectedBreakpoint: LabeledItem | undefined = await window.showQuickPick(
             breakpoints.map((bp: Breakpoint) => ({
-                label: bp.id,
-                description: `File: ${bp.file} | Line: ${bp.line} | Column: ${bp.column}`
+                label: bp.file,
+                description: `Line: ${bp.line} | Column: ${bp.column}`,
+                id: bp.id
             })),
             {
                 placeHolder: 'Select a breakpoint to assign scripts',
@@ -293,7 +295,7 @@ export default class CommandHandler extends EventEmitter {
         }
 
         // Find and return the selected breakpoint
-        return breakpoints.find((bp: Breakpoint) => bp.id === selectedBreakpoint.label);
+        return breakpoints.find((bp: Breakpoint) => bp.id === selectedBreakpoint.id);
     };
 
     /**

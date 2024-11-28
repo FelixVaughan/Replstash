@@ -98,3 +98,9 @@ export const deactivate = (): void => {};
 //TODO: Publisher name - 1 hr
 //TODO: Create logo - 30 mins
 //TODO: Long: Test and find issues - 2 hrs
+
+
+/**
+ * TEST ISSUES:
+ * 1. Line description in treeview for breakpoint not always accurate
+ */
