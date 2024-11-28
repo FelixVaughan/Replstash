@@ -103,4 +103,5 @@ export const deactivate = (): void => {};
 /**
  * TEST ISSUES:
  * 1. Line description in treeview for breakpoint not always accurate
+ * 2. Add caputure state in bottom bar
  */
