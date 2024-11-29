@@ -102,6 +102,9 @@ export const deactivate = (): void => {};
 
 /**
  * TEST ISSUES:
- * 1. Line description in treeview for breakpoint not always accurate
+ * 1. Ln description in treeview for breakpoint not always accurate
  * 2. Add caputure state in bottom bar
+ * 3. Empty scripts sometimes not removed
+ * 4. Renaming one script affects all with the same name
+ * 5. When flattened view, entries should be sorted by name and description
  */

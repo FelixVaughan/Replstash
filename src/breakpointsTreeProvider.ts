@@ -364,7 +364,7 @@ openScripts = (script: Script): void => {
     /**
      * Copies selected scripts and sets the context for them.
      */
-    copyScripts(): void {
+    copyScripts = (): void => {
         const selectedScripts: Script[] = this.getSelectedItems() as Script[];
         if (selectedScripts.length) {
             this.copiedScripts = selectedScripts;
@@ -377,7 +377,7 @@ openScripts = (script: Script): void => {
      * Runs the provided script along with all selected scripts.
      * @param {Script} script - The script to execute.
      */
-    runScripts(script: Script): void {
+    runScripts = (script: Script): void => {
         if (!_debugger?.activeDebugSession) {
             showWarningMessage('No active debug session.');
             return;
@@ -393,7 +393,7 @@ openScripts = (script: Script): void => {
      * Runs all scripts associated with the specified breakpoint.
      * @param {Breakpoint} breakpoint - The breakpoint whose scripts to run.
      */
-    runAllBreakpointScripts(breakpoint: Breakpoint): void {
+    runAllBreakpointScripts = (breakpoint: Breakpoint): void => {
         if (!_debugger?.activeDebugSession) {
             showWarningMessage('No active debug session.');
             return;
@@ -408,7 +408,7 @@ openScripts = (script: Script): void => {
      * Pastes the copied scripts into the specified breakpoint.
      * @param {Breakpoint} breakpoint - The breakpoint to assign copied scripts to.
      */
-    pasteScripts(breakpoint: Breakpoint): void {
+    pasteScripts = (breakpoint: Breakpoint): void => {
         this.storageManager.assignScriptsToBreakpoint(
             breakpoint,
             this.copiedScripts.map(s => s.uri)
