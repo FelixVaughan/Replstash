@@ -54,7 +54,6 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
         registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
         registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
-        registerCommand('slugger.assignScriptsToBreakpoint', commandHandler.assignScriptsToBreakpoint),
         registerCommand('slugger.deleteBreakpoint', commandHandler.deleteBreakpoint),
         registerCommand('slugger.clearCapture', commandHandler.clearCapture),
         registerCommand('slugger.clearLastExp', commandHandler.clearLastExpression),

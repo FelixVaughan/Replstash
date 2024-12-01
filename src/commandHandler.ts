@@ -13,7 +13,7 @@ import {
     showWarningMessage,
     showInformationMessage,
     getCurrentTimestamp,
-    isValidFilename
+    InvalidReason
 } from './utils';
 
 /**
@@ -153,18 +153,23 @@ export default class CommandHandler extends EventEmitter {
                         `${getCurrentTimestamp()}`;
 
         let fileName: string | undefined;
-        let invalidReason: string = "";
+        let invalidReason: InvalidReason = InvalidReason.None;
 
         // Prompt the user for a file name until valid input (optional back-out)
         while (true) {
+
             if (autoSave) {
                 fileName = defaultFileName;
+                this.storageManager.saveCaptureContent(
+                    currentBreakpoint, 
+                    defaultFileName
+                );
                 break;
             }
 
             // Show an input box for the user to enter a file name
             fileName = await window.showInputBox({
-                prompt: invalidReason || 'Save console input:',
+                prompt: invalidReason === InvalidReason.None ? 'Save console input:' : invalidReason,
                 value: defaultFileName,
                 placeHolder: defaultFileName
             });
@@ -178,21 +183,17 @@ export default class CommandHandler extends EventEmitter {
             // Validate the file name
             fileName = fileName.trim();
 
-            if (this.storageManager.fileExists(fileName)) {
-                invalidReason = `File already exists: ${fileName}`;
-                continue;
-            }
+            invalidReason = this.storageManager.saveCaptureContent(
+                currentBreakpoint, 
+                fileName
+            );
 
-            if (!isValidFilename(fileName)) {
-                invalidReason = 'Invalid file name.';
-                continue;
+            if (invalidReason === null) {
+                break;
             }
-
-            break;
         }
 
         this.captureTerminationSignal();
-        this.storageManager.saveBreakpoint(currentBreakpoint, fileName);
         this.sessionManager.clearCapture();
         const action = await showInformationMessage(`Stopped capture: ${fileName}`, 'Open File');
         action === 'Open File' && this.storageManager.openScript(fileName);
@@ -202,7 +203,7 @@ export default class CommandHandler extends EventEmitter {
      * Selects a script file from available saved scripts using the QuickPick UI.
      * @returns {Promise<string | void>} The selected script file name, or void if canceled.
      */
-    private async selectScript(): Promise<string | void> {
+    private async  selectScript(): Promise<string | void> {
         const scriptsMetaData: ScriptsMetaData[] = this.storageManager.scriptMetaData();
         if (!scriptsMetaData.length) {
             showInformationMessage('No saved breakpoints found.');
@@ -433,21 +434,6 @@ export default class CommandHandler extends EventEmitter {
         this.sessionManager.setScriptsRunnable(runnable);
         commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
         showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
-    };
-
-    /**
-     * Assigns a script to a breakpoint.
-     * Prompts the user to select a script and a breakpoint, then links them.
-     * @returns {Promise<void>}
-     */
-    assignScriptsToBreakpoint = async (): Promise<void> => {
-        const selected: string | void = await this.selectScript();
-        if (!selected) return;
-
-        const selectedBreakpoint: Breakpoint | void = await this.selectBreakpoint();
-        if (!selectedBreakpoint) return;
-
-        this.storageManager.assignScriptsToBreakpoint(selectedBreakpoint, [selected]);
     };
 
 }

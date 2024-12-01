@@ -91,11 +91,6 @@
         "category": "Slugger"
       },
       {
-        "command": "slugger.assignScriptsToBreakpoint",
-        "title": "Assign Scripts to Breakpoint",
-        "category": "Slugger"
-      },
-      {
         "command": "slugger.deleteBreakpoint",
         "title": "Delete Slug Breakpoint",
         "category": "Slugger"

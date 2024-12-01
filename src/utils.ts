@@ -23,6 +23,18 @@ export interface Script {
 }
 
 /**
+ * InvalidSaveError thrown when a capture save is unsuccessful 
+ */
+
+export enum InvalidReason {
+    InvalidFileName = 'Invalid file name',
+    InvalidContent = 'Invalid content',
+    FileExists = 'File already exist',
+    None = 'None'
+}
+
+
+/**
  * Represents a breakpoint in the code with associated metadata.
  */
 export interface Breakpoint {
@@ -162,18 +174,6 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
     } catch (error) {
         showWarningMessage('An error occurred');
     }
-};
-
-/**
- * Validates a filename against reserved names and invalid characters.
- * 
- * @param name - The filename to validate.
- * @returns {boolean} True if the filename is valid, false otherwise.
- */
-export const isValidFilename = (name: string): boolean => {
-    const invalidChars: RegExp = /[<>:"\/\\|?*\x00-\x1F]/g;
-    const reservedNames: RegExp = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
-    return !invalidChars.test(name) && !reservedNames.test(name) && name.length <= 255;
 };
 
 /**

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import fs from 'fs';
 import path from 'path';
-import { Breakpoint, ScriptsMetaData, isValidFilename } from './utils';
+import { Breakpoint, ScriptsMetaData } from './utils';
 import {
     window,
     Script,
@@ -9,6 +9,7 @@ import {
     showInformationMessage,
     getCurrentTimestamp,
     showErrorMessage,
+    InvalidReason,
 } from './utils';
 
 /**
@@ -96,15 +97,40 @@ export default class StorageManager {
     }
 
     /**
+     * Validates a filename against reserved names and invalid characters.
+     * 
+     * @param name - The filename to validate.
+     * @returns {boolean} True if the filename is valid, false otherwise.
+     */
+    isValidFilename (name: string): boolean {
+        const invalidChars: RegExp = /[<>:"\/\\|?*\x00-\x1F]/g;
+        const reservedNames: RegExp = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+        return !invalidChars.test(name) && !reservedNames.test(name) && name.length <= 255;
+    };
+
+    /**
      * Saves a breakpoint and its content to a file.
      * @param {Breakpoint} bp - The breakpoint to save.
      * @param {string} fileName - The name of the file to save the breakpoint content in.
      */
-    saveBreakpoint(bp: Breakpoint, fileName: string): void {
-        const content = Object.values(bp.content).join('\n');
+    saveCaptureContent(
+        bp: Breakpoint, 
+        fileName: string, 
+        content: string | null = null
+    ): InvalidReason {
+
+        if (!this.isValidFilename(fileName)) {
+            return InvalidReason.InvalidFileName;
+        }
+        if (this.fileExists(fileName)) {
+            return InvalidReason.FileExists;
+        }
+
+        content = content || Object.values(bp.content).join('\n');
         const fullPath = path.join(this.storagePath, 'scripts', fileName);
         this.saveToFile(fullPath, content);
         this.upsertBreakpointScripts(bp, fullPath);
+        return InvalidReason.None;
     }
 
     /**
@@ -210,7 +236,7 @@ export default class StorageManager {
         const [oldUri, newUri] = [oldFilename, newFilename].map((filename) =>
             path.join(this.storagePath, 'scripts', filename)
         );
-        if (!isValidFilename(newFilename)) {
+        if (!this.isValidFilename(newFilename)) {
             showErrorMessage(`Invalid filename: ${newFilename}`);
             return;
         }
@@ -373,7 +399,7 @@ export default class StorageManager {
     }
 
     /**
-     * Assigns scripts to a specific breakpoint.
+     * Copy scripts to a specific breakpoint.
      * Filters out scripts that are already assigned and updates the breakpoint's script list.
      * @param {Breakpoint} breakpoint - The breakpoint to update.
      * @param {string[]} scripts - The URIs of the scripts to assign.
@@ -385,9 +411,20 @@ export default class StorageManager {
                 const newScripts = scripts.filter((uri) => {
                     return !bp.scripts.some((s: Script) => s.uri === uri);
                 });
-                bp.scripts.push(
-                    ...newScripts.map((uri) => ({ uri, active: false, bId: bp.id }))
-                );
+                
+                /**
+                 * For each new script, copy the content to a new file 
+                 * and add the new file to the breakpoint
+                 */
+                newScripts.forEach((uri) => {
+                    const content: string | null = this.getScriptContent(uri);
+                    if (content) {
+                        const newFileName = `${path.basename(uri)} - copy - ${getCurrentTimestamp()}`;
+                        this.saveCaptureContent(breakpoint, newFileName, content);
+                    }
+                });
+
+
             }
             return bp;
         });

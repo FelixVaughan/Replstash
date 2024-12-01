@@ -286,17 +286,24 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         target: Breakpoint | Script | undefined,
         dataTransfer: vscode.DataTransfer
     ): Promise<void> {
-        if (target && isBreakpoint(target)) {
+        if (!target) return;
+
+        const breakpointTarget = (
+            isBreakpoint(target)
+                ? target
+                : this._getParent(target as Script)
+        ) as Breakpoint | null;
+        
+        if (breakpointTarget) {
             const droppedData: vscode.DataTransferItem | undefined = dataTransfer.get(this.mimeType);
             if (droppedData) {
                 const droppedUris: string = await droppedData.asString();
                 const scriptsToCopy: string[] = JSON.parse(droppedUris) as string[];
-                this.storageManager.assignScriptsToBreakpoint(target as Breakpoint, scriptsToCopy);
-                this.refresh();
+                this.storageManager.assignScriptsToBreakpoint(breakpointTarget, scriptsToCopy);
             }
-        } else {
-            showWarningMessage('Scripts can only be dropped onto breakpoints.');
         }
+
+        this.refresh();
     }
 
     /**
