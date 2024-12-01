@@ -274,6 +274,7 @@ export default class StorageManager {
             }
             return bp;
         });
+        this.deleteScript(path.basename(uri));
         this.updateBreakpoints(updatedBreakpoints);
     }
 

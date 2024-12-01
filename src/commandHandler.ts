@@ -432,7 +432,7 @@ export default class CommandHandler extends EventEmitter {
      */
     setScriptRunnable = async (runnable: boolean): Promise<void> => {
         this.sessionManager.setScriptsRunnable(runnable);
-        commands.executeCommand('setContext', 'slugger.scriptsRunnable', runnable);
+        commands.executeCommand('setContext', 'replStash.scriptsRunnable', runnable);
         showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
     };
 

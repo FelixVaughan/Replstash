@@ -46,36 +46,36 @@ export const activate = (context: vscode.ExtensionContext): void => {
     // List of commands registered in the extension
     const disposableCommands: Disposable[] = [
         // Command palette commands
-        registerCommand('slugger.startCapture', commandHandler.startCapture),
-        registerCommand('slugger.stopCapture', commandHandler.stopCapture),
-        registerCommand('slugger.pauseCapture', commandHandler.pauseCapture),
-        registerCommand('slugger.editSavedScript', commandHandler.openScript),
-        registerCommand('slugger.deleteSavedScript', commandHandler.deleteSavedScript),
-        registerCommand('slugger.purgeBreakpoints', commandHandler.purgeBreakpoints),
-        registerCommand('slugger.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
-        registerCommand('slugger.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
-        registerCommand('slugger.deleteBreakpoint', commandHandler.deleteBreakpoint),
-        registerCommand('slugger.clearCapture', commandHandler.clearCapture),
-        registerCommand('slugger.clearLastExp', commandHandler.clearLastExpression),
-        registerCommand('slugger.discardCapture', commandHandler.discardCapture),
-        registerCommand('slugger.renameSavedScript', commandHandler.renameSavedScript),
-        registerCommand('slugger.purgeScripts', commandHandler.purgeScripts),
+        registerCommand('replStash.startCapture', commandHandler.startCapture),
+        registerCommand('replStash.stopCapture', commandHandler.stopCapture),
+        registerCommand('replStash.pauseCapture', commandHandler.pauseCapture),
+        registerCommand('replStash.editSavedScript', commandHandler.openScript),
+        registerCommand('replStash.deleteSavedScript', commandHandler.deleteSavedScript),
+        registerCommand('replStash.purgeBreakpoints', commandHandler.purgeBreakpoints),
+        registerCommand('replStash.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
+        registerCommand('replStash.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
+        registerCommand('replStash.deleteBreakpoint', commandHandler.deleteBreakpoint),
+        registerCommand('replStash.clearCapture', commandHandler.clearCapture),
+        registerCommand('replStash.clearLastExp', commandHandler.clearLastExpression),
+        registerCommand('replStash.discardCapture', commandHandler.discardCapture),
+        registerCommand('replStash.renameSavedScript', commandHandler.renameSavedScript),
+        registerCommand('replStash.purgeScripts', commandHandler.purgeScripts),
         // Tree view commands
-        registerCommand('slugger.toggleElementActive', breakpointsTreeProvider.setElementActivation),
-        registerCommand('slugger.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),
-        registerCommand('slugger.activateSelected', breakpointsTreeProvider.activateSelectedItems),
-        registerCommand('slugger.copyScripts', breakpointsTreeProvider.copyScripts),
-        registerCommand('slugger.pasteScripts', breakpointsTreeProvider.pasteScripts),
-        registerCommand('slugger.openScripts', breakpointsTreeProvider.openScripts),
-        registerCommand('slugger.runScripts', breakpointsTreeProvider.runScripts),
-        registerCommand('slugger.removeBreakpointScripts', breakpointsTreeProvider.removeSelectedItems),
-        registerCommand('slugger.runAllBreakpointScripts', breakpointsTreeProvider.runAllBreakpointScripts),
-        registerCommand('slugger.treeRenameSavedScript', breakpointsTreeProvider.renameSavedScript),
-        registerCommand('slugger.toggleTreeViewMode', breakpointsTreeProvider.toggleFlattenedView),
+        registerCommand('replStash.toggleElementActive', breakpointsTreeProvider.setElementActivation),
+        registerCommand('replStash.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),
+        registerCommand('replStash.activateSelected', breakpointsTreeProvider.activateSelectedItems),
+        registerCommand('replStash.copyScripts', breakpointsTreeProvider.copyScripts),
+        registerCommand('replStash.pasteScripts', breakpointsTreeProvider.pasteScripts),
+        registerCommand('replStash.openScripts', breakpointsTreeProvider.openScripts),
+        registerCommand('replStash.runScripts', breakpointsTreeProvider.runScripts),
+        registerCommand('replStash.removeBreakpointScripts', breakpointsTreeProvider.removeSelectedItems),
+        registerCommand('replStash.runAllBreakpointScripts', breakpointsTreeProvider.runAllBreakpointScripts),
+        registerCommand('replStash.treeRenameSavedScript', breakpointsTreeProvider.renameSavedScript),
+        registerCommand('replStash.toggleTreeViewMode', breakpointsTreeProvider.toggleFlattenedView),
     ];
 
     // Set the initial context for scripts' runnability
-    commands.executeCommand('setContext', 'slugger.scriptsRunnable', false);
+    commands.executeCommand('setContext', 'replStash.scriptsRunnable', false);
 
     // Add disposables and other subscriptions to the extension's lifecycle
     context.subscriptions.push(
@@ -91,18 +91,18 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = (): void => {};
 
 
-//TODO: -> Minor test - 30 mins
-//TODO: Clean up package.json 2 hrs
-//TODO: Change save-debug tp save-repl - 1 hr
+//TODO: -> Clean up package.json 2 hrs
+    //delete unused dependencies and commands
+    //Setup and test command shortcuts
+//TODO: -> Create logo - 30 mins
 //TODO: Publisher name - 1 hr
-//TODO: Create logo - 30 mins
 //TODO: Long: Test and find issues - 2 hrs
 
 
 /**
  * TEST ISSUES:
  * 1. Ln description in treeview for breakpoint not always accurate
- * 2. Add caputure state in bottom bar
+ * 2. Add capture state in bottom bar
  * 3. Empty scripts sometimes not removed
  * 4. Renaming one script affects all with the same name
  * 5. When flattened view, entries should be sorted by name and description

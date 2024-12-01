@@ -376,7 +376,7 @@ openScripts = (script: Script): void => {
         if (selectedScripts.length) {
             this.copiedScripts = selectedScripts;
             const nonEmpty: boolean = selectedScripts.length > 0;
-            commands.executeCommand('setContext', 'slugger.hasCopiedScripts', nonEmpty);
+            commands.executeCommand('setContext', 'replStash.hasCopiedScripts', nonEmpty);
         }
     }
 
@@ -454,12 +454,12 @@ openScripts = (script: Script): void => {
             this.selectedItems = new Set(selection);
             commands.executeCommand(
                 'setContext',
-                'slugger.multipleSelectedItems',
+                'replStash.multipleSelectedItems',
                 isMultipleSelect
             );
             commands.executeCommand(
                 'setContext',
-                'slugger.breakpointSelected',
+                'replStash.breakpointSelected',
                 breakpointSelected
             );
         });
