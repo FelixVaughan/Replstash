@@ -105,5 +105,4 @@ export const deactivate = (): void => {};
  * - Empty scripts sometimes not removed
  * - When flattened view, entries should be sorted by name and description
  * - Breakpoints should turn purple when running
- * - start pause and stop capture should be available by right click in the debug console
  */

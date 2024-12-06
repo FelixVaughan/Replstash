@@ -90,8 +90,8 @@ export default class CommandHandler extends EventEmitter {
      * Pauses capturing of console input.
      * @returns {void}
      */
-    pauseCapture =(): void => {
-        if (this.sessionManager.capturePaused()) {
+    pauseCapture = (): void => {
+        if (this.sessionManager.capturePaused()) {  
             showWarningMessage('Capture already paused.');
             return;
         }
@@ -160,7 +160,7 @@ export default class CommandHandler extends EventEmitter {
 
             if (autoSave) {
                 fileName = defaultFileName;
-                this.storageManager.saveCaptureContent(
+                this.storageManager.persistCaptureContent(
                     currentBreakpoint, 
                     defaultFileName
                 );
@@ -183,7 +183,7 @@ export default class CommandHandler extends EventEmitter {
             // Validate the file name
             fileName = fileName.trim();
 
-            invalidReason = this.storageManager.saveCaptureContent(
+            invalidReason = this.storageManager.persistCaptureContent(
                 currentBreakpoint, 
                 fileName
             );

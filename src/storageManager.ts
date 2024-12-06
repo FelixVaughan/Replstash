@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import fs from 'fs';
 import path from 'path';
-import { Breakpoint, ScriptsMetaData } from './utils';
+import { Breakpoint, EvaluationResult, ScriptsMetaData } from './utils';
 import {
     window,
     Script,
@@ -113,7 +113,7 @@ export default class StorageManager {
      * @param {Breakpoint} bp - The breakpoint to save.
      * @param {string} fileName - The name of the file to save the breakpoint content in.
      */
-    saveCaptureContent(
+    persistCaptureContent(
         bp: Breakpoint, 
         fileName: string, 
         content: string | null = null
@@ -134,6 +134,25 @@ export default class StorageManager {
     }
 
     /**
+     * Persists the results of evaulated breakpoint scripts.
+     * @param {Breakpoint} bp - The breakpoint of the scripts.
+     * @param {results} results - The results of the evaluated scripts.
+     */
+    persistEvaluationResults = (
+        breakpoint: Breakpoint, 
+        results: EvaluationResult[]
+    ): void => {
+        results.forEach(({script, result}) => {
+            const assocScript: Script | undefined = breakpoint.scripts.find(s => s.uri === script);
+            if (assocScript) {
+                assocScript.results.push(result);
+                assocScript.results.length > 10 && assocScript.results.shift();
+            }
+        })
+        this.updateBreakpoints(this.loadBreakpoints());
+    }
+
+    /**
      * Updates the breakpoints stored in the extension workspace state.
      * @param {Breakpoint[]} breakpoints - The list of updated breakpoints.
      */
@@ -151,11 +170,12 @@ export default class StorageManager {
     private upsertBreakpointScripts(bp: Breakpoint, fullPath: string): void {
         const loadedBreakpoints = this.loadBreakpoints();
         const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
+        const script = { uri: fullPath, bId: bp.id, results: [] };
         if (existingBreakpoint) {
-            existingBreakpoint.scripts.push({ uri: fullPath, active: false, bId: bp.id });
+            existingBreakpoint.scripts.push({...script, active: true });
             existingBreakpoint.modifiedAt = getCurrentTimestamp();
         } else {
-            bp.scripts.push({ uri: fullPath, active: true, bId: bp.id });
+            bp.scripts.push({...script, active: false });
             bp.createdAt = getCurrentTimestamp();
             loadedBreakpoints.push(bp);
         }
@@ -421,7 +441,7 @@ export default class StorageManager {
                     const content: string | null = this.getScriptContent(uri);
                     if (content) {
                         const newFileName = `${path.basename(uri)} - copy - ${getCurrentTimestamp()}`;
-                        this.saveCaptureContent(breakpoint, newFileName, content);
+                        this.persistCaptureContent(breakpoint, newFileName, content);
                     }
                 });
 

@@ -20,6 +20,7 @@ export interface Script {
     /** Indicates whether the script is active. */
     active: boolean;
     bId: string;
+    results: ReplEvaluationResult[];
 }
 
 /**
@@ -90,6 +91,28 @@ export interface LabeledItem {
     id: string;
 }
 
+/**
+ * Represents the result of evaluating a script.
+ */
+export type ReplEvaluationResult = {
+    /** Exit code indicating the outcome of the evaluation (0 for failure, 1 for success). */
+    statusCode: number;
+
+    /** Indicates whether the evaluation was successful. */
+    success: boolean;
+
+    /** Stack trace of the error, if any (empty string if successful). */
+    stack: string;
+};
+
+/**
+ * Represents the result of evaluating a script.
+ */
+export type EvaluationResult = {
+    script: string;         // The URI of the evaluated script.
+    result: ReplEvaluationResult; // The result of the evaluation.
+}
+
 /** Show a warning message in the VS Code UI. */
 export const { showWarningMessage, showInformationMessage, showErrorMessage } = vscode.window;
 
@@ -114,11 +137,11 @@ export const getCurrentTimestamp = (): string => {
  * 
  * @param uris - An array of script URIs to evaluate.
  * @param threadId - The ID of the thread to evaluate the scripts in. If not provided, the active thread ID will be used.
- * @returns A Promise that resolves to void.
+ * @returns A Promise that resolves to a ReplEvaluationResult.
  */
-export const evaluateScripts = async (uris: string[], threadId: number | null = null): Promise<void> => {
+export const evaluateScripts = async (uris: string[], threadId: number | null = null): Promise<EvaluationResult[]> => {
     const activeSession = _debugger?.activeDebugSession;
-    if (!activeSession) return;
+    if (!activeSession) return [];
 
     /**
      * Retrieves the active thread ID.
@@ -132,47 +155,55 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
         return threads[0].id;
     };
 
-    /**
+   /**
      * Evaluates a single script in the given frame.
-     * 
-     * @param uri - The URI of the script to evaluate.
-     * @param frameId - The ID of the stack frame to evaluate the script in.
-     * @returns A Promise that resolves to an evaluation status code:
-     *          -1: Script is empty
-     *           0: Evaluation error
-     *           1: Evaluation succeeded
      */
-    const _evaluate = async (uri: string, frameId: number): Promise<number> => {
+
+    const _evaluate = async (uri: string, frameId: number): Promise<ReplEvaluationResult> => {
         const scriptContent: string | null = StorageManager.instance.getScriptContent(uri);
-        if (!scriptContent) return -1;
+        if (!scriptContent) 
+            return {
+                statusCode: 0, 
+                success: false, 
+                stack: ''
+            };
         try {
             await activeSession.customRequest('evaluate', {
                 expression: scriptContent,
                 context: 'repl',
                 frameId: frameId,
             });
-            return 1;
-        } catch (err) {
-            return 0;
+            return {
+                statusCode: 1, 
+                success: true, 
+                stack: ''
+            };
+        } catch (err: any) {
+            return {
+                statusCode: 0, 
+                success: false, 
+                stack: err?.stack || ''
+            };
         }
     };
 
+    const results: EvaluationResult[] = [];
     try {
         threadId = threadId || (await _getThreadId());
         const stackTraceResponse = await activeSession.customRequest('stackTrace', { threadId });
-        if (!stackTraceResponse?.stackFrames?.length) return;
+        if (!stackTraceResponse?.stackFrames?.length) return results;
 
         const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
         const frameId = topFrame.id;
 
-        uris.forEach(async (uri: string) => {
-            const status: number = await _evaluate(uri, frameId);
-            if (status === -1) showWarningMessage(`Script: ${uri} is empty.`);
-            else if (status === 0) showWarningMessage(`An error occurred on: ${uri}`);
-            else showInformationMessage(`Successfully ran: ${uri}`);
-        });
+        await Promise.all(uris.map(async (uri: string) => {
+            const result: ReplEvaluationResult = await _evaluate(uri, frameId);
+            results.push({script: uri, result});
+        }));
     } catch (error) {
-        showWarningMessage('An error occurred');
+        showWarningMessage('An error occurred evaulating the scripts');
+    }finally{
+        return results;
     }
 };
 

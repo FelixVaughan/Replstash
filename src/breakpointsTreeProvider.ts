@@ -9,6 +9,7 @@ import {
     evaluateScripts,
     _debugger,
     isBreakpoint,
+    EvaluationResult,
 } from './utils';
 import StorageManager from './storageManager';
 import CommandHandler from './commandHandler';
@@ -392,7 +393,11 @@ openScripts = (script: Script): void => {
         const selectedScripts: Script[] = this.getSelectedItems() as Script[];
         const scripts: Set<Script> = new Set([...selectedScripts, script]);
         scripts.forEach(async (script: Script) => {
-            evaluateScripts([script.uri]);
+            const results = await evaluateScripts([script.uri]);
+            const parentBreakpoint = this._getParent(script);
+            if (parentBreakpoint){
+                this.storageManager.persistEvaluationResults(parentBreakpoint, results);
+            }
         });
     }
 
@@ -400,7 +405,7 @@ openScripts = (script: Script): void => {
      * Runs all scripts associated with the specified breakpoint.
      * @param {Breakpoint} breakpoint - The breakpoint whose scripts to run.
      */
-    runAllBreakpointScripts = (breakpoint: Breakpoint): void => {
+    runAllBreakpointScripts = async (breakpoint: Breakpoint): Promise<void> => {
         if (!_debugger?.activeDebugSession) {
             showWarningMessage('No active debug session.');
             return;
@@ -408,7 +413,11 @@ openScripts = (script: Script): void => {
         if (!breakpoint.linked) {
             showWarningMessage('Breakpoint is not linked to any source file.');
         }
-        evaluateScripts(breakpoint.scripts.map(s => s.uri));
+        const results: EvaluationResult[] = await evaluateScripts(
+            breakpoint.scripts.map(s => s.uri)
+        );
+        this.storageManager.persistEvaluationResults(breakpoint, results);
+
     }
 
     /**

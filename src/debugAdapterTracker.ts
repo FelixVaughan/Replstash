@@ -7,6 +7,7 @@ import {
     showInformationMessage, 
     Script,
     evaluateScripts,
+    EvaluationResult
 } from './utils';
 import * as vscode from 'vscode';
 
@@ -20,7 +21,7 @@ export default class DebugAdapterTracker {
     /**
      * Manages the related state of the current debugging session.
      */
-    private sessionManager: SessionManager;
+    private  sessionManager: SessionManager;
 
     /**
      * Handles commands and user interactions.
@@ -121,8 +122,14 @@ export default class DebugAdapterTracker {
                  */
                 const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
                 const existingBreakpoint = loadedBreakpoints.find((b: Breakpoint) => b.id === bId);
-                const scripts: Script[] = existingBreakpoint?.scripts || [];
-                evaluateScripts(scripts.filter(s => s.active).map(s => s.uri), threadId);
+                if (existingBreakpoint){
+                    const scripts: Script[] = existingBreakpoint?.scripts || [];
+                    const results: EvaluationResult[] = await evaluateScripts(
+                        scripts.filter(s => s.active).map(s => s.uri), threadId
+                    );
+                    this.storageManager.persistEvaluationResults(existingBreakpoint, results);
+                }
+
             }
         }
 
