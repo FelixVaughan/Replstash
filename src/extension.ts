@@ -94,16 +94,16 @@ export const deactivate = (): void => {};
 //TODO: -> Clean up package.json 2 hrs
     //delete unused dependencies and commands
     //Setup and test command shortcuts
-//TODO: -> Create logo - 30 mins
-//TODO: Publisher name - 1 hr
+//TODO: Logo and publisher name - 1.5 hr
 //TODO: Long: Test and find issues - 2 hrs
 
 
 /**
  * TEST ISSUES:
- * 1. Ln description in treeview for breakpoint not always accurate
- * 2. Add capture state in bottom bar
- * 3. Empty scripts sometimes not removed
- * 4. Renaming one script affects all with the same name
- * 5. When flattened view, entries should be sorted by name and description
+ * - Ln description in treeview for breakpoint not always accurate
+ * - Add capture state in bottom bar
+ * - Empty scripts sometimes not removed
+ * - When flattened view, entries should be sorted by name and description
+ * - Breakpoints should turn purple when running
+ * - start pause and stop capture should be available by right click in the debug console
  */
