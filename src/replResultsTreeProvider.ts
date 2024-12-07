@@ -102,6 +102,10 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
         if (!element) {
             // Root-level elements: breakpoints
+            if (this.isFlattened) {
+                // If flattened, return all ReplResults directly
+                return Promise.resolve(this.results);
+            }
             return breakpoints.filter(bp => 
                 //@ts-ignore
                 bp.scripts.some(script => 

@@ -102,6 +102,7 @@ export const deactivate = (): void => {};
 //TODO: -> Clean up package.json 2 hrs
     //delete unused dependencies and commands
     //Setup and test command shortcuts
+//Save collapse state of repl treeview - 1 hr
 //TODO: Logo and publisher name - 1.5 hr
 //TODO: Long: Test and find issues - 2 hrs
 //TODO: Add go to breakpoint and open script to replResultsTreeProvider - 1 hr
