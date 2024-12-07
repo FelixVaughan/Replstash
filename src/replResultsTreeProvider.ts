@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Breakpoint, ReplResult, Script } from './utils';
+import { Breakpoint, describe, ReplResult, Script } from './utils';
 import ReplResultsPool from './replResultsPool';
 import StorageManager from './storageManager';
 import path from 'path';
@@ -64,26 +64,35 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
             const treeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
             treeItem.description = result.stack ? result.stack.split('\n')[0] : '';
             treeItem.tooltip = result.stack;
-            treeItem.iconPath = new vscode.ThemeIcon(result.success ? 'check' : 'error');
+            treeItem.iconPath = new vscode.ThemeIcon(result.success ? 'pass' : 'error', new vscode.ThemeColor(result.success ? 'charts.green' : 'charts.red'));
             return treeItem;
         } else if ('bId' in element) {
             // Script Item
             const script = element as Script;
             const label = `${path.basename(script.uri)}`;
-            const treeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Collapsed);
+            const scriptHasError = this.results.some(result => result.bId === script.bId && result.script === script.uri && !result.success);
+            const treeItem = new vscode.TreeItem(label,  vscode.TreeItemCollapsibleState.Collapsed);
             treeItem.tooltip = script.uri;
-            treeItem.iconPath = new vscode.ThemeIcon('file-code');
+            treeItem.iconPath = new vscode.ThemeIcon(scriptHasError ? 'error' : 'pass', new vscode.ThemeColor(scriptHasError ? 'charts.red' : 'charts.green'));
+            treeItem.resourceUri = vscode.Uri.file(script.uri);
+            treeItem.label = label;
             return treeItem;
         } else {
             // Breakpoint Item
             const bp = element as Breakpoint;
-            const label = `${path.basename(bp.file)} @Ln ${bp.line}, Col ${bp.column}`;
+            const label = `${path.basename(bp.file)}`;
+            const breakpointHasError = bp.scripts.some(script =>
+                this.results.some(result => result.bId === bp.id && result.script === script.uri && !result.success)
+            );
             const treeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Collapsed);
             treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;
-            treeItem.iconPath = new vscode.ThemeIcon('debug-breakpoint', new vscode.ThemeColor('charts.green'));
+            treeItem.iconPath = new vscode.ThemeIcon('debug-breakpoint', new vscode.ThemeColor(breakpointHasError ? 'charts.red' : 'charts.green'));
+            treeItem.label
+            treeItem.description = describe(bp);
             return treeItem;
         }
     }
+    
 
     /**
      * Get children elements based on the hierarchical or flattened view.

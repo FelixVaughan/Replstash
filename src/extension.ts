@@ -104,6 +104,8 @@ export const deactivate = (): void => {};
     //Setup and test command shortcuts
 //TODO: Logo and publisher name - 1.5 hr
 //TODO: Long: Test and find issues - 2 hrs
+//TODO: Add go to breakpoint and open script to replResultsTreeProvider - 1 hr
+//TDO: Copy tooltip errors to clipboard - 1 hr
 
 
 /**

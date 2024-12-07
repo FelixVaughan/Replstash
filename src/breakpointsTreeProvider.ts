@@ -9,6 +9,7 @@ import {
     evaluateScripts,
     _debugger,
     isBreakpoint,
+    describe,
 } from './utils';
 import StorageManager from './storageManager';
 import CommandHandler from './commandHandler';
@@ -132,8 +133,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             'uri' in element ? element.uri : element.file
         );
 
-        const describe = (bp: Breakpoint) => 
-            `${path.dirname(bp.file)}@Ln ${bp.line}, Col ${bp.column} - (${bp.scripts.length})`;
+        
     
         treeItem.checkboxState = element.active
             ? vscode.TreeItemCheckboxState.Checked

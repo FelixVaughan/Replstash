@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
 import StorageManager from './storageManager';
 import ReplResultsPool from './replResultsPool';
+import path from 'path';
 
 /** Alias for the VS Code debug namespace. */
 export const _debugger = vscode.debug;
@@ -207,6 +208,15 @@ export const evaluateScripts = async (scripts: Script[], threadId: number | null
         return results;
     }
 };
+
+
+/**
+ * 
+ * @param bp - The breakpoint to describe.
+ * @returns A string description of the breakpoint.
+ */
+export const describe = (bp: Breakpoint) => 
+    `${path.dirname(bp.file)}@Ln ${bp.line}, Col ${bp.column} - {${bp.scripts.length}}`;
 
 /**
  * Determines if the given object is a breakpoint.
