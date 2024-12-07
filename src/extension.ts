@@ -113,4 +113,5 @@ export const deactivate = (): void => {};
  * - Empty scripts sometimes not removed
  * - When flattened view, entries should be sorted by name and description
  * - Breakpoints should turn purple when running
+ * - Make Tracebacks copyable
  */

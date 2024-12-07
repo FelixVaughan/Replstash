@@ -188,7 +188,7 @@ export default class CommandHandler extends EventEmitter {
                 fileName
             );
 
-            if (invalidReason === null) {
+            if (invalidReason === InvalidReason.None) {
                 break;
             }
         }

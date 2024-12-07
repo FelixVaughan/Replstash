@@ -24,22 +24,29 @@ class ReplResultsPool extends EventEmitter {
         }
         return this._instance;
     }
+    
+    /**
+     * Clear the results stored in the pool.
+     */
+    clear(): void {
+        this.results = [];
+    }
 
 
     /**
      * Send new results and emit the 'results' event.
      * @param {ReplResult[]} results The results to store and broadcast.
      */
-    send(results: ReplResult[]) {
-        this.results = results;
-        this.emit('results', results);
+    send(results: ReplResult[]): void {
+        this.results = results || [];
+        this.results.length && this.emit('results', results);
     }
 
     /**
      * Get the current results stored in the pool.
      * @returns {ReplResult[]} The stored results.
      */
-    getResults() {
+    getResults(): ReplResult[] | null {
         return this.results;
     }
 }

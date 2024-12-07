@@ -391,9 +391,7 @@ openScripts = (script: Script): void => {
         }
         const selectedScripts: Script[] = this.getSelectedItems() as Script[];
         const scripts: Set<Script> = new Set([...selectedScripts, script]);
-        scripts.forEach(async (script: Script) => {
-            await evaluateScripts([script]);
-        });
+        evaluateScripts([...scripts]);
     }
 
     /**
