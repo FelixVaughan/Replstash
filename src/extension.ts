@@ -4,6 +4,7 @@ import StorageManager from './storageManager';
 import DebugAdapterTracker from './debugAdapterTracker';
 import CommandHandler from './commandHandler';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
+import ReplResultsTreeProvider from './replResultsTreeProvider';
 import { _debugger, commands } from './utils';
 
 /**
@@ -18,9 +19,11 @@ export const activate = (context: vscode.ExtensionContext): void => {
     // Singleton instances of command and tree providers
     const commandHandler: CommandHandler = CommandHandler.instance;
     const breakpointsTreeProvider: BreakpointsTreeProvider = BreakpointsTreeProvider.instance;
+    const replResultsTreeProvider: ReplResultsTreeProvider = ReplResultsTreeProvider.instance;
 
     // Create the tree view for breakpoints
-    const treeView = breakpointsTreeProvider.createTreeView();
+    const breakpointsTreeView = breakpointsTreeProvider.createTreeView();
+    const replResultsTreeView = replResultsTreeProvider.createTreeView();
 
     /**
      * Registers a debug adapter tracker factory to monitor debug sessions.
@@ -60,7 +63,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replStash.discardCapture', commandHandler.discardCapture),
         registerCommand('replStash.renameSavedScript', commandHandler.renameSavedScript),
         registerCommand('replStash.purgeScripts', commandHandler.purgeScripts),
-        // Tree view commands
+
+        // Breakpoint Tree view commands
         registerCommand('replStash.toggleElementActive', breakpointsTreeProvider.setElementActivation),
         registerCommand('replStash.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),
         registerCommand('replStash.activateSelected', breakpointsTreeProvider.activateSelectedItems),
@@ -71,7 +75,10 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replStash.removeBreakpointScripts', breakpointsTreeProvider.removeSelectedItems),
         registerCommand('replStash.runAllBreakpointScripts', breakpointsTreeProvider.runAllBreakpointScripts),
         registerCommand('replStash.treeRenameSavedScript', breakpointsTreeProvider.renameSavedScript),
-        registerCommand('replStash.toggleTreeViewMode', breakpointsTreeProvider.toggleFlattenedView),
+        registerCommand('replStash.toggleBreakpointTreeViewMode', breakpointsTreeProvider.toggleFlattenedView),
+
+        // Evaluation Results Tree view commands
+        registerCommand('replStash.toggleReplTreeViewMode', replResultsTreeProvider.toggleReplTreeViewMode),
     ];
 
     // Set the initial context for scripts' runnability
@@ -81,7 +88,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
     context.subscriptions.push(
         ...disposableCommands,
         debugAdapterTrackerFactory,
-        treeView
+        breakpointsTreeView,
+        replResultsTreeView
     );
 };
 

@@ -213,4 +213,4 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
  * @param e - The object to check.
  * @returns {boolean} True if the object is a breakpoint, false otherwise.
  */
-export const isBreakpoint = (e: Script | Breakpoint): boolean => Object.hasOwn(e, 'scripts');
+export const isBreakpoint = (e: Script | Breakpoint | ReplEvaluationResult): boolean => Object.hasOwn(e, 'scripts');

@@ -14,6 +14,15 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+        "panel": [
+            {
+                "id": "evaluationResultsContainer",
+                "title": "Stash Runs",
+                "icon": "resources/icon.svg"
+            }
+        ]
+    },
     "views": {
       "debug": [
         {
@@ -22,6 +31,14 @@
           "type": "tree",
           "visibility": "visible"
         }
+      ],
+      "evaluationResultsContainer": [
+          {
+              "id": "replResultsView",
+              "name": "Stash Runs",
+              "type": "tree",
+              "visibility": "visible"
+          }
       ]
     },
     "commands": [
@@ -151,7 +168,12 @@
         "enablement": "view == breakpointsView && !replStash.multipleSelectedItems"
       },
       {
-        "command": "replStash.toggleTreeViewMode",
+        "command": "replStash.toggleBreakpointTreeViewMode",
+        "title": "Toggle View Mode",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "replStash.toggleReplTreeViewMode",
         "title": "Toggle View Mode",
         "icon": "$(list-tree)"
       }
@@ -159,8 +181,13 @@
     "menus": {
       "view/title": [
         {
-          "command": "replStash.toggleTreeViewMode",
+          "command": "replStash.toggleBreakpointTreeViewMode",
           "when": "view == breakpointsView",
+          "group": "navigation"
+        },
+        {
+          "command": "replStash.toggleReplTreeViewMode",
+          "when": "view == replResultsView",
           "group": "navigation"
         }
       ],
