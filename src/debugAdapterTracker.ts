@@ -7,7 +7,6 @@ import {
     showInformationMessage, 
     Script,
     evaluateScripts,
-    EvaluationResult
 } from './utils';
 import * as vscode from 'vscode';
 
@@ -124,10 +123,9 @@ export default class DebugAdapterTracker {
                 const existingBreakpoint = loadedBreakpoints.find((b: Breakpoint) => b.id === bId);
                 if (existingBreakpoint){
                     const scripts: Script[] = existingBreakpoint?.scripts || [];
-                    const results: EvaluationResult[] = await evaluateScripts(
-                        scripts.filter(s => s.active).map(s => s.uri), threadId
+                    await evaluateScripts(
+                        scripts.filter(s => s.active), threadId
                     );
-                    this.storageManager.persistEvaluationResults(existingBreakpoint, results);
                 }
 
             }

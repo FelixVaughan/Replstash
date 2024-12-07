@@ -1,6 +1,6 @@
 {
-  "name": "save-debug",
-  "displayName": "save-debug",
+  "name": "replstash",
+  "displayName": "replstash",
   "description": "",
   "version": "0.0.1",
   "engines": {

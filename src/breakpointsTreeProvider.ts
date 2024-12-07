@@ -9,7 +9,6 @@ import {
     evaluateScripts,
     _debugger,
     isBreakpoint,
-    EvaluationResult,
 } from './utils';
 import StorageManager from './storageManager';
 import CommandHandler from './commandHandler';
@@ -393,11 +392,7 @@ openScripts = (script: Script): void => {
         const selectedScripts: Script[] = this.getSelectedItems() as Script[];
         const scripts: Set<Script> = new Set([...selectedScripts, script]);
         scripts.forEach(async (script: Script) => {
-            const results = await evaluateScripts([script.uri]);
-            const parentBreakpoint = this._getParent(script);
-            if (parentBreakpoint){
-                this.storageManager.persistEvaluationResults(parentBreakpoint, results);
-            }
+            await evaluateScripts([script]);
         });
     }
 
@@ -413,11 +408,7 @@ openScripts = (script: Script): void => {
         if (!breakpoint.linked) {
             showWarningMessage('Breakpoint is not linked to any source file.');
         }
-        const results: EvaluationResult[] = await evaluateScripts(
-            breakpoint.scripts.map(s => s.uri)
-        );
-        this.storageManager.persistEvaluationResults(breakpoint, results);
-
+        await evaluateScripts(breakpoint.scripts);
     }
 
     /**

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
 import StorageManager from './storageManager';
+import ReplResultsPool from './replResultsPool';
 
 /** Alias for the VS Code debug namespace. */
 export const _debugger = vscode.debug;
@@ -20,7 +21,6 @@ export interface Script {
     /** Indicates whether the script is active. */
     active: boolean;
     bId: string;
-    results: ReplEvaluationResult[];
 }
 
 /**
@@ -94,7 +94,14 @@ export interface LabeledItem {
 /**
  * Represents the result of evaluating a script.
  */
-export type ReplEvaluationResult = {
+export type ReplResult = {
+
+    /**Uri of ran repl*/
+    script?: string;
+
+    /** Unique identifier for the breakpoint. */
+    bId?: string;
+
     /** Exit code indicating the outcome of the evaluation (0 for failure, 1 for success). */
     statusCode: number;
 
@@ -105,13 +112,6 @@ export type ReplEvaluationResult = {
     stack: string;
 };
 
-/**
- * Represents the result of evaluating a script.
- */
-export type EvaluationResult = {
-    script: string;         // The URI of the evaluated script.
-    result: ReplEvaluationResult; // The result of the evaluation.
-}
 
 /** Show a warning message in the VS Code UI. */
 export const { showWarningMessage, showInformationMessage, showErrorMessage } = vscode.window;
@@ -135,11 +135,11 @@ export const getCurrentTimestamp = (): string => {
 /**
  * Evaluates scripts by executing them in the active debug session.
  * 
- * @param uris - An array of script URIs to evaluate.
+ * @param scripts - An array of script URIs to evaluate.
  * @param threadId - The ID of the thread to evaluate the scripts in. If not provided, the active thread ID will be used.
  * @returns A Promise that resolves to a ReplEvaluationResult.
  */
-export const evaluateScripts = async (uris: string[], threadId: number | null = null): Promise<EvaluationResult[]> => {
+export const evaluateScripts = async (scripts: Script[], threadId: number | null = null): Promise<ReplResult[]> => {
     const activeSession = _debugger?.activeDebugSession;
     if (!activeSession) return [];
 
@@ -159,7 +159,7 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
      * Evaluates a single script in the given frame.
      */
 
-    const _evaluate = async (uri: string, frameId: number): Promise<ReplEvaluationResult> => {
+    const _evaluate = async (uri: string, frameId: number): Promise<ReplResult> => {
         const scriptContent: string | null = StorageManager.instance.getScriptContent(uri);
         if (!scriptContent) 
             return {
@@ -187,7 +187,7 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
         }
     };
 
-    const results: EvaluationResult[] = [];
+    const results: ReplResult[] = [];
     try {
         threadId = threadId || (await _getThreadId());
         const stackTraceResponse = await activeSession.customRequest('stackTrace', { threadId });
@@ -196,13 +196,14 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
         const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
         const frameId = topFrame.id;
 
-        await Promise.all(uris.map(async (uri: string) => {
-            const result: ReplEvaluationResult = await _evaluate(uri, frameId);
-            results.push({script: uri, result});
+        await Promise.all(scripts.map(async (script: Script) => {
+            const result: ReplResult = await _evaluate(script.uri, frameId);
+            results.push({script: script.uri, bId: script.bId, ...result});
         }));
     } catch (error) {
         showWarningMessage('An error occurred evaulating the scripts');
     }finally{
+        ReplResultsPool.instance.send(results);
         return results;
     }
 };
@@ -213,4 +214,4 @@ export const evaluateScripts = async (uris: string[], threadId: number | null = 
  * @param e - The object to check.
  * @returns {boolean} True if the object is a breakpoint, false otherwise.
  */
-export const isBreakpoint = (e: Script | Breakpoint | ReplEvaluationResult): boolean => Object.hasOwn(e, 'scripts');
+export const isBreakpoint = (e: Script | Breakpoint | ReplResult): boolean => Object.hasOwn(e, 'scripts');

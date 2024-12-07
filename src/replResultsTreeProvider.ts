@@ -1,24 +1,29 @@
 import * as vscode from 'vscode';
-import { Breakpoint, Script, ReplEvaluationResult, isBreakpoint } from './utils';
-import StorageManager from './storageManager';
+import { Breakpoint, ReplResult } from './utils';
+import ReplResultsPool from './replResultsPool';
 import path from 'path';
-export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script | ReplEvaluationResult> {
-    private static _instance: ReplResultsTreeProvider | null = null; // Singleton instance
-    private _onDidChangeTreeData = new vscode.EventEmitter<Breakpoint | Script | ReplEvaluationResult | undefined>();
+
+export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<Breakpoint | ReplResult> {
+    private static _instance: ReplResultsTreeProvider | null = null;
+    private _onDidChangeTreeData = new vscode.EventEmitter<Breakpoint | ReplResult | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-    private storageManager: StorageManager;
+    private results: ReplResult[] = [];
     private isFlattened: boolean = false;
 
     /**
      * Private constructor to enforce singleton pattern.
      */
     private constructor() {
-        this.storageManager = StorageManager.instance;
+        // Listen to events from ReplResultsPool
+        ReplResultsPool.instance.on('results', (results: ReplResult[]) => {
+            this.results = results;
+            this.refresh();
+        });
     }
 
     /**
-     * Retrieves the singleton instance of the `ReplResultsTreeProvider`.
+     * Get the singleton instance of the `ReplResultsTreeProvider`.
      * @returns {ReplResultsTreeProvider} The singleton instance.
      */
     static get instance(): ReplResultsTreeProvider {
@@ -41,51 +46,28 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
     toggleReplTreeViewMode = (): void => {
         this.isFlattened = !this.isFlattened;
         this.refresh();
-    }
+    };
 
     /**
-     * Return a TreeItem for each element (Breakpoint, Script, or EvaluationResult).
+     * Return a TreeItem for each element (Breakpoint or ReplResult).
      */
-    getTreeItem(element: Breakpoint | Script | ReplEvaluationResult): vscode.TreeItem {
-        const describe = (bp: Breakpoint): string => {
-            const active: number = bp.scripts.filter(script => script.active).length;
-            const form = active === 1 ? 'script' : 'scripts';
-            return `${path.dirname(bp.file)}@Ln ${bp.line}, Col ${bp.column} - ${active} active ${form}`;
-        }
-        if (isBreakpoint(element)) {
-            // Parent Breakpoint Item
-            const bp = element as Breakpoint;
-           
-            const label = `${path.basename(bp.file)}`;
-            const treeItem = new vscode.TreeItem(
-                label, vscode.TreeItemCollapsibleState.Collapsed
-            );
-            treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;
-            treeItem.description = describe(bp);
-            treeItem.iconPath = new vscode.ThemeIcon(
-                'debug-breakpoint', 
-                new vscode.ThemeColor(bp.active ? 'charts.green' : 'errorForeground')
-            );
-            return treeItem;
-        } else if ('results' in element) {
-            // Child Script Item
-            const script = element as Script;
-            const label = `${path.basename(script.uri)} {${script.results.length}}`;
-            const treeItem = new vscode.TreeItem(
-                label, vscode.TreeItemCollapsibleState.Collapsed
-            );
-            treeItem.tooltip = `${script.uri}`;
-            treeItem.iconPath = new vscode.ThemeIcon('file-code');
-            return treeItem;
-        } else {
-            // Leaf Repl Item
-            const result = element as ReplEvaluationResult;
+    getTreeItem(element: Breakpoint | ReplResult): vscode.TreeItem {
+        if ('statusCode' in element) {
+            // ReplResult Item
+            const result = element as ReplResult;
             const label = result.success ? 'Success' : 'Error';
-            const treeItem = new vscode.TreeItem(
-                label, vscode.TreeItemCollapsibleState.None);
-            treeItem.description = result.stack || '';
+            const treeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
+            treeItem.description = result.stack ? result.stack.split('\n')[0] : '';
             treeItem.tooltip = result.stack;
             treeItem.iconPath = new vscode.ThemeIcon(result.success ? 'check' : 'error');
+            return treeItem;
+        } else {
+            // Breakpoint Item
+            const bp = element as Breakpoint;
+            const label = `${path.basename(bp.file)} @Ln ${bp.line}, Col ${bp.column}`;
+            const treeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Collapsed);
+            treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;
+            treeItem.iconPath = new vscode.ThemeIcon('debug-breakpoint', new vscode.ThemeColor('charts.green'));
             return treeItem;
         }
     }
@@ -93,33 +75,21 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
     /**
      * Get children elements based on the hierarchical or flattened view.
      */
-    getChildren(element?: Breakpoint | Script): Thenable<(Breakpoint | Script | ReplEvaluationResult)[]> {
-        const breakpoints = this.storageManager.loadBreakpoints();
-
+    getChildren(element?: Breakpoint): Thenable<(Breakpoint | ReplResult)[]> {
         if (!element) {
-            return Promise.resolve(this.isFlattened
-                ? breakpoints.flatMap(bp => bp.scripts.flatMap(script => script.results))
-                : breakpoints
-            );
+            // Return root level elements
+            return Promise.resolve(this.results.length > 0 ? this.results : []);
         }
 
-        if ('scripts' in element) {
-            return Promise.resolve((element as Breakpoint).scripts);
-        }
-
-        if ('results' in element) {
-            return Promise.resolve((element as Script).results);
-        }
-
+        // No hierarchical structure for ReplResults, just return an empty array
         return Promise.resolve([]);
     }
 
-
     /**
      * Create and register the Tree View for Evaluation Results.
-     * @returns {vscode.TreeView<Breakpoint | Script | EvaluationResult>} The created Tree View.
+     * @returns {vscode.TreeView<Breakpoint | ReplResult>} The created Tree View.
      */
-    public createTreeView(): vscode.TreeView<Breakpoint | Script | ReplEvaluationResult> {
+    public createTreeView(): vscode.TreeView<Breakpoint | ReplResult> {
         const treeView = vscode.window.createTreeView('replResultsView', {
             treeDataProvider: this,
             showCollapseAll: true,

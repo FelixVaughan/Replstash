@@ -1,6 +1,6 @@
-# save-debug README
+# replstash README
 
-This is the README for your extension "save-debug". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "replstash". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

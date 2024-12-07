@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import fs from 'fs';
 import path from 'path';
-import { Breakpoint, EvaluationResult, ScriptsMetaData } from './utils';
+import { Breakpoint, ScriptsMetaData } from './utils';
 import {
     window,
     Script,
@@ -134,25 +134,6 @@ export default class StorageManager {
     }
 
     /**
-     * Persists the results of evaulated breakpoint scripts.
-     * @param {Breakpoint} bp - The breakpoint of the scripts.
-     * @param {results} results - The results of the evaluated scripts.
-     */
-    persistEvaluationResults = (
-        breakpoint: Breakpoint, 
-        results: EvaluationResult[]
-    ): void => {
-        results.forEach(({script, result}) => {
-            const assocScript: Script | undefined = breakpoint.scripts.find(s => s.uri === script);
-            if (assocScript) {
-                assocScript.results.push(result);
-                assocScript.results.length > 10 && assocScript.results.shift();
-            }
-        })
-        this.updateBreakpoints(this.loadBreakpoints());
-    }
-
-    /**
      * Updates the breakpoints stored in the extension workspace state.
      * @param {Breakpoint[]} breakpoints - The list of updated breakpoints.
      */
@@ -170,7 +151,7 @@ export default class StorageManager {
     private upsertBreakpointScripts(bp: Breakpoint, fullPath: string): void {
         const loadedBreakpoints = this.loadBreakpoints();
         const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
-        const script = { uri: fullPath, bId: bp.id, results: [] };
+        const script = { uri: fullPath, bId: bp.id};
         if (existingBreakpoint) {
             existingBreakpoint.scripts.push({...script, active: true });
             existingBreakpoint.modifiedAt = getCurrentTimestamp();
