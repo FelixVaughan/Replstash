@@ -22,6 +22,7 @@ export interface Script {
     /** Indicates whether the script is active. */
     active: boolean;
     bId: string;
+    error: boolean;
 }
 
 /**
@@ -199,11 +200,13 @@ export const evaluateScripts = async (scripts: Script[], threadId: number | null
 
         await Promise.all(scripts.map(async (script: Script) => {
             const result: ReplResult = await _evaluate(script.uri, frameId);
+            if (!result.success) script.error = true;
             results.push({script: script.uri, bId: script.bId, ...result});
         }));
     } catch (error) {
         showWarningMessage('An error occurred evaulating the scripts');
     }finally{
+        StorageManager.instance.updateLoadedBreakpoints();
         ReplResultsPool.instance.send(results);
         return results;
     }

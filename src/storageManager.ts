@@ -151,7 +151,7 @@ export default class StorageManager {
     private upsertBreakpointScripts(bp: Breakpoint, fullPath: string): void {
         const loadedBreakpoints = this.loadBreakpoints();
         const existingBreakpoint = loadedBreakpoints.find((b) => b.id === bp.id);
-        const script = { uri: fullPath, bId: bp.id};
+        const script = { uri: fullPath, bId: bp.id, error: false};
         if (existingBreakpoint) {
             existingBreakpoint.scripts.push({...script, active: true });
             existingBreakpoint.modifiedAt = getCurrentTimestamp();
@@ -324,6 +324,14 @@ export default class StorageManager {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
         loadedBreakpoints.forEach(bp => bp.scripts = []);
         this.updateBreakpoints(loadedBreakpoints);
+    }
+
+    /**
+     * Updates (persists) the loaded breakpoint.
+     */
+    updateLoadedBreakpoints(): void {
+        if (!this.loadedBreakpoints.length) return;
+        this.updateBreakpoints(this.loadedBreakpoints);
     }
 
     /**
