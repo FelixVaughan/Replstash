@@ -198,9 +198,31 @@ export const evaluateScripts = async (scripts: Script[], threadId: number | null
         const topFrame: Record<string, any> = stackTraceResponse.stackFrames[0];
         const frameId = topFrame.id;
 
+        const errorDecoration = vscode.window.createTextEditorDecorationType({
+            isWholeLine: true,
+            backgroundColor: 'rgba(255, 0, 0, 0.3)', // Red background for errors
+        });
+        
+        const successDecoration = vscode.window.createTextEditorDecorationType({
+            isWholeLine: true,
+            backgroundColor: 'rgba(0, 255, 0, 0.3)', // Green background for success
+        });
+
+        const editor = vscode.window.activeTextEditor;
+        const breakpoints = vscode.debug.breakpoints;
+
         await Promise.all(scripts.map(async (script: Script) => {
             const result: ReplResult = await _evaluate(script.uri, frameId);
             if (!result.success) script.error = true;
+            const bp = breakpoints.find(b => b.id === script.bId);
+    
+            if (bp && bp instanceof vscode.SourceBreakpoint) {
+                const activeBreakpointDecoration = result.success ? successDecoration : errorDecoration;
+                editor?.setDecorations(activeBreakpointDecoration, [{ range: bp.location.range }]);
+                setTimeout(() => {
+                    editor?.setDecorations(activeBreakpointDecoration, []);
+                }, 500); // 0.5 seconds
+            }
             results.push({script: script.uri, bId: script.bId, ...result});
         }));
     } catch (error) {

@@ -174,9 +174,9 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
                 treeItem.description = parentBreakpoint ? describe(parentBreakpoint) : '';
             }
 
-            const iconColor = script.active
-                ? 'charts.green' : script.error
-                ? 'errorForeground' : 'charts.yellow';
+            const iconColor = script.error
+                ? 'errorForeground' : script.active
+                ? 'charts.green' : 'charts.yellow';
             treeItem.iconPath = new vscode.ThemeIcon('file-code', new vscode.ThemeColor(iconColor));
         }
     
