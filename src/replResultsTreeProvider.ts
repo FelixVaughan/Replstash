@@ -8,6 +8,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
     private static _instance: ReplResultsTreeProvider | null = null;
     private _onDidChangeTreeData = new vscode.EventEmitter<Breakpoint | Script | ReplResult | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+    private treeView: vscode.TreeView<Breakpoint | Script | ReplResult> | undefined;
 
     private results: ReplResult[] = [];
     private isFlattened: boolean = false;
@@ -23,6 +24,12 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         // Listen to events from ReplResultsPool
         ReplResultsPool.instance.on('results', (results: ReplResult[]) => {
             this.results = results;
+            if (this.treeView){
+                this.treeView.badge = {
+                    value: this.results.length,
+                    tooltip: `Results Available`, // Tooltip text
+                };
+            }
             this.refresh();
         });
     }
@@ -136,7 +143,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Copy the error stack to the clipboard.
      * @param element The ReplResult to copy the error stack from.
      */
-    copyErrorStack = async (element: ReplResult): Promise<void> => {
+    copyStackTrace = async (element: ReplResult): Promise<void> => {
         if (!element.stack) {
             showWarningMessage('No stack info to copy.');
             return;
@@ -144,17 +151,18 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         await vscode.env.clipboard.writeText(`\'${element.stack}\'`);
     }
 
+
     /**
      * Create and register the Tree View for Evaluation Results.
      * @returns {vscode.TreeView<Breakpoint | Script | ReplResult>} The created Tree View.
      */
     public createTreeView(): vscode.TreeView<Breakpoint | Script | ReplResult> {
-        const treeView = vscode.window.createTreeView('replResultsView', {
+        this.treeView = vscode.window.createTreeView('replResultsView', {
             treeDataProvider: this,
-            showCollapseAll: true,
+            showCollapseAll: false,
         });
 
-        treeView.onDidChangeSelection((event: vscode.TreeViewSelectionChangeEvent<any>) => {
+        this.treeView.onDidChangeSelection((event: vscode.TreeViewSelectionChangeEvent<any>) => {
             const [selected] = event.selection;
             if (isReplResult(selected)) {
                 commands.executeCommand(
@@ -165,6 +173,6 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
             }
         });
 
-        return treeView;
+        return this.treeView;
     }
 }

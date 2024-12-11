@@ -79,7 +79,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
 
         // Evaluation Results Tree view commands
         registerCommand('replStash.toggleReplTreeViewMode', replResultsTreeProvider.toggleReplTreeViewMode),
-        registerCommand('replStash.copyErrorStack', replResultsTreeProvider.copyErrorStack),
+        registerCommand('replStash.copyErrorStack', replResultsTreeProvider.copyStackTrace),
     ];
 
     // Set the initial context for scripts' runnability
@@ -107,10 +107,6 @@ export const deactivate = (): void => {};
 //TODO: Logo and publisher name - 1.5 hr
 //TODO: Long: Test and find issues - 2 hrs
 //TODO: Add go to breakpoint and open script to replResultsTreeProvider - 1 hr
-
-//TODO: switch to repl repl results context after evaluations - 20 min
-//TODO: Default to uncollapsed view - 30 min
-
 
 /**
  * TEST ISSUES:

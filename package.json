@@ -19,7 +19,7 @@
             {
                 "id": "evaluationResultsContainer",
                 "title": "Stash Runs",
-                "icon": "resources/icon.svg"
+                "icon": "resources/icon.svg"            
             }
         ]
     },
