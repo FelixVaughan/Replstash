@@ -176,6 +176,11 @@
         "command": "replStash.toggleReplTreeViewMode",
         "title": "Toggle View Mode",
         "icon": "$(list-tree)"
+      },
+      {
+        "command": "replStash.copyErrorStack",
+        "title": "Copy Stack Trace",
+        "enablement": "view == replResultsView && replStash.stackAvailable"
       }
     ],
     "menus": {
@@ -246,6 +251,11 @@
         {
           "command": "replStash.treeRenameSavedScript",
           "when": "view == breakpointsView && viewItem == script",
+          "group": "navigation"
+        },
+        {
+          "command": "replStash.copyErrorStack",
+          "when": "view == replResultsView && viewItem == result",
           "group": "navigation"
         }
       ],

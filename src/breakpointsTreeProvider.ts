@@ -445,7 +445,7 @@ openScripts = (script: Script): void => {
             canSelectMany: true,
         });
 
-        treeView.onDidChangeSelection((event) => {
+        treeView.onDidChangeSelection((event: vscode.TreeViewSelectionChangeEvent<any>) => {
             const selection: readonly (Breakpoint | Script)[] = event.selection;
             const isMultipleSelect: boolean = selection.length > 1;
             const breakpointSelected: boolean = selection.some((elem) =>

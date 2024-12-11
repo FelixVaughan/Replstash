@@ -228,3 +228,4 @@ export const describe = (bp: Breakpoint) =>
  * @returns {boolean} True if the object is a breakpoint, false otherwise.
  */
 export const isBreakpoint = (e: Script | Breakpoint | ReplResult): boolean => Object.hasOwn(e, 'scripts');
+export const isReplResult = (e: Script | Breakpoint | ReplResult): boolean => Object.hasOwn(e, 'statusCode');

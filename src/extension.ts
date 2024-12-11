@@ -79,6 +79,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
 
         // Evaluation Results Tree view commands
         registerCommand('replStash.toggleReplTreeViewMode', replResultsTreeProvider.toggleReplTreeViewMode),
+        registerCommand('replStash.copyErrorStack', replResultsTreeProvider.copyErrorStack),
     ];
 
     // Set the initial context for scripts' runnability
@@ -106,7 +107,9 @@ export const deactivate = (): void => {};
 //TODO: Logo and publisher name - 1.5 hr
 //TODO: Long: Test and find issues - 2 hrs
 //TODO: Add go to breakpoint and open script to replResultsTreeProvider - 1 hr
-//TDO: Copy tooltip errors to clipboard - 1 hr
+
+//TODO: switch to repl repl results context after evaluations - 20 min
+//TODO: Default to uncollapsed view - 30 min
 
 
 /**
@@ -116,5 +119,4 @@ export const deactivate = (): void => {};
  * - Empty scripts sometimes not removed
  * - When flattened view, entries should be sorted by name and description
  * - Breakpoints should turn purple when running
- * - Make Tracebacks copyable
  */
