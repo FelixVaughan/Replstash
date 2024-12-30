@@ -6,18 +6,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "JS Application",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "internalConsoleOptions": "openOnSessionStart",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}",
-                "/home/felix/code/github/express"
-            ],
-
-        },
-        {
             "name": "Python Application",
             "type": "extensionHost",
             "request": "launch",
@@ -25,11 +13,25 @@
             "internalConsoleOptions": "openOnSessionStart", 
             "args": [
               "--extensionDevelopmentPath=${workspaceFolder}",
-              "/home/felix/code/demo2"
+              "/home/felixezama-vaughan/Code/py-demo"
             ],
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],      // Path to the compiled JavaScript files
             "preLaunchTask": "tsc: watch",                      // Automatically compile TypeScript files before debugging
             "sourceMaps": true,                                  // Enable source maps to debug TypeScript directly
         },
+        {
+            "name": "Node Application",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "internalConsoleOptions": "openOnSessionStart", 
+            "args": [
+              "--extensionDevelopmentPath=${workspaceFolder}",
+              "/home/felixezama-vaughan/Code/node-demo"
+            ],
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],      // Path to the compiled JavaScript files
+            "preLaunchTask": "tsc: watch",                      // Automatically compile TypeScript files before debugging
+            "sourceMaps": true,                                  // Enable source maps to debug TypeScript directly
+        }
     ]
 }

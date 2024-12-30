@@ -15,13 +15,13 @@
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
-        "panel": [
-            {
-                "id": "evaluationResultsContainer",
-                "title": "Stash Runs",
-                "icon": "resources/icon.svg"            
-            }
-        ]
+      "panel": [
+        {
+          "id": "evaluationResultsContainer",
+          "title": "Stash Runs",
+          "icon": "resources/icon.svg"
+        }
+      ]
     },
     "views": {
       "debug": [
@@ -33,12 +33,12 @@
         }
       ],
       "evaluationResultsContainer": [
-          {
-              "id": "replResultsView",
-              "name": "Stash Runs",
-              "type": "tree",
-              "visibility": "visible"
-          }
+        {
+          "id": "replResultsView",
+          "name": "Stash Runs",
+          "type": "tree",
+          "visibility": "visible"
+        }
       ]
     },
     "commands": [
@@ -196,7 +196,6 @@
           "group": "navigation"
         }
       ],
-
       "view/item/context": [
         {
           "command": "replStash.toggleElementActive",
@@ -338,7 +337,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.3.3",
     "typedoc": "^0.26.11",
-    "typescript": "^5.4.5"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "prettier-eslint": "^16.3.0"

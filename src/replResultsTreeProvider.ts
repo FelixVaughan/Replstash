@@ -5,15 +5,48 @@ import StorageManager from './storageManager';
 import path from 'path';
 
 export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<Breakpoint | Script | ReplResult> {
+
+    /**
+     * Singleton instance of the `ReplResultsTreeProvider`.
+     */
     private static _instance: ReplResultsTreeProvider | null = null;
+
+    /**
+     * Event emitter to signal changes in the TreeView data.
+     * Used to refresh the TreeView when data changes.
+     */
     private _onDidChangeTreeData = new vscode.EventEmitter<Breakpoint | Script | ReplResult | undefined>();
+
+    /**
+     * Event to signal changes in the TreeView data.
+     * Used to refresh the TreeView when data changes.
+     */
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+    /**
+     * The TreeView instance to display the ReplResults.
+     */
     private treeView: vscode.TreeView<Breakpoint | Script | ReplResult> | undefined;
 
+    /**
+     * The list of ReplResults to display in the TreeView.
+     */
     private results: ReplResult[] = [];
+
+    /**
+     * Flag to toggle between hierarchical and flattened views.
+     */
     private isFlattened: boolean = false;
 
+    /**
+     * The StorageManager instance to manage breakpoints and scripts.
+     */
     private storageManager: StorageManager;
+
+    /**
+     * Map to store collapsible states of tree items.
+     */
+    private collapsibleStates: Map<string, vscode.TreeItemCollapsibleState> = new Map();
 
     /**
      * Private constructor to enforce singleton pattern.
@@ -29,6 +62,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
                     value: this.results.length,
                     tooltip: `Results Available`, // Tooltip text
                 };
+                this.collapsibleStates.clear();
             }
             this.refresh();
         });
@@ -52,6 +86,27 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         this._onDidChangeTreeData.fire(undefined);
     }
 
+     /**
+     * Set collapsible state for a given tree item.
+     */
+     private setCollapsibleState(
+        element: Breakpoint | Script | ReplResult,
+        state: vscode.TreeItemCollapsibleState
+    ): void {
+        const key = 'id' in element ? element.id : (element as Script).uri;
+        this.collapsibleStates.set(key, state);
+    }
+
+    /**
+     * Get the collapsible state for a given tree item.
+     */
+    private getCollapsibleState(element: Breakpoint | Script | ReplResult): vscode.TreeItemCollapsibleState {
+        const key = 'id' in element ? element.id : (element as Script).uri;
+        return this.collapsibleStates.get(key) || vscode.TreeItemCollapsibleState.Collapsed;
+    }
+
+
+
     /**
      * Toggle between hierarchical and flattened views.
      */
@@ -64,28 +119,37 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Return a TreeItem for each element (Breakpoint, Script, or ReplResult).
      */
     getTreeItem(element: Breakpoint | Script | ReplResult): vscode.TreeItem {
+        let treeItem: vscode.TreeItem;
         if (isReplResult(element)) {
             // ReplResult Item
             const result = element as ReplResult;
             const label = result.success ? 'Success' : 'Error';
-            const treeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
+            treeItem = new vscode.TreeItem(label);
             treeItem.contextValue = 'result';
             treeItem.description = result.stack ? result.stack.split('\n')[0] : 'No issues detected.';
             treeItem.tooltip = result.stack;
-            treeItem.iconPath = new vscode.ThemeIcon(result.success ? 'pass' : 'error', new vscode.ThemeColor(result.success ? 'charts.green' : 'charts.red'));
-            return treeItem;
+            treeItem.iconPath = new vscode.ThemeIcon(
+                result.success ? 'pass' : 'error', new vscode.ThemeColor(
+                    result.success ? 'charts.green' : 'charts.red'
+                )
+            );
         } else if ('bId' in element) {
             // Script Item
             const script = element as Script;
             const label = `${path.basename(script.uri)}`;
-            const scriptHasError = this.results.some(result => result.bId === script.bId && result.script === script.uri && !result.success);
-            const treeItem = new vscode.TreeItem(label,  vscode.TreeItemCollapsibleState.Collapsed);
+            const scriptHasError = this.results.some(result => 
+                result.bId === script.bId && result.script === script.uri && !result.success
+            );
+            treeItem = new vscode.TreeItem(label);
             treeItem.contextValue = 'script';
             treeItem.tooltip = script.uri;
-            treeItem.iconPath = new vscode.ThemeIcon(scriptHasError ? 'error' : 'pass', new vscode.ThemeColor(scriptHasError ? 'charts.red' : 'charts.green'));
+            treeItem.iconPath = new vscode.ThemeIcon(
+                scriptHasError ? 'error' : 'pass', new vscode.ThemeColor(
+                    scriptHasError ? 'charts.red' : 'charts.green'
+                )
+            );
             treeItem.resourceUri = vscode.Uri.file(script.uri);
             treeItem.label = label;
-            return treeItem;
         } else {
             // Breakpoint Item
             const bp = element as Breakpoint;
@@ -93,13 +157,15 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
             const breakpointHasError = bp.scripts.some(script =>
                 this.results.some(result => result.bId === bp.id && result.script === script.uri && !result.success)
             );
-            const treeItem = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.Collapsed);
+            treeItem = new vscode.TreeItem(label);
             treeItem.contextValue = 'breakpoint';
             treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;
             treeItem.iconPath = new vscode.ThemeIcon('debug-breakpoint', new vscode.ThemeColor(breakpointHasError ? 'charts.red' : 'charts.green'));
             treeItem.description = describe(bp);
-            return treeItem;
         }
+
+        treeItem.collapsibleState = this.getCollapsibleState(element);
+        return treeItem;
     }
     
 
@@ -126,14 +192,18 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         if ('scripts' in element) {
             // Breakpoint children: scripts with results
             return (element as Breakpoint).scripts.filter(script =>
-                this.results.some(result => result.bId === (element as Breakpoint).id && result.script === script.uri)
+                this.results.some(result => 
+                    result.bId === (element as Breakpoint).id && result.script === script.uri
+                )
             );
         }
 
         if ('bId' in element) {
             // Script children: results
             const script = element as Script;
-            return this.results.filter(result => result.bId === script.bId && result.script === script.uri);
+            return this.results.filter(
+                result => result.bId === script.bId && result.script === script.uri
+            );
         }
 
         return [];
@@ -160,6 +230,14 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         this.treeView = vscode.window.createTreeView('replResultsView', {
             treeDataProvider: this,
             showCollapseAll: false,
+        });
+
+        this.treeView.onDidCollapseElement((event: vscode.TreeViewExpansionEvent<any>) => {
+            this.setCollapsibleState(event.element, vscode.TreeItemCollapsibleState.Collapsed);
+        });
+
+        this.treeView.onDidExpandElement((event: vscode.TreeViewExpansionEvent<any>) => {
+            this.setCollapsibleState(event.element, vscode.TreeItemCollapsibleState.Expanded);
         });
 
         this.treeView.onDidChangeSelection((event: vscode.TreeViewSelectionChangeEvent<any>) => {
