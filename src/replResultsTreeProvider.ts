@@ -88,6 +88,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
      /**
      * Set collapsible state for a given tree item.
+     * @param element - The tree item to set the collapsible state for.
+     * @param state - The collapsible state to set.
      */
      private setCollapsibleState(
         element: Breakpoint | Script | ReplResult,
@@ -121,65 +123,97 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Return a TreeItem for each element (Breakpoint, Script, or ReplResult).
      */
     getTreeItem(element: Breakpoint | Script | ReplResult): vscode.TreeItem {
-        let treeItem: vscode.TreeItem;
+        const treeItem = new vscode.TreeItem(''); // Placeholder for initialization
+    
         if (isReplResult(element)) {
-            // ReplResult Item
-            const result = element as ReplResult;
-            treeItem = new vscode.TreeItem(result.script ? path.basename(result.script) : 'No script info.');
-            treeItem.contextValue = 'result';
-            if (this.isFlattened) {
-                const assocBreakpoint = this.storageManager.loadBreakpoints().find(
-                    bp => bp.id === result.bId
-                );
-                treeItem.description = assocBreakpoint ? describe(assocBreakpoint, false) : 'No breakpoint info.';
-            } else {
-                treeItem.label = result.success ? 'Success' : 'Error';
-                treeItem.description = result.stack ? result.stack.split('\n')[0] : 'No issues detected.';
-            }
-            treeItem.tooltip = result.stack;
-            treeItem.iconPath = new vscode.ThemeIcon(
-                result.success ? 'pass' : 'error', new vscode.ThemeColor(
-                    result.success ? 'charts.green' : 'charts.red'
-                )
-            );
+            this.configureReplResultItem(treeItem, element as ReplResult);
         } else if ('bId' in element) {
-            // Script Item
-            const script = element as Script;
-            const label = `${path.basename(script.uri)}`;
-            const scriptHasError = this.results.some(result => 
-                result.bId === script.bId && result.script === script.uri && !result.success
-            );
-            treeItem = new vscode.TreeItem(label);
-            treeItem.contextValue = 'script';
-            treeItem.tooltip = script.uri;
-            treeItem.iconPath = new vscode.ThemeIcon(
-                scriptHasError ? 'error' : 'pass', new vscode.ThemeColor(
-                    scriptHasError ? 'charts.red' : 'charts.green'
-                )
-            );
-            treeItem.resourceUri = vscode.Uri.file(script.uri);
-            treeItem.label = label;
+            this.configureScriptItem(treeItem, element as Script);
         } else {
-            // Breakpoint Item
-            const bp = element as Breakpoint;
-            const label = `${path.basename(bp.file)}`;
-            const breakpointHasError = bp.scripts.some(script =>
-                this.results.some(result => result.bId === bp.id && result.script === script.uri && !result.success)
-            );
-            treeItem = new vscode.TreeItem(label);
-            treeItem.contextValue = 'breakpoint';
-            treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;
-            treeItem.iconPath = new vscode.ThemeIcon('debug-breakpoint', new vscode.ThemeColor(breakpointHasError ? 'charts.red' : 'charts.green'));
-            treeItem.description = describe(bp, false);
+            this.configureBreakpointItem(treeItem, element as Breakpoint);
         }
-
+    
         treeItem.collapsibleState = this.getCollapsibleState(element);
         return treeItem;
+    }
+    
+    /**
+     * Configure the TreeItem for a ReplResult.
+     * @param treeItem - The TreeItem to configure.
+     * @param result - The ReplResult to configure the TreeItem for.
+     */
+    private configureReplResultItem(treeItem: vscode.TreeItem, result: ReplResult): void {
+        treeItem.label = result.script ? path.basename(result.script) : 'No script info.';
+        treeItem.contextValue = 'result';
+        treeItem.description = this.isFlattened
+            ? this.getAssociatedBreakpointDescription(result)
+            : result.success ? 'Success' : 'Error';
+        treeItem.tooltip = result.stack || 'No issues detected.';
+        treeItem.iconPath = new vscode.ThemeIcon(
+            result.success ? 'pass' : 'error',
+            new vscode.ThemeColor(result.success ? 'charts.green' : 'charts.red')
+        );
+    }
+
+
+    /**
+     * Configure the TreeItem for a Script.
+     * @param treeItem - The TreeItem to configure.
+     * @param script - The Script to configure the TreeItem for.
+     */
+    private configureScriptItem(treeItem: vscode.TreeItem, script: Script): void {
+        const label = path.basename(script.uri);
+        const scriptHasError = this.results.some(result =>
+            result.bId === script.bId && result.script === script.uri && !result.success
+        );
+    
+        treeItem.label = label;
+        treeItem.contextValue = 'script';
+        treeItem.tooltip = script.uri;
+        treeItem.iconPath = new vscode.ThemeIcon(
+            scriptHasError ? 'error' : 'pass',
+            new vscode.ThemeColor(scriptHasError ? 'charts.red' : 'charts.green')
+        );
+        treeItem.resourceUri = vscode.Uri.file(script.uri);
+    }
+
+    /**
+     * Configure the TreeItem for a Breakpoint.
+     * @param treeItem 
+     * @param bp 
+     */
+    private configureBreakpointItem(treeItem: vscode.TreeItem, bp: Breakpoint): void {
+        const label = path.basename(bp.file);
+        const breakpointHasError = bp.scripts.some(script =>
+            this.results.some(result => result.bId === bp.id && result.script === script.uri && !result.success)
+        );
+    
+        treeItem.label = label;
+        treeItem.contextValue = 'breakpoint';
+        treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;
+        treeItem.iconPath = new vscode.ThemeIcon(
+            'debug-breakpoint',
+            new vscode.ThemeColor(breakpointHasError ? 'charts.red' : 'charts.green')
+        );
+        treeItem.description = describe(bp, false);
+    }
+
+    /**
+     * 
+     * @param result - The ReplResult to get the associated breakpoint description for.
+     * @returns The description of the associated breakpoint.
+     */
+    private getAssociatedBreakpointDescription(result: ReplResult): string {
+        const assocBreakpoint = this.storageManager.loadBreakpoints().find(
+            bp => bp.id === result.bId
+        );
+        return assocBreakpoint ? describe(assocBreakpoint, false) : 'No breakpoint info.';
     }
     
 
     /**
      * Get children elements based on the hierarchical or flattened view.
+     * @param element - The parent element to get children for.
      */
     async getChildren(element?: Breakpoint | Script): Promise<(Breakpoint | Script | ReplResult)[]> {
         const breakpoints = this.storageManager.loadBreakpoints();
