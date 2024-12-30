@@ -100,19 +100,17 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = (): void => {};
 
 
-//TODO: -> Clean up package.json 2 hrs
-    //delete unused dependencies and commands
-    //Setup and test command shortcuts
-//Save collapse state of repl treeview - 1 hr
-//TODO: Logo and publisher name - 1.5 hr
-//TODO: Long: Test and find issues - 2 hrs
 //TODO: Add go to breakpoint and open script to replResultsTreeProvider - 1 hr
+//TODO: Save and enhance collapse state of repl treeview - 1 hr
+//TODO: Add capture state in bottom bar - 45 min
+//TODO: Setup and test command shortcuts 2 hrs
+//TODO: Delete unused dependencies and commands - 1 hr
+//TODO: Clean up package.json 2 hrs
+//TODO: Test and find issues - 2 hrs
+//TODO: Logo and publisher name - 1.5 hr
 
 /**
  * TEST ISSUES:
  * - Ln description in treeview for breakpoint not always accurate
- * - Add capture state in bottom bar
  * - Empty scripts sometimes not removed
- * - When flattened view, entries should be sorted by name and description
- * - Breakpoints should turn purple when running
  */
