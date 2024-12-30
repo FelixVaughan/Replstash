@@ -104,8 +104,8 @@ export const deactivate = (): void => {};
 //TODO: Save and enhance collapse state of repl treeview - 1 hr
 //TODO: Add capture state in bottom bar - 45 min
 //TODO: Unknown memory leak/stack overflow  - 1 hr
-//TODO: Setup and test command shortcuts 2 hrs
 //TODO: Delete unused dependencies and commands - 1 hr
+//TODO: Setup and test command shortcuts 2 hrs
 //TODO: Clean up package.json 2 hrs
 //TODO: Test and find issues - 2 hrs
 //TODO: Logo and publisher name - 1.5 hr
