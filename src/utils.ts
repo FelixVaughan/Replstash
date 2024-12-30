@@ -213,7 +213,7 @@ export const evaluateScripts = async (scripts: Script[], threadId: number | null
 
         await Promise.all(scripts.map(async (script: Script) => {
             const result: ReplResult = await _evaluate(script.uri, frameId);
-            if (!result.success) script.error = true;
+            script.error = !result.success;
             const bp = breakpoints.find(b => b.id === script.bId);
     
             if (bp && bp instanceof vscode.SourceBreakpoint) {
