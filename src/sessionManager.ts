@@ -1,6 +1,6 @@
 import { _debugger, Breakpoint, refreshTree } from './utils';
 import StorageManager from './storageManager';
-
+import * as vscode from 'vscode';
 /**
  * Manages debugging sessions, breakpoints, and captured expression ouputs.
  * @class
@@ -34,6 +34,11 @@ export default class SessionManager {
     private capturing: boolean = false;
 
     /**
+     * Indicates if the debugger is currently active.
+     */
+    private debugging: boolean = false;
+
+    /**
      * Indicates if capturing is paused.
      */
     private captureIsPaused: boolean = false;
@@ -48,11 +53,37 @@ export default class SessionManager {
      */
     private storageManager: StorageManager = StorageManager.instance;
 
+    private statusBarItem: vscode.StatusBarItem;
+
     /**
      * Private constructor to ensure Singleton pattern.
      * Initializes event listeners for breakpoint changes.
      */
     private constructor() {
+
+        this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+        this.statusBarItem.command = 'replStash.toggleCapture'; // Optional command for interaction
+        this.updateStatusBar();
+        this.statusBarItem.show();
+        this.debugEventListeners();
+    }
+
+    /**
+     * Initializes event listeners for debugging sessions.
+     */
+    private debugEventListeners(): void {
+        // Listen for debugging session start
+        _debugger.onDidStartDebugSession(() => {
+            this.debugging = true;
+            this.updateStatusBar();
+        });
+
+        // Listen for debugging session termination
+        _debugger.onDidTerminateDebugSession(() => {
+            this.debugging = false;
+            this.updateStatusBar();
+        });
+
         _debugger.onDidChangeBreakpoints(({removed, changed}) => {
 
             // Handle removed breakpoints
@@ -104,6 +135,7 @@ export default class SessionManager {
     setCapturing(capturing: boolean): void {
         this.capturing = capturing;
         this.captureIsPaused = false;
+        this.updateStatusBar();
     }
 
     /**
@@ -121,6 +153,30 @@ export default class SessionManager {
     setCapturePaused(paused: boolean): void {
         this.captureIsPaused = paused;
         this.capturing = false;
+        this.updateStatusBar();
+    }
+
+
+    /**
+     * Updates the status bar to reflect the current capturing state.
+     */
+    private updateStatusBar = () : void => {
+        let color = 'white';
+        let tip = 'Not capturing';
+
+        if (this.capturing) {
+            color = 'green';
+            tip = 'Currently capturing';
+        } else if (this.captureIsPaused) {
+            color = 'orange';
+            tip = 'Capture paused';
+        } else if (this.debugging) {
+            color = 'red';
+            tip = 'Debugging but not capturing';
+        }
+        this.statusBarItem.text = 'ReplStash';
+        this.statusBarItem.color = color;
+        this.statusBarItem.tooltip = tip;
     }
 
     /**

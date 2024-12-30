@@ -134,7 +134,7 @@ export default class DebugAdapterTracker {
         // Handle continued execution
         if (message.type === 'event' && message.event === 'continued') {
             this.commandHandler.setStoppedOnBreakpoint(false);
-            if (this.sessionManager.isCapturing()) {
+            if (this.sessionManager.isCapturing() || this.sessionManager.capturePaused()) {
                 this.commandHandler.stopCapture(true);
             }
             showInformationMessage('Debugger resumed from breakpoint.');

@@ -254,7 +254,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Copy the error stack to the clipboard.
-     * @param element The ReplResult to copy the error stack from.
+     * @param element - The ReplResult to copy the error stack from.
      */
     copyStackTrace = async (element: ReplResult): Promise<void> => {
         if (!element.stack) {
@@ -266,7 +266,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Open the script file associated with the ReplResult.
-     * @param element The ReplResult to open the script file for.
+     * @param element - The ReplResult to open the script file for.
      */
     openScripts = async (element: ReplResult | Script): Promise<void> => {
         const uri = isReplResult(element) ? (element as ReplResult).script : (element as Script).uri;
@@ -277,6 +277,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * get the breakpoint id of the element
+     * @param element - The element to get the breakpoint id for.
+     * @returns The breakpoint id.
      */
     getBid = (element: ReplResult | Script | Breakpoint): string | undefined => {
         if (isReplResult(element)) {
@@ -291,7 +293,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Jump to the breakpoint associated with the ReplResult.
-     * @param element The ReplResult to jump to the breakpoint for.
+     * @param element - The ReplResult to jump to the breakpoint for.
      */
     jumpToBreakpoint = async (element: ReplResult | Script | Breakpoint): Promise<void> => {
         const bid = this.getBid(element);
