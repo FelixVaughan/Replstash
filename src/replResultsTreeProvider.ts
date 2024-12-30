@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Breakpoint, describe, ReplResult, Script, commands, isReplResult, showWarningMessage } from './utils';
+import { Breakpoint, describe, ReplResult, Script, commands, isReplResult, showWarningMessage, isBreakpoint } from './utils';
 import ReplResultsPool from './replResultsPool';
 import StorageManager from './storageManager';
 import path from 'path';
@@ -228,6 +228,48 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
             return;
         }
         await vscode.env.clipboard.writeText(`\'${element.stack}\'`);
+    }
+
+    /**
+     * Open the script file associated with the ReplResult.
+     * @param element The ReplResult to open the script file for.
+     */
+    openScripts = async (element: ReplResult | Script): Promise<void> => {
+        const uri = isReplResult(element) ? (element as ReplResult).script : (element as Script).uri;
+        if (!uri) return
+        const document = await vscode.workspace.openTextDocument(uri);
+        vscode.window.showTextDocument(document, { preview: false });
+    }
+
+    /**
+     * get the breakpoint id of the element
+     */
+    getBid = (element: ReplResult | Script | Breakpoint): string | undefined => {
+        if (isReplResult(element)) {
+            return (element as ReplResult).bId;
+        }
+        if (isBreakpoint(element)) {
+            return (element as Breakpoint).id;
+        }
+        return (element as Script).bId;
+    };
+    
+
+    /**
+     * Jump to the breakpoint associated with the ReplResult.
+     * @param element The ReplResult to jump to the breakpoint for.
+     */
+    jumpToBreakpoint = async (element: ReplResult | Script | Breakpoint): Promise<void> => {
+        const bid = this.getBid(element);
+        if (!bid) return;
+        const breakpoint = this.storageManager.loadBreakpoints().find(bp => bp.id === bid);
+        if (!breakpoint) return;
+        //run command to jump to breakpoint
+        const document = await vscode.workspace.openTextDocument(breakpoint.file);
+        const position = new vscode.Position(Math.max(breakpoint.line - 1, 0), 0)
+        await vscode.window.showTextDocument(document, {
+            selection: new vscode.Range(position, position),
+        });
     }
 
 

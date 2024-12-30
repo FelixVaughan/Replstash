@@ -80,6 +80,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
         // Evaluation Results Tree view commands
         registerCommand('replStash.toggleReplTreeViewMode', replResultsTreeProvider.toggleReplTreeViewMode),
         registerCommand('replStash.copyErrorStack', replResultsTreeProvider.copyStackTrace),
+        registerCommand('replStash.openRanScripts', replResultsTreeProvider.openScripts),
+        registerCommand('replStash.jumpToBreakpoint', replResultsTreeProvider.jumpToBreakpoint),
     ];
 
     // Set the initial context for scripts' runnability
@@ -100,7 +102,6 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = (): void => {};
 
 
-//TODO: Add go to breakpoint and open script to replResultsTreeProvider - 1 hr
 //TODO: Add capture state in bottom bar - 45 min
 //TODO: Unknown memory leak/stack overflow  - 1 hr
 //TODO: Delete unused dependencies and commands - 1 hr

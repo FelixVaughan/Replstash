@@ -181,6 +181,16 @@
         "command": "replStash.copyErrorStack",
         "title": "Copy Stack Trace",
         "enablement": "view == replResultsView && replStash.stackAvailable"
+      },
+      {
+        "command": "replStash.openRanScripts",
+        "title": "Open Ran Script",
+        "enablement": "view == replResultsView"
+      },
+      {
+        "command": "replStash.jumpToBreakpoint",
+        "title": "Jump to Breakpoint",
+        "enablement": "view == replResultsView"
       }
     ],
     "menus": {
@@ -255,6 +265,16 @@
         {
           "command": "replStash.copyErrorStack",
           "when": "view == replResultsView && viewItem == result",
+          "group": "navigation"
+        },
+        {
+          "command": "replStash.openRanScripts",
+          "when": "view == replResultsView && (viewItem == script || viewItem == result)",
+          "group": "navigation"
+        },
+        {
+          "command": "replStash.jumpToBreakpoint",
+          "when": "view == replResultsView",
           "group": "navigation"
         }
       ],
