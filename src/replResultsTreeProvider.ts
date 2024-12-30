@@ -93,6 +93,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         element: Breakpoint | Script | ReplResult,
         state: vscode.TreeItemCollapsibleState
     ): void {
+        if (isReplResult(element)) return; 
         const key = 'id' in element ? element.id : (element as Script).uri;
         this.collapsibleStates.set(key, state);
     }
@@ -101,6 +102,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Get the collapsible state for a given tree item.
      */
     private getCollapsibleState(element: Breakpoint | Script | ReplResult): vscode.TreeItemCollapsibleState {
+        if (isReplResult(element)) return vscode.TreeItemCollapsibleState.None;
         const key = 'id' in element ? element.id : (element as Script).uri;
         return this.collapsibleStates.get(key) || vscode.TreeItemCollapsibleState.Collapsed;
     }
@@ -123,10 +125,17 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         if (isReplResult(element)) {
             // ReplResult Item
             const result = element as ReplResult;
-            const label = result.success ? 'Success' : 'Error';
-            treeItem = new vscode.TreeItem(label);
+            treeItem = new vscode.TreeItem(result.script ? path.basename(result.script) : 'No script info.');
             treeItem.contextValue = 'result';
-            treeItem.description = result.stack ? result.stack.split('\n')[0] : 'No issues detected.';
+            if (this.isFlattened) {
+                const assocBreakpoint = this.storageManager.loadBreakpoints().find(
+                    bp => bp.id === result.bId
+                );
+                treeItem.description = assocBreakpoint ? describe(assocBreakpoint, false) : 'No breakpoint info.';
+            } else {
+                treeItem.label = result.success ? 'Success' : 'Error';
+                treeItem.description = result.stack ? result.stack.split('\n')[0] : 'No issues detected.';
+            }
             treeItem.tooltip = result.stack;
             treeItem.iconPath = new vscode.ThemeIcon(
                 result.success ? 'pass' : 'error', new vscode.ThemeColor(
@@ -161,7 +170,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
             treeItem.contextValue = 'breakpoint';
             treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;
             treeItem.iconPath = new vscode.ThemeIcon('debug-breakpoint', new vscode.ThemeColor(breakpointHasError ? 'charts.red' : 'charts.green'));
-            treeItem.description = describe(bp);
+            treeItem.description = describe(bp, false);
         }
 
         treeItem.collapsibleState = this.getCollapsibleState(element);

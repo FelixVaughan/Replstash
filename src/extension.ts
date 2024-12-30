@@ -101,7 +101,6 @@ export const deactivate = (): void => {};
 
 
 //TODO: Add go to breakpoint and open script to replResultsTreeProvider - 1 hr
-//TODO: Save and enhance collapse state of repl treeview - 1 hr
 //TODO: Add capture state in bottom bar - 45 min
 //TODO: Unknown memory leak/stack overflow  - 1 hr
 //TODO: Delete unused dependencies and commands - 1 hr
