@@ -103,8 +103,8 @@ export const deactivate = (): void => {};
 
 
 //TODO: Delete unused dependencies and commands - 1 hr
-//TODO: Setup and test command shortcuts 2 hrs
 //TODO: Clean up package.json 2 hrs
+//TODO: Setup and test command shortcuts 2 hrs
 //TODO: Test and find issues - 2 hrs
 //TODO: Logo and publisher name - 1.5 hr
 
@@ -112,4 +112,5 @@ export const deactivate = (): void => {};
  * TEST ISSUES:
  * - Ln description in treeview for breakpoint not always accurate
  * - Empty scripts sometimes not removed
+ * - Can't multi-select in reverse order
  */
