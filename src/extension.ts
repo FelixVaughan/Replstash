@@ -103,7 +103,6 @@ export const deactivate = (): void => {};
 
 
 //TODO: Add capture state in bottom bar - 45 min
-//TODO: Unknown memory leak/stack overflow  - 1 hr
 //TODO: Delete unused dependencies and commands - 1 hr
 //TODO: Setup and test command shortcuts 2 hrs
 //TODO: Clean up package.json 2 hrs
