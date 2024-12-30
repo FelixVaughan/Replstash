@@ -135,9 +135,9 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
         
     
-        treeItem.checkboxState = element.active
-            ? vscode.TreeItemCheckboxState.Checked
-            : vscode.TreeItemCheckboxState.Unchecked;
+        // treeItem.checkboxState = element.active
+        //     ? vscode.TreeItemCheckboxState.Checked
+        //     : vscode.TreeItemCheckboxState.Unchecked;
     
         if (isBreakpoint(element)) {
             const breakpoint = element as Breakpoint;
