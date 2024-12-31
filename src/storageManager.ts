@@ -285,9 +285,13 @@ export default class StorageManager {
      */
     removeBreakpoint(breakpoint: Breakpoint): void {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
-        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.filter(
-            (bp) => bp.id !== breakpoint.id
-        );
+        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.filter((bp) => {
+            if (bp.id === breakpoint.id) {
+                bp.scripts.forEach((s) => this.deleteScript(path.basename(s.uri)));
+                return false;
+            }
+            return true;
+        });
         this.updateBreakpoints(updatedBreakpoints);
     }
 
