@@ -5,8 +5,9 @@ import DebugAdapterTracker from './debugAdapterTracker';
 import CommandHandler from './commandHandler';
 import BreakpointsTreeProvider from './breakpointsTreeProvider';
 import ReplResultsTreeProvider from './replResultsTreeProvider';
+import BreakpointDecorationProvider from './breakpointDecorationProvider';
 import { _debugger, commands } from './utils';
-
+import { window } from './utils';
 /**
  * Activates the VS Code extension, setting up commands, tree views, and debug trackers.
  * 
@@ -34,6 +35,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
             return new DebugAdapterTracker(commandHandler); // Pass commandHandler to track capturing state
         }
     });
+
+    const decorationProvider = BreakpointDecorationProvider.instance;
+    const decorationDisposable = window.registerFileDecorationProvider(decorationProvider);
 
     /**
      * Helper function to register a command in VS Code.
@@ -90,6 +94,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
     // Add disposables and other subscriptions to the extension's lifecycle
     context.subscriptions.push(
         ...disposableCommands,
+        decorationDisposable,
         debugAdapterTrackerFactory,
         breakpointsTreeView,
         replResultsTreeView
@@ -113,4 +118,5 @@ export const deactivate = (): void => {};
  * - Ln description in treeview for breakpoint not always accurate
  * - Empty scripts sometimes not removed
  * - Can't multi-select in reverse order
+ * - Single click is iffy
  */

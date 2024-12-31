@@ -7,7 +7,7 @@ class ReplResultsPool extends EventEmitter {
     private static _instance: ReplResultsPool | null = null;
 
     /** @type {ReplResult[]} */
-    private results: ReplResult[] | null = [];
+    public results: ReplResult[] | null = [];
 
     // Private constructor to prevent direct instantiation
     private constructor() {
