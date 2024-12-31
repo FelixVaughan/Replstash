@@ -60,9 +60,8 @@ export default class SessionManager {
      * Initializes event listeners for breakpoint changes.
      */
     private constructor() {
-
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-        this.statusBarItem.command = 'replStash.toggleCapture'; // Optional command for interaction
+        this.statusBarItem.command = 'replStash.toggleCapture';
         this.updateStatusBar();
         this.statusBarItem.show();
         this.debugEventListeners();

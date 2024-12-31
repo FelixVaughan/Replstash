@@ -67,6 +67,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replStash.discardCapture', commandHandler.discardCapture),
         registerCommand('replStash.renameSavedScript', commandHandler.renameSavedScript),
         registerCommand('replStash.purgeScripts', commandHandler.purgeScripts),
+        registerCommand('replStash.toggleCapture', commandHandler.toggleCapture),
 
         // Breakpoint Tree view commands
         registerCommand('replStash.toggleElementActive', breakpointsTreeProvider.setElementActivation),

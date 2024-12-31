@@ -436,4 +436,12 @@ export default class CommandHandler extends EventEmitter {
         showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
     };
 
+    toggleCapture = async (): Promise<void> => {
+        if (this.sessionManager.isCapturing()) {
+            await this.stopCapture();
+        } else {
+            this.startCapture();
+        }
+    }
+
 }
