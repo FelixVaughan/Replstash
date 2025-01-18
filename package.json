@@ -1,17 +1,40 @@
 {
   "name": "replstash",
-  "displayName": "replstash",
-  "description": "",
+  "displayName": "Replstash",
+  "description": "Save, edit and rerun repl expressions captured from the debug console",
+  "publisher": "replstash #TODO: Create a publisher account",
+  "license": "MIT #TODO: Change the license to the appropriate one",
+  "badges": [],
+  "markdown": "github",
+  "qna": "marketplace",
+  "pricing": "Free",
+  "homepage": "",
+  "bugs": {
+    "url": "http://todo.com"
+  },
+  "icon": "",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": {
+    "name": "Felix Ezama-Vaughan",
+    "email": "felix.ezamavaughan@gmail.com"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.92.2"
   },
-  "categories": [
-    "Debuggers"
-  ],
+  "categories": ["Debuggers"],
+  "keywords": ["repl", "debug", "console", "breakpoint", "script", "automate"],
   "activationEvents": [
     "onDebug"
   ],
+
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -43,72 +66,72 @@
       {
         "command": "replStash.startCapture",
         "title": "Start Capturing Debug Console",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.pauseCapture",
         "title": "Pause Capturing Debug Console",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.stopCapture",
         "title": "Stop Debug Capture",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.clearCapture",
-        "category": "Repl Stash",
+        "category": "Replstash",
         "title": "Clear Debug Captured"
       },
       {
         "command": "replStash.discardCapture",
-        "category": "Repl Stash",
+        "category": "Replstash",
         "title": "Discard Debug Captured"
       },
       {
         "command": "replStash.clearLastExp",
-        "category": "Repl Stash",
+        "category": "Replstash",
         "title": "Pop Last Expression"
       },
       {
         "command": "replStash.editSavedScript",
         "title": "Open Replstash Script",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.deleteSavedScript",
         "title": "Delete Capture Script",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.purgeScripts",
         "title": "Purge all Scripts",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.purgeBreakpoints",
         "title": "Purge all Breakpoints",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.enableScriptsRunnable",
         "title": "Enable Auto-run Replstash scripts",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.disableScriptsRunnable",
         "title": "Disable Auto-run Replstash scripts",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.deleteBreakpoint",
         "title": "Delete Replstash Breakpoint",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.renameSavedScript",
         "title": "Rename Replstash Script",
-        "category": "Repl Stash"
+        "category": "Replstash"
       },
       {
         "command": "replStash.activateSelected",
