@@ -226,7 +226,7 @@ export const evaluateScripts = async (scripts: Script[], threadId: number | null
             results.push({script: script.uri, bId: script.bId, ...result});
         }));
     } catch (error) {
-        showWarningMessage('An error occurred evaulating the scripts');
+        showWarningMessage('An error occurred evaulating the scripts.');
     }finally{
         StorageManager.instance.updateLoadedBreakpoints();
         ReplResultsPool.instance.send(results);

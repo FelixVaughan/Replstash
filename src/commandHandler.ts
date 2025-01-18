@@ -252,7 +252,7 @@ export default class CommandHandler extends EventEmitter {
             return;
         }
         if (Object.is(this.sessionManager.clearLastExpression(), null)) {
-            showWarningMessage('No expression entered.');
+            showWarningMessage('No expressions to pop.');
             return;
         }
         showInformationMessage('Last expression cleared.');
@@ -266,7 +266,7 @@ export default class CommandHandler extends EventEmitter {
      * 
      * @returns {Promise<Breakpoint | void>} The selected breakpoint or `void` if no selection was made.
      */
-    private selectBreakpoint = async (): Promise<Breakpoint | void> => {
+    private selectBreakpoint = async (supress: boolean = false): Promise<Breakpoint | void> => {
         // Load all stored breakpoints
         const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
 
@@ -280,7 +280,7 @@ export default class CommandHandler extends EventEmitter {
         const selectedBreakpoint: LabeledItem | undefined = await window.showQuickPick(
             breakpoints.map((bp: Breakpoint) => ({
                 label: bp.file,
-                description: `Line: ${bp.line} | Column: ${bp.column}`,
+                description: `Ln:${bp.line}, Col${bp.column}`,
                 id: bp.id
             })),
             {
@@ -291,7 +291,7 @@ export default class CommandHandler extends EventEmitter {
 
         // If no selection is made, exit the function
         if (!selectedBreakpoint) {
-            showInformationMessage('No breakpoint selected.');
+            !supress && showInformationMessage('No breakpoint selected.');
             return;
         }
 
@@ -358,7 +358,7 @@ export default class CommandHandler extends EventEmitter {
      * @returns {Promise<void>}
      */
     deleteBreakpoint = async (): Promise<void> => {
-        const selectedBreakpoint: Breakpoint | void = await this.selectBreakpoint();
+        const selectedBreakpoint: Breakpoint | void = await this.selectBreakpoint(true);
         if (selectedBreakpoint) {
             this.storageManager.removeBreakpoint(selectedBreakpoint);
             showInformationMessage(`Deleted: ${selectedBreakpoint.file}`);
@@ -399,7 +399,9 @@ export default class CommandHandler extends EventEmitter {
      * @returns {Promise<void>}
      */
     purgeBreakpoints = async (): Promise<void> => {
-        const proceed: boolean = await this.confirmWarning("Are you sure you want to purge all breakpoints?");
+        const proceed: boolean = await this.confirmWarning(
+            "Are you sure you want to purge all breakpoints?"
+        );
         proceed && this.storageManager.purgeBreakpoints();
     };
 
@@ -409,19 +411,10 @@ export default class CommandHandler extends EventEmitter {
      * @returns {Promise<void>}
      */
     purgeScripts = async (): Promise<void> => {
-        const proceed: boolean = await this.confirmWarning("Are you sure you want to purge all scripts?");
+        const proceed: boolean = await this.confirmWarning(
+            "Are you sure you want to purge all scripts?"
+        );
         proceed && this.storageManager.purgeScripts();
-    };
-
-    /**
-     * Purges all breakpoints and scripts after user confirmation.
-     * Displays a warning message to confirm the action before proceeding.
-     * Currently unused.
-     * @returns {Promise<void>}
-     */
-    purgeAll = async (): Promise<void> => {
-        const proceed: boolean = await this.confirmWarning("Are you sure you want to purge all data (breakpoints and scripts)?");
-        proceed && this.storageManager.purgeAll();
     };
 
     /**
@@ -430,10 +423,19 @@ export default class CommandHandler extends EventEmitter {
      * @param {boolean} runnable - True to make scripts runnable, otherwise false.
      * @returns {Promise<void>}
      */
-    setScriptRunnable = async (runnable: boolean): Promise<void> => {
+    toggleAutomaticRuns = async (runnable: boolean): Promise<void> => {
+        if (this.sessionManager.scriptsAreRunnable() === runnable) {
+            showWarningMessage(
+                `Automatic runs are already ${runnable ? 'enabled' : 'disabled'}.
+            `);
+            return;
+        }
         this.sessionManager.setScriptsRunnable(runnable);
-        commands.executeCommand('setContext', 'replStash.scriptsRunnable', runnable);
-        showInformationMessage(`Slugs are now ${runnable ? 'runnable' : 'not runnable'}.`);
+        if(runnable){
+            showInformationMessage('Replstash will now automatically run.');
+            return;
+        }
+        showInformationMessage('Automatic Replstash runs disabled.');
     };
 
     toggleCapture = async (): Promise<void> => {

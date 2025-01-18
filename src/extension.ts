@@ -59,8 +59,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replStash.editSavedScript', commandHandler.openScript),
         registerCommand('replStash.deleteSavedScript', commandHandler.deleteSavedScript),
         registerCommand('replStash.purgeBreakpoints', commandHandler.purgeBreakpoints),
-        registerCommand('replStash.enableScriptsRunnable', () => commandHandler.setScriptRunnable(true)),
-        registerCommand('replStash.disableScriptsRunnable', () => commandHandler.setScriptRunnable(false)),
+        registerCommand('replStash.enableScriptsRunnable', () => commandHandler.toggleAutomaticRuns(true)),
+        registerCommand('replStash.disableScriptsRunnable', () => commandHandler.toggleAutomaticRuns(false)),
         registerCommand('replStash.deleteBreakpoint', commandHandler.deleteBreakpoint),
         registerCommand('replStash.clearCapture', commandHandler.clearCapture),
         registerCommand('replStash.clearLastExp', commandHandler.clearLastExpression),
@@ -89,9 +89,6 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replStash.jumpToBreakpoint', replResultsTreeProvider.jumpToBreakpoint),
     ];
 
-    // Set the initial context for scripts' runnability
-    commands.executeCommand('setContext', 'replStash.scriptsRunnable', false);
-
     // Add disposables and other subscriptions to the extension's lifecycle
     context.subscriptions.push(
         ...disposableCommands,
@@ -107,12 +104,12 @@ export const activate = (context: vscode.ExtensionContext): void => {
  */
 export const deactivate = (): void => {};
 
+ 
 
-//TODO: Delete unused dependencies and commands - 1 hr
-//TODO: Clean up package.json 2 hrs
 //TODO: Setup and test command shortcuts 2 hrs
 //TODO: Test and find issues - 2 hrs
-//TODO: Logo and publisher name - 1.5 hr
+//TODO: Logo and publisher name  (badgen.net) - 1.5 hr
+//TODO: README.md - 1 hr
 
 /**
  * TEST ISSUES:
@@ -120,4 +117,10 @@ export const deactivate = (): void => {};
  * - Empty scripts sometimes not removed
  * - Can't multi-select in reverse order
  * - Single click is iffy
+ * - Show current captured expressions
+ * - Show autorun status on repl-stash view
+ * - Copy and paste single script via context
+ * - Make activation toggle multi select
+ * - Some commands fade when disabled but others do not 
  */
+

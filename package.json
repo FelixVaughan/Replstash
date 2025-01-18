@@ -28,16 +28,14 @@
         {
           "id": "breakpointsView",
           "name": "Repl Stash",
-          "type": "tree",
-          "visibility": "visible"
+          "type": "tree"
         }
       ],
       "evaluationResultsContainer": [
         {
           "id": "replResultsView",
           "name": "Stash Runs",
-          "type": "tree",
-          "visibility": "visible"
+          "type": "tree"
         }
       ]
     },
@@ -74,17 +72,12 @@
       },
       {
         "command": "replStash.editSavedScript",
-        "title": "Open Script",
+        "title": "Open Replstash Script",
         "category": "Repl Stash"
       },
       {
         "command": "replStash.deleteSavedScript",
         "title": "Delete Capture Script",
-        "category": "Repl Stash"
-      },
-      {
-        "command": "replStash.activateScript",
-        "title": "Activate Script",
         "category": "Repl Stash"
       },
       {
@@ -99,22 +92,22 @@
       },
       {
         "command": "replStash.enableScriptsRunnable",
-        "title": "Enable Scripts Runnable",
+        "title": "Enable Auto-run Replstash scripts",
         "category": "Repl Stash"
       },
       {
         "command": "replStash.disableScriptsRunnable",
-        "title": "Disable Scripts Runnable",
+        "title": "Disable Auto-run Replstash scripts",
         "category": "Repl Stash"
       },
       {
         "command": "replStash.deleteBreakpoint",
-        "title": "Delete Slug Breakpoint",
+        "title": "Delete Replstash Breakpoint",
         "category": "Repl Stash"
       },
       {
         "command": "replStash.renameSavedScript",
-        "title": "Rename Capture Script",
+        "title": "Rename Replstash Script",
         "category": "Repl Stash"
       },
       {
@@ -184,7 +177,7 @@
       },
       {
         "command": "replStash.openRanScripts",
-        "title": "Open Ran Script",
+        "title": "Open Script",
         "enablement": "view == replResultsView"
       },
       {
@@ -209,83 +202,55 @@
       "view/item/context": [
         {
           "command": "replStash.toggleElementActive",
-          "when": "view == breakpointsView && viewItem == breakpoint",
-          "group": "navigation"
-        },
-        {
-          "command": "replStash.toggleElementActive",
-          "when": "view == breakpointsView && viewItem == script",
-          "group": "navigation"
+          "when": "view == breakpointsView"
         },
         {
           "command": "replStash.runScripts",
-          "when": "view == breakpointsView && viewItem == script",
-          "group": "navigation"
+          "when": "view == breakpointsView && viewItem == script"
         },
         {
           "command": "replStash.activateSelected",
-          "when": "view == breakpointsView",
-          "group": "navigation"
+          "when": "view == breakpointsView"
         },
         {
           "command": "replStash.deactivateSelected",
-          "when": "view == breakpointsView",
-          "group": "navigation"
+          "when": "view == breakpointsView"
         },
         {
           "command": "replStash.copyScripts",
-          "when": "view == breakpointsView",
-          "group": "navigation"
+          "when": "view == breakpointsView"
         },
         {
           "command": "replStash.pasteScripts",
-          "when": "view == breakpointsView && viewItem == breakpoint",
-          "group": "navigation"
+          "when": "view == breakpointsView && viewItem == breakpoint"
         },
         {
           "command": "replStash.removeBreakpointScripts",
-          "when": "view == breakpointsView",
-          "group": "navigation"
+          "when": "view == breakpointsView"
         },
         {
           "command": "replStash.openScripts",
-          "when": "view == breakpointsView",
-          "group": "navigation"
+          "when": "view == breakpointsView"
         },
         {
           "command": "replStash.runAllBreakpointScripts",
-          "when": "view == breakpointsView && viewItem == breakpoint",
-          "group": "navigation"
+          "when": "view == breakpointsView && viewItem == breakpoint"
         },
         {
           "command": "replStash.treeRenameSavedScript",
-          "when": "view == breakpointsView && viewItem == script",
-          "group": "navigation"
+          "when": "view == breakpointsView && viewItem == script"
         },
         {
           "command": "replStash.copyErrorStack",
-          "when": "view == replResultsView && viewItem == result",
-          "group": "navigation"
+          "when": "view == replResultsView && viewItem == result"
         },
         {
           "command": "replStash.openRanScripts",
-          "when": "view == replResultsView && (viewItem == script || viewItem == result)",
-          "group": "navigation"
+          "when": "view == replResultsView && (viewItem == script || viewItem == result)"
         },
         {
           "command": "replStash.jumpToBreakpoint",
-          "when": "view == replResultsView",
-          "group": "navigation"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "replStash.enableScriptsRunnable",
-          "when": "!replStash.scriptsRunnable"
-        },
-        {
-          "command": "replStash.disableScriptsRunnable",
-          "when": "replStash.scriptsRunnable"
+          "when": "view == replResultsView"
         }
       ]
     },
@@ -293,73 +258,61 @@
       {
         "command": "replStash.startCapture",
         "key": "ctrl+alt+s",
+        "mac": "cmd+alt+s",
         "when": "debugging"
       },
       {
         "command": "replStash.pauseCapture",
         "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p",
         "when": "debugging"
       },
       {
         "command": "replStash.stopCapture",
         "key": "ctrl+alt+s",
+        "mac": "cmd+alt+s",
         "when": "debugging"
       },
       {
         "command": "replStash.clearCapture",
         "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c",
         "when": "debugging"
       },
       {
         "command": "replStash.discardCapture",
         "category": "ctrl+alt+d",
+        "mac": "cmd+alt+d",
         "title": "Discard Debug Captured"
       },
       {
         "command": "replStash.clearLastExp",
         "key": "ctrl+alt+c",
+        "mac": "cmd+alt+c",
         "when": "debugging"
       },
       {
         "command": "replStash.editSavedScript",
         "key": "ctrl+alt+e",
-        "when": "debugging"
-      },
-      {
-        "command": "replStash.activateScripts",
-        "key": "ctrl+alt+a",
+        "mac": "cmd+alt+e",
         "when": "debugging"
       },
       {
         "command": "replStash.deleteSavedScript",
         "key": "ctrl+alt+d",
+        "mac": "cmd+alt+d",
         "when": "debugging"
       }
     ]
   },
   "scripts": {
-    "lint": "eslint .",
-    "pretest": "npm run lint",
-    "test": "vscode-test",
     "watch": "tsc --watch",
     "doc": "npx typedoc"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.7",
     "@types/node": "20.x",
     "@types/vscode": "^1.92.0",
-    "@typescript-eslint/eslint-plugin": "^8.15.0",
-    "@typescript-eslint/parser": "^8.15.0",
-    "@vscode/test-cli": "^0.0.9",
-    "@vscode/test-electron": "^2.4.0",
-    "eslint": "^8.57.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "prettier": "^3.3.3",
     "typedoc": "^0.26.11",
     "typescript": "^5.7.2"
-  },
-  "dependencies": {
-    "prettier-eslint": "^16.3.0"
   }
 }
