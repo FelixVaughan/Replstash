@@ -2,7 +2,7 @@
   "name": "replstash",
   "displayName": "Replstash",
   "description": "Save, edit and rerun repl expressions captured from the debug console",
-  "publisher": "replstash #TODO: Create a publisher account",
+  "publisher": "Replstash",
   "license": "MIT",
   "markdown": "github",
   "qna": "marketplace",
@@ -56,7 +56,7 @@
       "debug": [
         {
           "id": "breakpointsView",
-          "name": "Repl Stash",
+          "name": "REPLSTASH",
           "type": "tree"
         }
       ],
@@ -70,147 +70,147 @@
     },
     "commands": [
       {
-        "command": "replStash.startCapture",
+        "command": "replstash.startCapture",
         "title": "Start Capturing Debug Console",
         "category": "Replstash"
       },
       {
-        "command": "replStash.pauseCapture",
+        "command": "replstash.pauseCapture",
         "title": "Pause Capturing Debug Console",
         "category": "Replstash"
       },
       {
-        "command": "replStash.stopCapture",
+        "command": "replstash.stopCapture",
         "title": "Stop Debug Capture",
         "category": "Replstash"
       },
       {
-        "command": "replStash.clearCapture",
-        "category": "Replstash",
-        "title": "Clear Debug Captured"
+        "command": "replstash.clearCapture",
+        "title": "Clear Debug Captured",
+        "category": "Replstash"
       },
       {
-        "command": "replStash.discardCapture",
-        "category": "Replstash",
-        "title": "Discard Debug Captured"
+        "command": "replstash.discardCapture",
+        "title": "Discard Debug Captured",
+        "category": "Replstash"
       },
       {
-        "command": "replStash.clearLastExp",
-        "category": "Replstash",
-        "title": "Pop Last Expression"
+        "command": "replstash.clearLastExp",
+        "title": "Pop Last Expression",
+        "category": "Replstash"
       },
       {
-        "command": "replStash.editSavedScript",
+        "command": "replstash.editSavedScript",
         "title": "Open Replstash Script",
         "category": "Replstash"
       },
       {
-        "command": "replStash.deleteSavedScript",
+        "command": "replstash.deleteSavedScript",
         "title": "Delete Capture Script",
         "category": "Replstash"
       },
       {
-        "command": "replStash.purgeScripts",
+        "command": "replstash.purgeScripts",
         "title": "Purge all Scripts",
         "category": "Replstash"
       },
       {
-        "command": "replStash.purgeBreakpoints",
+        "command": "replstash.purgeBreakpoints",
         "title": "Purge all Breakpoints",
         "category": "Replstash"
       },
       {
-        "command": "replStash.enableScriptsRunnable",
+        "command": "replstash.enableScriptsRunnable",
         "title": "Enable Auto-run Replstash scripts",
         "category": "Replstash"
       },
       {
-        "command": "replStash.disableScriptsRunnable",
+        "command": "replstash.disableScriptsRunnable",
         "title": "Disable Auto-run Replstash scripts",
         "category": "Replstash"
       },
       {
-        "command": "replStash.deleteBreakpoint",
+        "command": "replstash.deleteBreakpoint",
         "title": "Delete Replstash Breakpoint",
         "category": "Replstash"
       },
       {
-        "command": "replStash.renameSavedScript",
+        "command": "replstash.renameSavedScript",
         "title": "Rename Replstash Script",
         "category": "Replstash"
       },
       {
-        "command": "replStash.activateSelected",
+        "command": "replstash.activateSelected",
         "title": "Activate",
         "enablement": "view == breakpointsView"
       },
       {
-        "command": "replStash.deactivateSelected",
+        "command": "replstash.deactivateSelected",
         "title": "Deactivate",
         "enablement": "view == breakpointsView"
       },
       {
-        "command": "replStash.toggleElementActive",
+        "command": "replstash.toggleElementActive",
         "title": "Toggle",
-        "enablement": "view == breakpointsView && !replStash.multipleSelectedItems"
+        "enablement": "view == breakpointsView && !replstash.multipleSelectedItems"
       },
       {
-        "command": "replStash.runScripts",
+        "command": "replstash.runScripts",
         "title": "Run",
         "enablement": "view == breakpointsView"
       },
       {
-        "command": "replStash.copyScripts",
+        "command": "replstash.copyScripts",
         "title": "Copy Scripts",
-        "enablement": "view == breakpointsView && replStash.multipleSelectedItems && !replStash.breakpointSelected"
+        "enablement": "view == breakpointsView && replstash.multipleSelectedItems && !replstash.breakpointSelected"
       },
       {
-        "command": "replStash.pasteScripts",
+        "command": "replstash.pasteScripts",
         "title": "Paste Scripts",
-        "enablement": "view == breakpointsView && replStash.hasCopiedScripts"
+        "enablement": "view == breakpointsView && replstash.hasCopiedScripts"
       },
       {
-        "command": "replStash.removeBreakpointScripts",
+        "command": "replstash.removeBreakpointScripts",
         "title": "Delete",
         "enablement": "view == breakpointsView"
       },
       {
-        "command": "replStash.openScripts",
+        "command": "replstash.openScripts",
         "title": "Open",
-        "enablement": "view == breakpointsView && !replStash.breakpointSelected"
+        "enablement": "view == breakpointsView && !replstash.breakpointSelected"
       },
       {
-        "command": "replStash.runAllBreakpointScripts",
+        "command": "replstash.runAllBreakpointScripts",
         "title": "Run All",
-        "enablement": "view == breakpointsView && !replStash.multipleSelectedItems"
+        "enablement": "view == breakpointsView && !replstash.multipleSelectedItems"
       },
       {
-        "command": "replStash.treeRenameSavedScript",
+        "command": "replstash.treeRenameSavedScript",
         "title": "Rename",
-        "enablement": "view == breakpointsView && !replStash.multipleSelectedItems"
+        "enablement": "view == breakpointsView && !replstash.multipleSelectedItems"
       },
       {
-        "command": "replStash.toggleBreakpointTreeViewMode",
+        "command": "replstash.toggleBreakpointTreeViewMode",
         "title": "Toggle View Mode",
         "icon": "$(list-tree)"
       },
       {
-        "command": "replStash.toggleReplTreeViewMode",
+        "command": "replstash.toggleReplTreeViewMode",
         "title": "Toggle View Mode",
         "icon": "$(list-tree)"
       },
       {
-        "command": "replStash.copyErrorStack",
+        "command": "replstash.copyErrorStack",
         "title": "Copy Stack Trace",
-        "enablement": "view == replResultsView && replStash.stackAvailable"
+        "enablement": "view == replResultsView && replstash.stackAvailable"
       },
       {
-        "command": "replStash.openRanScripts",
+        "command": "replstash.openRanScripts",
         "title": "Open Script",
         "enablement": "view == replResultsView"
       },
       {
-        "command": "replStash.jumpToBreakpoint",
+        "command": "replstash.jumpToBreakpoint",
         "title": "Jump to Breakpoint",
         "enablement": "view == replResultsView"
       }
@@ -218,119 +218,101 @@
     "menus": {
       "view/title": [
         {
-          "command": "replStash.toggleBreakpointTreeViewMode",
+          "command": "replstash.toggleBreakpointTreeViewMode",
           "when": "view == breakpointsView",
           "group": "navigation"
         },
         {
-          "command": "replStash.toggleReplTreeViewMode",
+          "command": "replstash.toggleReplTreeViewMode",
           "when": "view == replResultsView",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "replStash.toggleElementActive",
+          "command": "replstash.toggleElementActive",
           "when": "view == breakpointsView"
         },
         {
-          "command": "replStash.runScripts",
+          "command": "replstash.runScripts",
           "when": "view == breakpointsView && viewItem == script"
         },
         {
-          "command": "replStash.activateSelected",
+          "command": "replstash.activateSelected",
           "when": "view == breakpointsView"
         },
         {
-          "command": "replStash.deactivateSelected",
+          "command": "replstash.deactivateSelected",
           "when": "view == breakpointsView"
         },
         {
-          "command": "replStash.copyScripts",
+          "command": "replstash.copyScripts",
           "when": "view == breakpointsView"
         },
         {
-          "command": "replStash.pasteScripts",
+          "command": "replstash.pasteScripts",
           "when": "view == breakpointsView && viewItem == breakpoint"
         },
         {
-          "command": "replStash.removeBreakpointScripts",
+          "command": "replstash.removeBreakpointScripts",
           "when": "view == breakpointsView"
         },
         {
-          "command": "replStash.openScripts",
+          "command": "replstash.openScripts",
           "when": "view == breakpointsView"
         },
         {
-          "command": "replStash.runAllBreakpointScripts",
+          "command": "replstash.runAllBreakpointScripts",
           "when": "view == breakpointsView && viewItem == breakpoint"
         },
         {
-          "command": "replStash.treeRenameSavedScript",
+          "command": "replstash.treeRenameSavedScript",
           "when": "view == breakpointsView && viewItem == script"
         },
         {
-          "command": "replStash.copyErrorStack",
+          "command": "replstash.copyErrorStack",
           "when": "view == replResultsView && viewItem == result"
         },
         {
-          "command": "replStash.openRanScripts",
+          "command": "replstash.openRanScripts",
           "when": "view == replResultsView && (viewItem == script || viewItem == result)"
         },
         {
-          "command": "replStash.jumpToBreakpoint",
+          "command": "replstash.jumpToBreakpoint",
           "when": "view == replResultsView"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "replStash.startCapture",
-        "key": "ctrl+alt+s",
-        "mac": "cmd+alt+s",
-        "when": "debugging"
+        "command": "replstash.toggleCapture",
+        "key": "ctrl+shift+j j",
+        "mac": "cmd+shift+j j"
       },
       {
-        "command": "replStash.pauseCapture",
-        "key": "ctrl+alt+p",
-        "mac": "cmd+alt+p",
-        "when": "debugging"
+        "command": "replstash.pauseCapture",
+        "key": "ctrl+shift+j k",
+        "mac": "cmd+shift+j k"
       },
       {
-        "command": "replStash.stopCapture",
-        "key": "ctrl+alt+s",
-        "mac": "cmd+alt+s",
-        "when": "debugging"
+        "command": "replstash.clearCapture",
+        "key": "ctrl+shift+j n",
+        "mac": "cmd+shift+j n"
       },
       {
-        "command": "replStash.clearCapture",
-        "key": "ctrl+alt+c",
-        "mac": "cmd+alt+c",
-        "when": "debugging"
+        "command": "replstash.discardCapture",
+        "key": "ctrl+shift+j h",
+        "mac": "cmd+shift+j h"
       },
       {
-        "command": "replStash.discardCapture",
-        "category": "ctrl+alt+d",
-        "mac": "cmd+alt+d",
-        "title": "Discard Debug Captured"
+        "command": "replstash.clearLastExp",
+        "key": "ctrl+shift+j l",
+        "mac": "cmd+shift+j l"
       },
       {
-        "command": "replStash.clearLastExp",
-        "key": "ctrl+alt+c",
-        "mac": "cmd+alt+c",
-        "when": "debugging"
-      },
-      {
-        "command": "replStash.editSavedScript",
-        "key": "ctrl+alt+e",
-        "mac": "cmd+alt+e",
-        "when": "debugging"
-      },
-      {
-        "command": "replStash.deleteSavedScript",
-        "key": "ctrl+alt+d",
-        "mac": "cmd+alt+d",
-        "when": "debugging"
+        "command": "replstash.toggleAutoRun",
+        "key": "ctrl+shift+j m",
+        "mac": "cmd+shift+j m"
       }
     ]
   },

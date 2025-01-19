@@ -446,4 +446,10 @@ export default class CommandHandler extends EventEmitter {
         }
     }
 
+    toggleAutoRun = async (): Promise<void> => {
+        this.toggleAutomaticRuns(
+            !this.sessionManager.scriptsAreRunnable()
+        );
+    }
+
 }
