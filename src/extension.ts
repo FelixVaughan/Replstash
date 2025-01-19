@@ -59,8 +59,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replstash.editSavedScript', commandHandler.openScript),
         registerCommand('replstash.deleteSavedScript', commandHandler.deleteSavedScript),
         registerCommand('replstash.purgeBreakpoints', commandHandler.purgeBreakpoints),
-        registerCommand('replstash.enableScriptsRunnable', () => commandHandler.toggleAutomaticRuns(true)),
-        registerCommand('replstash.disableScriptsRunnable', () => commandHandler.toggleAutomaticRuns(false)),
+        registerCommand('replstash.enableScriptsRunnable', () => commandHandler.setAutomaticRuns(true)),
+        registerCommand('replstash.disableScriptsRunnable', () => commandHandler.setAutomaticRuns(false)),
         registerCommand('replstash.deleteBreakpoint', commandHandler.deleteBreakpoint),
         registerCommand('replstash.clearCapture', commandHandler.clearCapture),
         registerCommand('replstash.clearLastExp', commandHandler.clearLastExpression),
@@ -69,6 +69,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replstash.purgeScripts', commandHandler.purgeScripts),
         registerCommand('replstash.toggleCapture', commandHandler.toggleCapture),
         registerCommand('replstash.toggleAutoRun', commandHandler.toggleAutoRun),
+        registerCommand('replstash.outputCapture', commandHandler.outputCapture),
 
         // Breakpoint Tree view commands
         registerCommand('replstash.toggleElementActive', breakpointsTreeProvider.setElementActivation),
@@ -107,7 +108,6 @@ export const deactivate = (): void => {};
 
  
 
-//TODO: Setup and test command shortcuts 2 hrs
 //TODO: Test and find issues - 2 hrs
 //TODO: README.md - 1 hr
 //TODO: Logo and publisher name - 1.5 hr
@@ -118,12 +118,9 @@ export const deactivate = (): void => {};
  * - Empty scripts sometimes not removed
  * - Can't multi-select in reverse order
  * - Single click is iffy
- * - Show current captured expressions
  * - Show autorun status on repl-stash view
  * - Copy and paste single script via context
  * - Make activation toggle multi select
- * - Some commands fade when disabled but others do not 
- * - Capture does not automatically stop when debug session (abruptly) ends
  Estimated completions date : MARCH 15, 2025
  */
 

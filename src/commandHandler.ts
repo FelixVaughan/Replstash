@@ -423,7 +423,7 @@ export default class CommandHandler extends EventEmitter {
      * @param {boolean} runnable - True to make scripts runnable, otherwise false.
      * @returns {Promise<void>}
      */
-    toggleAutomaticRuns = async (runnable: boolean): Promise<void> => {
+    setAutomaticRuns = async (runnable: boolean): Promise<void> => {
         if (this.sessionManager.scriptsAreRunnable() === runnable) {
             showWarningMessage(
                 `Automatic runs are already ${runnable ? 'enabled' : 'disabled'}.
@@ -438,6 +438,21 @@ export default class CommandHandler extends EventEmitter {
         showInformationMessage('Automatic Replstash runs disabled.');
     };
 
+    /**
+     * Print the current capture content to the debug console.
+     * @returns {Promise<void>}
+     */
+    outputCapture = async (): Promise<void> => {
+        if (!this.sessionManager.isCapturing()) {
+            showWarningMessage('Not capturing console input.');
+            return;
+        }
+        const breakpoint: Breakpoint | null = this.sessionManager.getCurrentBreakpoint()!;
+        const content: Record<string, string> = breakpoint.content;
+        const output = Object.values(content).join('\n');
+        _debugger.activeDebugConsole?.appendLine(output);
+    }
+
     toggleCapture = async (): Promise<void> => {
         if (this.sessionManager.isCapturing()) {
             await this.stopCapture();
@@ -447,7 +462,7 @@ export default class CommandHandler extends EventEmitter {
     }
 
     toggleAutoRun = async (): Promise<void> => {
-        this.toggleAutomaticRuns(
+        this.setAutomaticRuns(
             !this.sessionManager.scriptsAreRunnable()
         );
     }

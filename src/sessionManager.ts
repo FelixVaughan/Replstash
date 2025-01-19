@@ -80,7 +80,7 @@ export default class SessionManager {
         // Listen for debugging session termination
         _debugger.onDidTerminateDebugSession(() => {
             this.debugging = false;
-            this.updateStatusBar();
+            this.setCapturing(false);
         });
 
         _debugger.onDidChangeBreakpoints(({removed, changed}) => {
@@ -164,7 +164,7 @@ export default class SessionManager {
         let tip = 'Not capturing';
 
         if (this.capturing) {
-            color = 'green';
+            color = 'purple';
             tip = 'Currently capturing';
         } else if (this.captureIsPaused) {
             color = 'orange';
@@ -173,7 +173,7 @@ export default class SessionManager {
             color = 'red';
             tip = 'Debugging but not capturing';
         }
-        this.statusBarItem.text = 'ReplStash';
+        this.statusBarItem.text = 'Replstash';
         this.statusBarItem.color = color;
         this.statusBarItem.tooltip = tip;
     }

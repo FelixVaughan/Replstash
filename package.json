@@ -85,6 +85,11 @@
         "category": "Replstash"
       },
       {
+        "command": "replstash.outputCapture",
+        "title": "Output Capture Content",
+        "category": "Replstash"
+      },
+      {
         "command": "replstash.clearCapture",
         "title": "Clear Debug Captured",
         "category": "Replstash"
@@ -285,6 +290,11 @@
     },
     "keybindings": [
       {
+        "command": "replstash.discardCapture",
+        "key": "ctrl+shift+j h",
+        "mac": "cmd+shift+j h"
+      },
+      {
         "command": "replstash.toggleCapture",
         "key": "ctrl+shift+j j",
         "mac": "cmd+shift+j j"
@@ -295,24 +305,24 @@
         "mac": "cmd+shift+j k"
       },
       {
-        "command": "replstash.clearCapture",
-        "key": "ctrl+shift+j n",
-        "mac": "cmd+shift+j n"
-      },
-      {
-        "command": "replstash.discardCapture",
-        "key": "ctrl+shift+j h",
-        "mac": "cmd+shift+j h"
-      },
-      {
         "command": "replstash.clearLastExp",
         "key": "ctrl+shift+j l",
         "mac": "cmd+shift+j l"
       },
       {
+        "command": "replstash.clearCapture",
+        "key": "ctrl+shift+j n",
+        "mac": "cmd+shift+j n"
+      },
+      {
         "command": "replstash.toggleAutoRun",
         "key": "ctrl+shift+j m",
         "mac": "cmd+shift+j m"
+      },
+      {
+        "command": "replstash.outputCapture",
+        "key": "ctrl+shift+j o",
+        "mac": "cmd+shift+j o"
       }
     ]
   },
