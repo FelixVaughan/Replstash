@@ -3,23 +3,22 @@
   "displayName": "Replstash",
   "description": "Save, edit and rerun repl expressions captured from the debug console",
   "publisher": "replstash #TODO: Create a publisher account",
-  "license": "MIT #TODO: Change the license to the appropriate one",
-  "badges": [],
+  "license": "MIT",
   "markdown": "github",
   "qna": "marketplace",
   "pricing": "Free",
-  "homepage": "",
+  "homepage": "https://github.com/FelixVaughan/Replstash/blob/main/README.md",
   "bugs": {
-    "url": "http://todo.com"
+    "url": "https://github.com/FelixVaughan/Replstash/issues"
   },
-  "icon": "",
+  "icon": "icon.png",
   "extensionKind": [
     "ui",
     "workspace"
   ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/FelixVaughan/Replstash"
   },
   "author": {
     "name": "Felix Ezama-Vaughan",
@@ -30,7 +29,14 @@
     "vscode": "^1.92.2"
   },
   "categories": ["Debuggers"],
-  "keywords": ["repl", "debug", "console", "breakpoint", "script", "automate"],
+  "keywords": [
+    "repl", 
+    "debug", 
+    "console", 
+    "breakpoint", 
+    "script", 
+    "automate"
+  ],
   "activationEvents": [
     "onDebug"
   ],

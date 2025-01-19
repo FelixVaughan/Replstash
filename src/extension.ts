@@ -108,8 +108,8 @@ export const deactivate = (): void => {};
 
 //TODO: Setup and test command shortcuts 2 hrs
 //TODO: Test and find issues - 2 hrs
-//TODO: Logo and publisher name  (badgen.net) - 1.5 hr
 //TODO: README.md - 1 hr
+//TODO: Logo and publisher name - 1.5 hr
 
 /**
  * TEST ISSUES:
@@ -122,5 +122,7 @@ export const deactivate = (): void => {};
  * - Copy and paste single script via context
  * - Make activation toggle multi select
  * - Some commands fade when disabled but others do not 
+ * - Capture does not automatically stop when debug session (abruptly) ends
+ Estimated completions date : MARCH 15, 2025
  */
 
