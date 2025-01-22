@@ -378,7 +378,7 @@ openScripts = (script: Script): void => {
         if (selectedScripts.length) {
             this.copiedScripts = selectedScripts;
             const nonEmpty: boolean = selectedScripts.length > 0;
-            commands.executeCommand('setContext', 'replStash.hasCopiedScripts', nonEmpty);
+            commands.executeCommand('setContext', 'replstash.hasCopiedScripts', nonEmpty);
         }
     }
 
@@ -394,7 +394,7 @@ openScripts = (script: Script): void => {
         const selectedScripts: Script[] = this.getSelectedItems() as Script[];
         const scripts: Set<Script> = new Set([...selectedScripts, script]);
         evaluateScripts([...scripts]);
-        commands.executeCommand('replResultsView.focus');
+        // commands.executeCommand('replResultsView.focus');
     }
 
     /**
@@ -410,7 +410,7 @@ openScripts = (script: Script): void => {
             showWarningMessage('Breakpoint is not linked to any source file.');
         }
         await evaluateScripts(breakpoint.scripts);
-        commands.executeCommand('replResultsView.focus');
+        // commands.executeCommand('replResultsView.focus');
 
     }
 
@@ -457,12 +457,12 @@ openScripts = (script: Script): void => {
             this.selectedItems = new Set(selection);
             commands.executeCommand(
                 'setContext',
-                'replStash.multipleSelectedItems',
+                'replstash.multipleSelectedItems',
                 isMultipleSelect
             );
             commands.executeCommand(
                 'setContext',
-                'replStash.breakpointSelected',
+                'replstash.breakpointSelected',
                 breakpointSelected
             );
         });

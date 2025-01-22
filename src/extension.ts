@@ -108,7 +108,6 @@ export const deactivate = (): void => {};
 
  
 
-//TODO: Test and find issues - 2 hrs
 //TODO: README.md - 1 hr
 //TODO: Logo and publisher name - 1.5 hr
 
@@ -121,6 +120,10 @@ export const deactivate = (): void => {};
  * - Show autorun status on repl-stash view
  * - Copy and paste single script via context
  * - Make activation toggle multi select
- Estimated completions date : MARCH 15, 2025
+ * - Show timestamp on repl-stash view
+ * - Right click in tree view to create new script (append a new script to bps list)
+ * - When a breakpoint is toggled off and on, it is unlinked but when created again, a new breakpoint is created
+        -basically need to restore unlinked
+Estimated completions date : MARCH 15, 2025
  */
 

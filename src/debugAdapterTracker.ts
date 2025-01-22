@@ -80,7 +80,11 @@ export default class DebugAdapterTracker {
         }
 
         // Handle breakpoint stops
-        if (message.type === 'event' && message.event === 'stopped' && message.body.reason === 'breakpoint') {
+        if (
+            message.type === 'event' && 
+            message.event === 'stopped' && 
+            ['breakpoint', 'break'].includes(message.body.reason)
+        ) {
             const activeSession = _debugger?.activeDebugSession;5
             if (!activeSession) return;
 
@@ -100,10 +104,11 @@ export default class DebugAdapterTracker {
             const vscodeBreakpoint = _debugger.breakpoints.find((bp) => {
                 if (bp instanceof vscode.SourceBreakpoint) {
                     return (
-                        bp.location.uri.fsPath === source &&
-                        bp.location.range.start.line + 1 === line &&
-                        bp.location.range.start.character + 1 === column
+                        bp.location.uri.fsPath === source
+                        && bp.location.range.start.line + 1 === line 
+                        // && bp.location.range.start.character + 1 === column 
                     );
+                    // NOTE: Above commment for compatability with bash debugger
                 }
                 return false;
             });

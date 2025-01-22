@@ -106,7 +106,7 @@
       },
       {
         "command": "replstash.editSavedScript",
-        "title": "Open Replstash Script",
+        "title": "Open Script",
         "category": "Replstash"
       },
       {

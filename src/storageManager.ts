@@ -156,7 +156,7 @@ export default class StorageManager {
             existingBreakpoint.scripts.push({...script, active: true });
             existingBreakpoint.modifiedAt = getCurrentTimestamp();
         } else {
-            bp.scripts.push({...script, active: false });
+            bp.scripts.push({...script, active: true });
             bp.createdAt = getCurrentTimestamp();
             loadedBreakpoints.push(bp);
         }

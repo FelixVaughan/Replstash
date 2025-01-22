@@ -342,7 +342,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
             if (isReplResult(selected)) {
                 commands.executeCommand(
                     'setContext',
-                    'replStash.stackAvailable',
+                    'replstash.stackAvailable',
                     Boolean(selected.stack)
                 );
             }

@@ -61,7 +61,7 @@ export default class SessionManager {
      */
     private constructor() {
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-        this.statusBarItem.command = 'replStash.toggleCapture';
+        this.statusBarItem.command = 'replstash.toggleCapture';
         this.updateStatusBar();
         this.statusBarItem.show();
         this.debugEventListeners();
