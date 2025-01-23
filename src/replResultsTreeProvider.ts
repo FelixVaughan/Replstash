@@ -151,6 +151,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         treeItem.description = this.isFlattened
             ? this.getAssociatedBreakpointDescription(result)
             : result.stack.substring(0, 100) || 'No issues detected.';
+        treeItem.description += ` -- ${new Date().toLocaleTimeString()}`; 
         treeItem.tooltip = result.stack || 'No issues detected.';
         treeItem.iconPath = new vscode.ThemeIcon(
             result.success ? 'pass' : 'error',

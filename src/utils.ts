@@ -131,7 +131,7 @@ export const refreshTree = (): void => {
  * @returns {string} The current timestamp in the format `YYYY-MM-DD_HH-MM-SS`.
  */
 export const getCurrentTimestamp = (): string => {
-    return new Date().toISOString().replace('T', '_').slice(0, 19).replace(/:/g, '-');
+    return new Date().toISOString().replace('T', ' ').slice(0, 19).replace(/:/g, '-');
 };
 
 /**

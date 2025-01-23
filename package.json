@@ -155,20 +155,11 @@
         "enablement": "view == breakpointsView"
       },
       {
-        "command": "replstash.toggleElementActive",
-        "title": "Toggle",
-        "enablement": "view == breakpointsView && !replstash.multipleSelectedItems"
-      },
-      {
         "command": "replstash.runScripts",
         "title": "Run",
         "enablement": "view == breakpointsView"
       },
-      {
-        "command": "replstash.copyScripts",
-        "title": "Copy Scripts",
-        "enablement": "view == breakpointsView && replstash.multipleSelectedItems && !replstash.breakpointSelected"
-      },
+      
       {
         "command": "replstash.pasteScripts",
         "title": "Paste Scripts",
@@ -185,14 +176,24 @@
         "enablement": "view == breakpointsView && !replstash.breakpointSelected"
       },
       {
-        "command": "replstash.runAllBreakpointScripts",
-        "title": "Run All",
-        "enablement": "view == breakpointsView && !replstash.multipleSelectedItems"
+        "command": "replstash.copyScripts",
+        "title": "Copy Scripts",
+        "enablement": "view == breakpointsView && replstash.multipleSelected && !replstash.breakpointSelected"
+      },
+      {
+        "command": "replstash.toggleElementActive",
+        "title": "Toggle",
+        "enablement": "view == breakpointsView && !replstash.multipleSelected"
       },
       {
         "command": "replstash.treeRenameSavedScript",
         "title": "Rename",
-        "enablement": "view == breakpointsView && !replstash.multipleSelectedItems"
+        "enablement": "view == breakpointsView && !replstash.multipleSelected"
+      },
+      {
+        "command": "replstash.runAllBreakpointScripts",
+        "title": "Run All",
+        "enablement": "view == breakpointsView && !replstash.multipleSelected"
       },
       {
         "command": "replstash.toggleBreakpointTreeViewMode",

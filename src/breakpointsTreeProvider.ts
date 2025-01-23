@@ -151,18 +151,19 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             treeItem.label = path.basename(breakpoint.file);
             treeItem.tooltip = !breakpoint.linked ? 'Unlinked' : breakpoint.active ? 'Active' : 'Inactive';
             treeItem.description = describe(breakpoint);
-            const position = new vscode.Position(Math.max(breakpoint.line - 1, 0), 0);
-            treeItem.command = {
-                command: 'vscode.open',
-                title: 'Open Breakpoint Location',
-                arguments: [
-                    vscode.Uri.file(breakpoint.file),
-                    {
-                        viewColumn: vscode.ViewColumn.One,
-                        selection: new vscode.Range(position, position)
-                    }
-                ]
-            };
+            //TODO: Add as a context menu item
+            // const position = new vscode.Position(Math.max(breakpoint.line - 1, 0), 0);
+            // treeItem.command = {
+            //     command: 'vscode.open',
+            //     title: 'Open Breakpoint Location',
+            //     arguments: [
+            //         vscode.Uri.file(breakpoint.file),
+            //         {
+            //             viewColumn: vscode.ViewColumn.One,
+            //             selection: new vscode.Range(position, position)
+            //         }
+            //     ]
+            // };
         } else {
             const script = element as Script;
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
@@ -450,16 +451,18 @@ openScripts = (script: Script): void => {
 
         treeView.onDidChangeSelection((event: vscode.TreeViewSelectionChangeEvent<any>) => {
             const selection: readonly (Breakpoint | Script)[] = event.selection;
-            const isMultipleSelect: boolean = selection.length > 1;
             const breakpointSelected: boolean = selection.some((elem) =>
                 isBreakpoint(elem)
             );
+
             this.selectedItems = new Set(selection);
+            
             commands.executeCommand(
                 'setContext',
-                'replstash.multipleSelectedItems',
-                isMultipleSelect
+                'replstash.multipleSelected',
+                selection.length > 0
             );
+            
             commands.executeCommand(
                 'setContext',
                 'replstash.breakpointSelected',

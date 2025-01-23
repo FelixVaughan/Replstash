@@ -108,19 +108,16 @@ export const deactivate = (): void => {};
 
  
 
-//TODO: README.md - 1 hr
+//TODO: README.md - 2.5 hr
 //TODO: Logo and publisher name - 1.5 hr
 
 /**
  * TEST ISSUES:
  * - Ln description in treeview for breakpoint not always accurate
  * - Empty scripts sometimes not removed
- * - Can't multi-select in reverse order
- * - Single click is iffy
  * - Show autorun status on repl-stash view
  * - Copy and paste single script via context
  * - Make activation toggle multi select
- * - Show timestamp on repl-stash view
  * - Right click in tree view to create new script (append a new script to bps list)
  * - When a breakpoint is toggled off and on, it is unlinked but when created again, a new breakpoint is created
         -basically need to restore unlinked
