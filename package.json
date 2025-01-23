@@ -178,22 +178,22 @@
       {
         "command": "replstash.copyScripts",
         "title": "Copy Scripts",
-        "enablement": "view == breakpointsView && replstash.multipleSelected && !replstash.breakpointSelected"
+        "enablement": "view == breakpointsView && replstash.hasSelected && !replstash.breakpointSelected"
       },
       {
         "command": "replstash.toggleElementActive",
         "title": "Toggle",
-        "enablement": "view == breakpointsView && !replstash.multipleSelected"
+        "enablement": "view == breakpointsView"
       },
       {
         "command": "replstash.treeRenameSavedScript",
         "title": "Rename",
-        "enablement": "view == breakpointsView && !replstash.multipleSelected"
+        "enablement": "view == breakpointsView && !replstash.hasSelected"
       },
       {
         "command": "replstash.runAllBreakpointScripts",
         "title": "Run All",
-        "enablement": "view == breakpointsView && !replstash.multipleSelected"
+        "enablement": "view == breakpointsView && !replstash.hasSelected"
       },
       {
         "command": "replstash.toggleBreakpointTreeViewMode",

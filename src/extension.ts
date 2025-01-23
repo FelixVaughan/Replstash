@@ -72,7 +72,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replstash.outputCapture', commandHandler.outputCapture),
 
         // Breakpoint Tree view commands
-        registerCommand('replstash.toggleElementActive', breakpointsTreeProvider.setElementActivation),
+        registerCommand('replstash.toggleElementActive', (b) => breakpointsTreeProvider.setElementActivation(b)),
         registerCommand('replstash.deactivateSelected', breakpointsTreeProvider.deactivateSelectedItems),
         registerCommand('replstash.activateSelected', breakpointsTreeProvider.activateSelectedItems),
         registerCommand('replstash.copyScripts', breakpointsTreeProvider.copyScripts),
@@ -116,8 +116,6 @@ export const deactivate = (): void => {};
  * - Ln description in treeview for breakpoint not always accurate
  * - Empty scripts sometimes not removed
  * - Show autorun status on repl-stash view
- * - Copy and paste single script via context
- * - Make activation toggle multi select
  * - Right click in tree view to create new script (append a new script to bps list)
  * - When a breakpoint is toggled off and on, it is unlinked but when created again, a new breakpoint is created
         -basically need to restore unlinked

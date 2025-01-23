@@ -242,21 +242,26 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * @param {Breakpoint | Script} element - The element to activate or deactivate.
      * @param {boolean} [status] - The desired activation status. If not provided, toggles the current state.
      */
-    setElementActivation = (element: Breakpoint | Script, status?: boolean): void => {
-        const statusValue: boolean = status !== undefined ? status : !element.active;
-
-        if (isBreakpoint(element)) {
-            const breakpoint = element as Breakpoint;
-            this.storageManager.changeBreakpointActivation(breakpoint, statusValue);
-        } else {
-            const script = element as Script;
-            const parentBreakpoint = this._getParent(script);
-            if (parentBreakpoint) {
-                this.storageManager.changeScriptActivation(parentBreakpoint, script, statusValue);
+    setElementActivation = (
+        element: Breakpoint | Script, 
+        status?: boolean
+    ): void => {
+        const selectedItems: (Breakpoint | Script)[] = this.getSelectedItems();
+        const items: (Breakpoint | Script)[] = selectedItems.length ? selectedItems : [element];
+        items.forEach((item: Breakpoint | Script) => {
+            const statusValue: boolean = status !== undefined ? status : !item.active;
+            if (isBreakpoint(item)) {
+                const breakpoint = item as Breakpoint;
+                this.storageManager.changeBreakpointActivation(breakpoint, statusValue);
+            } else {
+                const script = item as Script;
+                const parentBreakpoint = this._getParent(script);
+                if (parentBreakpoint) {
+                    this.storageManager.changeScriptActivation(parentBreakpoint, script, statusValue);
+                }
             }
-        }
-
-        this.refresh();
+            this.refresh();
+        });
     }
 
     /**
@@ -459,7 +464,7 @@ openScripts = (script: Script): void => {
             
             commands.executeCommand(
                 'setContext',
-                'replstash.multipleSelected',
+                'replstash.hasSelected',
                 selection.length > 0
             );
             
@@ -469,15 +474,6 @@ openScripts = (script: Script): void => {
                 breakpointSelected
             );
         });
-
-        treeView.onDidChangeCheckboxState(
-            (event: vscode.TreeCheckboxChangeEvent<Script | Breakpoint>) => {
-                event.items.forEach(([elem, checked]: [Script | Breakpoint, number]) => {
-                    const isChecked: boolean = checked === vscode.TreeItemCheckboxState.Checked;
-                    this.setElementActivation(elem, isChecked);
-                });
-            }
-        );
 
         type ExpansionEvent = vscode.TreeViewExpansionEvent<Breakpoint | Script>;
 
