@@ -159,6 +159,11 @@
         "title": "Run",
         "enablement": "view == breakpointsView"
       },
+      {
+        "command": "replstash.addScript",
+        "title": "Add Script",
+        "enablement": "view == breakpointsView"
+      },
       
       {
         "command": "replstash.pasteScripts",
@@ -177,8 +182,8 @@
       },
       {
         "command": "replstash.copyScripts",
-        "title": "Copy Scripts",
-        "enablement": "view == breakpointsView && replstash.hasSelected && !replstash.breakpointSelected"
+        "title": "Copy Script(s)",
+        "enablement": "view == breakpointsView && !replstash.breakpointSelected"
       },
       {
         "command": "replstash.toggleElementActive",
@@ -188,17 +193,22 @@
       {
         "command": "replstash.treeRenameSavedScript",
         "title": "Rename",
-        "enablement": "view == breakpointsView && !replstash.hasSelected"
+        "enablement": "view == breakpointsView"
       },
       {
         "command": "replstash.runAllBreakpointScripts",
         "title": "Run All",
-        "enablement": "view == breakpointsView && !replstash.hasSelected"
+        "enablement": "view == breakpointsView"
       },
       {
         "command": "replstash.toggleBreakpointTreeViewMode",
         "title": "Toggle View Mode",
         "icon": "$(list-tree)"
+      },
+      {
+        "command": "replstash.goTo",
+        "title": "Go to",
+        "enablement": "view == breakpointsView"
       },
       {
         "command": "replstash.toggleReplTreeViewMode",
@@ -253,10 +263,18 @@
         },
         {
           "command": "replstash.copyScripts",
-          "when": "view == breakpointsView"
+          "when": "view == breakpointsView && viewItem == script"
+        },
+        {
+          "command": "replstash.goTo",
+          "when": "view == breakpointsView && viewItem == breakpoint"
         },
         {
           "command": "replstash.pasteScripts",
+          "when": "view == breakpointsView && viewItem == breakpoint"
+        },
+        {
+          "command": "replstash.addScript",
           "when": "view == breakpointsView && viewItem == breakpoint"
         },
         {
@@ -265,7 +283,7 @@
         },
         {
           "command": "replstash.openScripts",
-          "when": "view == breakpointsView"
+          "when": "view == breakpointsView && viewItem == script"
         },
         {
           "command": "replstash.runAllBreakpointScripts",

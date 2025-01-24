@@ -83,6 +83,8 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replstash.runAllBreakpointScripts', breakpointsTreeProvider.runAllBreakpointScripts),
         registerCommand('replstash.treeRenameSavedScript', breakpointsTreeProvider.renameSavedScript),
         registerCommand('replstash.toggleBreakpointTreeViewMode', breakpointsTreeProvider.toggleFlattenedView),
+        registerCommand('replstash.addScript', breakpointsTreeProvider.addScript),
+        registerCommand('replstash.goTo', breakpointsTreeProvider.goTo),
 
         // Evaluation Results Tree view commands
         registerCommand('replstash.toggleReplTreeViewMode', replResultsTreeProvider.toggleReplTreeViewMode),
@@ -116,9 +118,8 @@ export const deactivate = (): void => {};
  * - Ln description in treeview for breakpoint not always accurate
  * - Empty scripts sometimes not removed
  * - Show autorun status on repl-stash view
- * - Right click in tree view to create new script (append a new script to bps list)
  * - When a breakpoint is toggled off and on, it is unlinked but when created again, a new breakpoint is created
-        -basically need to restore unlinked
+    -basically need to restore unlinked
 Estimated completions date : MARCH 15, 2025
  */
 

@@ -10,6 +10,8 @@ import {
     _debugger,
     isBreakpoint,
     describe,
+    InvalidReason,
+    getCurrentTimestamp
 } from './utils';
 import StorageManager from './storageManager';
 import CommandHandler from './commandHandler';
@@ -151,19 +153,6 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             treeItem.label = path.basename(breakpoint.file);
             treeItem.tooltip = !breakpoint.linked ? 'Unlinked' : breakpoint.active ? 'Active' : 'Inactive';
             treeItem.description = describe(breakpoint);
-            //TODO: Add as a context menu item
-            // const position = new vscode.Position(Math.max(breakpoint.line - 1, 0), 0);
-            // treeItem.command = {
-            //     command: 'vscode.open',
-            //     title: 'Open Breakpoint Location',
-            //     arguments: [
-            //         vscode.Uri.file(breakpoint.file),
-            //         {
-            //             viewColumn: vscode.ViewColumn.One,
-            //             selection: new vscode.Range(position, position)
-            //         }
-            //     ]
-            // };
         } else {
             const script = element as Script;
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
@@ -182,6 +171,18 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         }
     
         return treeItem;
+    }
+
+    /**
+     * Navigates to the specified file from the Tree View.
+     * @param {Breakpoint} element - The Breakpoint to navigate to
+     */
+    goTo = (element: Breakpoint): void => {
+        const position = new vscode.Position(Math.max(element.line - 1, 0), 0);
+        const fileUri = vscode.Uri.file(element.file);
+        commands.executeCommand('vscode.open', fileUri, {
+            selection: new vscode.Range(position, position),
+        });
     }
     
 
@@ -246,8 +247,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         element: Breakpoint | Script, 
         status?: boolean
     ): void => {
-        const selectedItems: (Breakpoint | Script)[] = this.getSelectedItems();
-        const items: (Breakpoint | Script)[] = selectedItems.length ? selectedItems : [element];
+        const items = this.getSelectedItems(element);
         items.forEach((item: Breakpoint | Script) => {
             const statusValue: boolean = status !== undefined ? status : !item.active;
             if (isBreakpoint(item)) {
@@ -318,30 +318,55 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * Opens the specified script in a new editor tab.
      * @param {Script} script - The script to open.
      */
-openScripts = (script: Script): void => {
-    const scripts = this.getSelectedItems() as Script[];
-    const uniqueScripts: Set<Script> = new Set([...scripts, script]);
+    openScripts = (script: Script): void => {
+        const scripts = this.getSelectedItems(script) as Script[];
+        scripts.forEach(async (script: Script) => {
+            const document = await vscode.workspace.openTextDocument(script.uri);
+            vscode.window.showTextDocument(document, { preview: false }); // Ensure each opens in a new tab
+        });
+    };
 
-    uniqueScripts.forEach(async (script: Script) => {
-        const document = await vscode.workspace.openTextDocument(script.uri);
-        vscode.window.showTextDocument(document, { preview: false }); // Ensure each opens in a new tab
-    });
-};
 
+    /**
+     * Create an empty script and add it to the specified breakpoint.
+     * @param {Breakpoint} breakpoint - The breakpoint to add the script to.
+     * @returns {Promise<void>}
+     */
+    addScript = async (breakpoint: Breakpoint): Promise<void> => {
+        const breakpoints = this.getSelectedItems(breakpoint) as Breakpoint[];
+        breakpoints.forEach((item: Breakpoint) => {
+            const invalidReason: InvalidReason = this.storageManager.persistCaptureContent(
+                item,
+                `new_${item.id}_${getCurrentTimestamp()}`,
+                ''
+            )
+            if (invalidReason != InvalidReason.None) {
+                showWarningMessage(invalidReason);
+                return;
+            }
+        })
+        this.refresh();
+    }
 
     /**
      * Gets the currently selected items from the Tree View.
      * @returns {(Breakpoint | Script)[]} The currently selected Breakpoints or Scripts.
      */
-    getSelectedItems(): (Breakpoint | Script)[] {
-        return Array.from(this.selectedItems);
+    getSelectedItems(
+        append: Script | Breakpoint | undefined = undefined)
+    : (Breakpoint | Script)[] {
+        const items = new Set([
+            ...this.selectedItems, 
+            ...(append ? [append] : [])
+        ]);
+        return Array.from(items);
     }
 
     /**
      * Deactivates all currently selected items in the Tree View.
      */
-    deactivateSelectedItems = () :void => {
-        this.getSelectedItems().forEach((item: Breakpoint | Script) => {
+    deactivateSelectedItems = (element: Script | Breakpoint) :void => {
+        this.getSelectedItems(element).forEach((item: Breakpoint | Script) => {
             this.setElementActivation(item, false);
         });
     }
@@ -349,8 +374,8 @@ openScripts = (script: Script): void => {
     /**
      * Activates all currently selected items in the Tree View.
      */
-    activateSelectedItems = () :void => {
-        this.getSelectedItems().forEach((item: Breakpoint | Script) => {
+    activateSelectedItems = (element: Script | Breakpoint) :void => {
+        this.getSelectedItems(element).forEach((item: Breakpoint | Script) => {
             this.setElementActivation(item, true);
         });
     }
@@ -360,8 +385,7 @@ openScripts = (script: Script): void => {
      * @param {Script} element - The Script to remove.
      */
     removeSelectedItems = (element: Script): void => {
-        const elements: (Breakpoint | Script)[] = [...this.getSelectedItems(), element];
-        new Set(elements).forEach((elem: Breakpoint | Script) => {
+        this.getSelectedItems(element).forEach((elem: Breakpoint | Script) => {
             if (isBreakpoint(elem)) {
                 const bp = elem as Breakpoint;
                 this.storageManager.removeBreakpoint(bp);
@@ -379,8 +403,8 @@ openScripts = (script: Script): void => {
     /**
      * Copies selected scripts and sets the context for them.
      */
-    copyScripts = (): void => {
-        const selectedScripts: Script[] = this.getSelectedItems() as Script[];
+    copyScripts = (script: Script): void => {
+        const selectedScripts: Script[] = this.getSelectedItems(script) as Script[];
         if (selectedScripts.length) {
             this.copiedScripts = selectedScripts;
             const nonEmpty: boolean = selectedScripts.length > 0;
@@ -397,9 +421,8 @@ openScripts = (script: Script): void => {
             showWarningMessage('No active debug session.');
             return;
         }
-        const selectedScripts: Script[] = this.getSelectedItems() as Script[];
-        const scripts: Set<Script> = new Set([...selectedScripts, script]);
-        evaluateScripts([...scripts]);
+        const selectedScripts: Script[] = this.getSelectedItems(script) as Script[];
+        evaluateScripts([...selectedScripts]);
         // commands.executeCommand('replResultsView.focus');
     }
 
@@ -407,17 +430,17 @@ openScripts = (script: Script): void => {
      * Runs all scripts associated with the specified breakpoint.
      * @param {Breakpoint} breakpoint - The breakpoint whose scripts to run.
      */
-    runAllBreakpointScripts = async (breakpoint: Breakpoint): Promise<void> => {
+    runAllBreakpointScripts = async (element: Breakpoint): Promise<void> => {
+        const breakpoints = this.getSelectedItems(element) as Breakpoint[];
+
         if (!_debugger?.activeDebugSession) {
             showWarningMessage('No active debug session.');
             return;
         }
-        if (!breakpoint.linked) {
-            showWarningMessage('Breakpoint is not linked to any source file.');
-        }
-        await evaluateScripts(breakpoint.scripts);
-        // commands.executeCommand('replResultsView.focus');
 
+        const scripts = breakpoints.flatMap((bp) => bp.scripts);
+        evaluateScripts(scripts);
+        commands.executeCommand('replResultsView.focus');
     }
 
     /**
@@ -461,12 +484,6 @@ openScripts = (script: Script): void => {
             );
 
             this.selectedItems = new Set(selection);
-            
-            commands.executeCommand(
-                'setContext',
-                'replstash.hasSelected',
-                selection.length > 0
-            );
             
             commands.executeCommand(
                 'setContext',
