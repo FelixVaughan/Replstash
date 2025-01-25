@@ -1,4 +1,4 @@
-import { _debugger, Breakpoint, refreshTree } from './utils';
+import { _debugger, Breakpoint, commands, refreshTree } from './utils';
 import StorageManager from './storageManager';
 import * as vscode from 'vscode';
 /**
@@ -272,6 +272,8 @@ export default class SessionManager {
      */
     setScriptsRunnable(runnable: boolean): void {
         this.scriptsRunnable = runnable;
+        commands.executeCommand('setContext', 'replstash.scriptsRunnable', runnable);
+        // this.updateStatusBar();
     }
 
     /**

@@ -127,12 +127,14 @@
       {
         "command": "replstash.enableScriptsRunnable",
         "title": "Enable Auto-run Replstash scripts",
-        "category": "Replstash"
+        "category": "Replstash",
+        "icon": "$(debug-start)"
       },
       {
         "command": "replstash.disableScriptsRunnable",
         "title": "Disable Auto-run Replstash scripts",
-        "category": "Replstash"
+        "category": "Replstash",
+        "icon": "$(debug-stop)"
       },
       {
         "command": "replstash.deleteBreakpoint",
@@ -144,6 +146,7 @@
         "title": "Rename Replstash Script",
         "category": "Replstash"
       },
+      
       {
         "command": "replstash.activateSelected",
         "title": "Activate",
@@ -236,12 +239,22 @@
         {
           "command": "replstash.toggleBreakpointTreeViewMode",
           "when": "view == breakpointsView",
-          "group": "navigation"
+          "group": "navigation@2"
         },
         {
           "command": "replstash.toggleReplTreeViewMode",
           "when": "view == replResultsView",
           "group": "navigation"
+        },
+        {
+          "command": "replstash.enableScriptsRunnable",
+          "when": "!replstash.scriptsRunnable && view == breakpointsView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "replstash.disableScriptsRunnable",
+          "when": "replstash.scriptsRunnable && view == breakpointsView",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
