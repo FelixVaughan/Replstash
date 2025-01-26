@@ -61,6 +61,7 @@ export default class StorageManager {
     /**
      * Sets the storage context for the extension and initializes the directories.
      * @param {vscode.ExtensionContext} context - The VSCode extension context.
+     * @returns {void}
      */
     static setContext(context: vscode.ExtensionContext): void {
         const instance: StorageManager = this.instance;
@@ -91,6 +92,7 @@ export default class StorageManager {
      * Saves the provided content to a file at the specified path.
      * @param {string} fullPath - The full file path where the content will be saved.
      * @param {string} content - The content to save in the file.
+     * @returns {void}
      */
     private saveToFile(fullPath: string, content: string): void {
         fs.writeFileSync(fullPath, content);
@@ -112,6 +114,8 @@ export default class StorageManager {
      * Saves a breakpoint and its content to a file.
      * @param {Breakpoint} bp - The breakpoint to save.
      * @param {string} fileName - The name of the file to save the breakpoint content in.
+     * @param {string | null} content - The content to save in the file.
+     * @returns {InvalidReason} The reason the save operation failed, if any.
      */
     persistCaptureContent(
         bp: Breakpoint, 
@@ -136,6 +140,7 @@ export default class StorageManager {
     /**
      * Updates the breakpoints stored in the extension workspace state.
      * @param {Breakpoint[]} breakpoints - The list of updated breakpoints.
+     * @returns {void}
      */
     updateBreakpoints(breakpoints: Breakpoint[]): void {
         this.context?.workspaceState.update('breakpoints', breakpoints);
@@ -147,6 +152,7 @@ export default class StorageManager {
      * Adds or updates scripts for a given breakpoint.
      * @param {Breakpoint} bp - The breakpoint to update.
      * @param {string} fullPath - The full file path of the script.
+     * @returns {void}
      */
     private upsertBreakpointScripts(bp: Breakpoint, fullPath: string): void {
         const loadedBreakpoints = this.loadBreakpoints();
@@ -204,6 +210,7 @@ export default class StorageManager {
     /**
      * Opens a script file in the VSCode editor.
      * @param {string} fileName - The name of the script file to open.
+     * @returns {void}
      */
     openScript(fileName: string): void {
         const fullPath = path.join(this.storagePath, 'scripts', fileName);
@@ -215,6 +222,7 @@ export default class StorageManager {
     /**
      * Deletes a script file and removes its references from breakpoints.
      * @param {string} fileName - The name of the file to delete.
+     * @returns {void}
      */
     deleteScript(fileName: string): void {
         const fullPath: string = path.join(this.storagePath, 'scripts', fileName);
@@ -232,6 +240,7 @@ export default class StorageManager {
      * Renames a script file and updates its references in breakpoints.
      * @param {string} oldFilename - The current file name.
      * @param {string} newFilename - The new file name.
+     * @returns {void}
      */
     renameScript(oldFilename: string, newFilename: string): void {
         const [oldUri, newUri] = [oldFilename, newFilename].map((filename) =>
@@ -266,6 +275,7 @@ export default class StorageManager {
      * Updates the breakpoint's script list and persists the changes.
      * @param {Breakpoint} breakpoint - The breakpoint to update.
      * @param {string} uri - The URI of the script to remove.
+     * @returns {void}
      */
     removeBreakpointScript(breakpoint: Breakpoint, uri: string): void {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
@@ -283,6 +293,7 @@ export default class StorageManager {
     /**
      * Removes a specific breakpoint entirely.
      * @param {Breakpoint} breakpoint - The breakpoint to remove.
+     * @returns {void}
      */
     removeBreakpoint(breakpoint: Breakpoint): void {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
@@ -299,6 +310,7 @@ export default class StorageManager {
     /**
      * Unlinks a breakpoint by setting its `linked` property to false.
      * @param {string} bId - The ID of the breakpoint to unlink.
+     * @returns {void}
      */
     unlinkBreakpoint(bId: string): void {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
@@ -313,13 +325,15 @@ export default class StorageManager {
     /**
      * Removes all stored breakpoints.
      * Clears the list of breakpoints in the workspace state.
+     * @returns {void}
      */
     purgeBreakpoints(): void {
         this.updateBreakpoints([]);
     }
 
     /**
-     * Deletes all scripts from the storage directory and clears their references in breakpoints.
+     * Deletes all scripts from the storage directory and clears their references in breakpoints.'
+     * @returns {void}
      */
     purgeScripts(): void {
         const scriptsPath = path.join(this.storagePath, 'scripts');
@@ -333,6 +347,7 @@ export default class StorageManager {
 
     /**
      * Updates (persists) the loaded breakpoint.
+     * @returns {void}
      */
     updateLoadedBreakpoints(): void {
         if (!this.loadedBreakpoints.length) return;
@@ -342,6 +357,7 @@ export default class StorageManager {
     /**
      * Removes all breakpoints and scripts from storage.
      * Calls `purgeBreakpoints` and `purgeScripts` to clear both types of data.
+     * @returns {void}
      */
     purgeAll(): void {
         this.purgeBreakpoints();
@@ -371,6 +387,7 @@ export default class StorageManager {
      * The state is only active if the breakpoint is also linked.
      * @param {Breakpoint} breakpoint - The breakpoint to update.
      * @param {boolean} active - The new activation state.
+     * @returns {void}
      */
     changeBreakpointActivation(breakpoint: Breakpoint, active: boolean): void {
         const loaded: Breakpoint[] = this.loadBreakpoints();
@@ -385,6 +402,7 @@ export default class StorageManager {
      * Modifies the file, line, and column properties based on the new location.
      * @param {Breakpoint} breakpoint - The breakpoint to update.
      * @param {any} location - The new location details.
+     * @returns {void}
      */
     changeBreakpointLocation(breakpoint: Breakpoint, location: any): void {
         const loaded: Breakpoint[] = this.loadBreakpoints();
@@ -417,6 +435,7 @@ export default class StorageManager {
      * Filters out scripts that are already assigned and updates the breakpoint's script list.
      * @param {Breakpoint} breakpoint - The breakpoint to update.
      * @param {string[]} scripts - The URIs of the scripts to assign.
+     * @returns {void}
      */
     assignScriptsToBreakpoint(breakpoint: Breakpoint, scripts: string[]): void {
         const loaded: Breakpoint[] = this.loadBreakpoints();

@@ -27,6 +27,7 @@ class ReplResultsPool extends EventEmitter {
     
     /**
      * Clear the results stored in the pool.
+     * @returns {void}
      */
     clear(): void {
         this.results = [];
@@ -36,6 +37,7 @@ class ReplResultsPool extends EventEmitter {
     /**
      * Send new results and emit the 'results' event.
      * @param {ReplResult[]} results The results to store and broadcast.
+     * @returns {void}
      */
     send(results: ReplResult[]): void {
         this.results = results || [];

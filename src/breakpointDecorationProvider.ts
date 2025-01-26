@@ -8,6 +8,10 @@ export default class BreakpointDecorationProvider implements vscode.FileDecorati
 
     private constructor() {}
 
+    /**
+     * Get the singleton instance of the BreakpointDecorationProvider.
+     * @returns {BreakpointDecorationProvider} The singleton instance.
+    */
     static get instance(): BreakpointDecorationProvider {
         if (!this._instance) {
             this._instance = new BreakpointDecorationProvider();
@@ -15,6 +19,12 @@ export default class BreakpointDecorationProvider implements vscode.FileDecorati
         return this._instance;
     }
 
+    /**
+     * Provides a decoration for the given file URI.
+     * @param {vscode.Uri} uri - The URI of the file to decorate.
+     * @param {vscode.CancellationToken} token - A cancellation token.
+     * @returns {vscode.ProviderResult<vscode.FileDecoration>} The file decoration.
+     */
     //@ts-ignore
     provideFileDecoration = (uri: vscode.Uri, token: vscode.CancellationToken): vscode.ProviderResult<vscode.FileDecoration> => {
         const queryParams = new URLSearchParams(uri.query);
@@ -37,6 +47,12 @@ export default class BreakpointDecorationProvider implements vscode.FileDecorati
             color: new vscode.ThemeColor('charts.green'),
         }
     }
+
+    /**
+     * Triggers an update for the given URI.
+     * @param {vscode.Uri | vscode.Uri[]} uri - The URI to update.
+     * @returns {void}
+     */
     triggerUpdate(uri?: vscode.Uri | vscode.Uri[]) {
         console.log("Triggering update for URI:", uri);
         this._onDidChangeFileDecorations.fire(uri);

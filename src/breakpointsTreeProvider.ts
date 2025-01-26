@@ -98,7 +98,6 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Retrieves the singleton instance of the `BreakpointsTreeProvider`.
-     * @returns {BreakpointsTreeProvider} The singleton instance.
      */
     static get instance(): BreakpointsTreeProvider {
         if (!this._instance) {
@@ -109,6 +108,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Refreshes the Tree View by triggering the `onDidChangeTreeData` event.
+     * @returns {void}
      */
     refresh(): void {
         this._onDidChangeTreeData.fire(undefined);
@@ -117,6 +117,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Toggles the Tree View between hierarchical and flattened modes.
+     * @returns {void}
      */
     toggleFlattenedView = (): void => {
         this.isFlattened = !this.isFlattened;
@@ -129,6 +130,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * Retrieves a Tree Item representation of the given element (Breakpoint or Script).
      * @param {Breakpoint | Script} element - The element to create the Tree Item for.
      * @returns {vscode.TreeItem} A VS Code Tree Item with properties such as label, icon, and command.
+     * @override
      */
     getTreeItem(element: Breakpoint | Script): vscode.TreeItem {
         const treeItem: vscode.TreeItem = new vscode.TreeItem(
@@ -170,6 +172,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     /**
      * Navigates to the specified file from the Tree View.
      * @param {Breakpoint} element - The Breakpoint to navigate to
+     * @returns {void}
      */
     goTo = (element: Breakpoint): void => {
         const position = new vscode.Position(Math.max(element.line - 1, 0), 0);
@@ -221,7 +224,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * 
      * Retrieves the parent Breakpoint for the given Script if not flattened.
      * @param {Script} script - The Script for which to find the parent Breakpoint.
-     * @returns {Breakpoint | null} The parent Breakpoint or `null` if not found.
+     * @returns {Breakpoint | null} The parent Breakpoint or `null` if not found.'
+     * @override
      */
     getParent(script: Script): Breakpoint | null {
         
@@ -236,6 +240,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * Activates or deactivates the given Breakpoint or Script.
      * @param {Breakpoint | Script} element - The element to activate or deactivate.
      * @param {boolean} [status] - The desired activation status. If not provided, toggles the current state.
+     * @returns {void}
      */
     setElementActivation = (
         element: Breakpoint | Script, 
@@ -262,6 +267,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * Handles the drag-and-drop operation for scripts.
      * @param {readonly (Breakpoint | Script)[]} source - The dragged elements.
      * @param {vscode.DataTransfer} dataTransfer - The data transfer object.
+     * @returns {void}
      */
     handleDrag(source: readonly (Breakpoint | Script)[], dataTransfer: vscode.DataTransfer): void {
         const scriptsToDrag: Script[] = source.filter((e): e is Script => 'uri' in e);
@@ -283,6 +289,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * Handles the drop operation for scripts onto Breakpoints.
      * @param {Breakpoint | Script | undefined} target - The target Breakpoint for the drop operation.
      * @param {vscode.DataTransfer} dataTransfer - The data transfer object containing dropped data.
+     * @returns {Promise<void>}
      */
     async handleDrop(
         target: Breakpoint | Script | undefined,
@@ -311,6 +318,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     /**
      * Opens the specified script in a new editor tab.
      * @param {Script} script - The script to open.
+     * @returns {void}
      */
     openScripts = (script: Script): void => {
         const scripts = this.getSelectedItems(script) as Script[];
@@ -344,6 +352,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Gets the currently selected items from the Tree View.
+     * @param {Script | Breakpoint} [append] - An optional element to append to the selected items.
      * @returns {(Breakpoint | Script)[]} The currently selected Breakpoints or Scripts.
      */
     getSelectedItems(
@@ -358,6 +367,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Deactivates all currently selected items in the Tree View.
+     * @param {Script | Breakpoint} element - The element to deactivate.
+     * @returns {void}
      */
     deactivateSelectedItems = (element: Script | Breakpoint) :void => {
         this.getSelectedItems(element).forEach((item: Breakpoint | Script) => {
@@ -367,6 +378,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Activates all currently selected items in the Tree View.
+     * @param {Script | Breakpoint} element - The element to activate.
+     * @returns {void}
      */
     activateSelectedItems = (element: Script | Breakpoint) :void => {
         this.getSelectedItems(element).forEach((item: Breakpoint | Script) => {
@@ -377,6 +390,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     /**
      * Removes the specified Script from the Tree View.
      * @param {Script} element - The Script to remove.
+     * @returns {void}
      */
     removeSelectedItems = (element: Script): void => {
         this.getSelectedItems(element).forEach((elem: Breakpoint | Script) => {
@@ -396,6 +410,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Copies selected scripts and sets the context for them.
+     * @param {Script} script - The script to copy.
+     * @returns {void}
      */
     copyScripts = (script: Script): void => {
         const selectedScripts: Script[] = this.getSelectedItems(script) as Script[];
@@ -409,6 +425,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     /**
      * Runs the provided script along with all selected scripts.
      * @param {Script} script - The script to execute.
+     * @returns {void}
      */
     runScripts = (script: Script): void => {
         if (!_debugger?.activeDebugSession) {
@@ -422,7 +439,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Runs all scripts associated with the specified breakpoint.
-     * @param {Breakpoint} breakpoint - The breakpoint whose scripts to run.
+     * @param {Breakpoint} element - The breakpoint whose scripts to run.
+     * @returns {Promise<void>}
      */
     runAllBreakpointScripts = async (element: Breakpoint): Promise<void> => {
         const breakpoints = this.getSelectedItems(element) as Breakpoint[];
@@ -440,6 +458,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     /**
      * Pastes the copied scripts into the specified breakpoint.
      * @param {Breakpoint} breakpoint - The breakpoint to assign copied scripts to.
+     * @returns {void}
      */
     pasteScripts = (breakpoint: Breakpoint): void => {
         this.storageManager.assignScriptsToBreakpoint(
@@ -454,6 +473,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * @private
      * @param {Breakpoint | Script} element - The element for which the collapsible state should be set.
      * @param {vscode.TreeItemCollapsibleState} state - The collapsible state to assign to the element.
+     * @returns {void}
      */
     private setCollapsibleState(element: Breakpoint | Script, state: vscode.TreeItemCollapsibleState): void {
         isBreakpoint(element) && this.collapsibleStates.set((element as Breakpoint).id, state);

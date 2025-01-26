@@ -73,7 +73,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Get the singleton instance of the `ReplResultsTreeProvider`.
-     * @returns {ReplResultsTreeProvider} The singleton instance.
+     * @returns {ReplResultsTreeProvider} The singleton instance.'
      */
     static get instance(): ReplResultsTreeProvider {
         if (!this._instance) {
@@ -84,6 +84,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Refresh the tree view.
+     * @returns {void}
      */
     refresh(): void {
         this._onDidChangeTreeData.fire(undefined);
@@ -93,6 +94,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Set collapsible state for a given tree item.
      * @param element - The tree item to set the collapsible state for.
      * @param state - The collapsible state to set.
+     * @returns {void}
      */
      private setCollapsibleState(
         element: Breakpoint | Script | ReplResult,
@@ -105,6 +107,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Get the collapsible state for a given tree item.
+     * @param element - The tree item to get the collapsible state for.
+     * @returns {vscode.TreeItemCollapsibleState} The collapsible state.
      */
     private getCollapsibleState(element: Breakpoint | Script | ReplResult): vscode.TreeItemCollapsibleState {
         if (isReplResult(element)) return vscode.TreeItemCollapsibleState.None;
@@ -116,6 +120,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Toggle between hierarchical and flattened views.
+     * @returns {void}
      */
     toggleReplTreeViewMode = (): void => {
         this.isFlattened = !this.isFlattened;
@@ -124,6 +129,9 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Return a TreeItem for each element (Breakpoint, Script, or ReplResult).
+     * @param element - The element to get a TreeItem for.
+     * @returns {vscode.TreeItem} The TreeItem for the element.
+     * @override
      */
     getTreeItem(element: Breakpoint | Script | ReplResult): vscode.TreeItem {
         const treeItem = new vscode.TreeItem(''); // Placeholder for initialization
@@ -144,6 +152,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Configure the TreeItem for a ReplResult.
      * @param treeItem - The TreeItem to configure.
      * @param result - The ReplResult to configure the TreeItem for.
+     * @returns {void}
      */
     private configureReplResultItem(treeItem: vscode.TreeItem, result: ReplResult): void {
         treeItem.label = result.success ? 'Success' : 'Failure';
@@ -164,6 +173,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Configure the TreeItem for a Script.
      * @param treeItem - The TreeItem to configure.
      * @param script - The Script to configure the TreeItem for.
+     * @returns {void}
      */
     private configureScriptItem(treeItem: vscode.TreeItem, script: Script): void {
         const label = path.basename(script.uri);
@@ -185,6 +195,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      * Configure the TreeItem for a Breakpoint.
      * @param treeItem 
      * @param bp 
+     * @returns {void}
      */
     private configureBreakpointItem(treeItem: vscode.TreeItem, bp: Breakpoint): void {
         const label = path.basename(bp.file);
@@ -211,8 +222,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * 
-     * @param result - The ReplResult to get the associated breakpoint description for.
-     * @returns The description of the associated breakpoint.
+     * @param {ReplResult} result - The ReplResult to get the associated breakpoint for.
+     * @returns {string} The description of the associated breakpoint.
      */
     private getAssociatedBreakpointDescription(result: ReplResult): string {
         const assocBreakpoint = this.storageManager.loadBreakpoints().find(
@@ -224,7 +235,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Get children elements based on the hierarchical or flattened view.
-     * @param element - The parent element to get children for.
+     * @param {Breakpoint | Script} element - The parent element to get children for.
+     * @returns {Promise<(Breakpoint | Script | ReplResult)[]>} The children elements.
      */
     async getChildren(element?: Breakpoint | Script): Promise<(Breakpoint | Script | ReplResult)[]> {
         const breakpoints = this.storageManager.loadBreakpoints();
@@ -265,7 +277,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Copy the error stack to the clipboard.
-     * @param element - The ReplResult to copy the error stack from.
+     * @param {ReplResult} element - The ReplResult to copy the stack for.
+     * @returns {Promise<void>} A Promise that resolves when the stack is copied.
      */
     copyStackTrace = async (element: ReplResult): Promise<void> => {
         if (!element.stack) {
@@ -277,7 +290,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Open the script file associated with the ReplResult.
-     * @param element - The ReplResult to open the script file for.
+     * @param {ReplResult | Script} element - The ReplResult to open the script for.
+     * @returns {Promise<void>} A Promise that resolves when the script is opened.
      */
     openScripts = async (element: ReplResult | Script): Promise<void> => {
         const uri = isReplResult(element) ? (element as ReplResult).script : (element as Script).uri;
@@ -288,8 +302,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * get the breakpoint id of the element
-     * @param element - The element to get the breakpoint id for.
-     * @returns The breakpoint id.
+     * @param {ReplResult | Script | Breakpoint} element - The element to get the breakpoint id for.
+     * @returns {string | undefined} The breakpoint id.
      */
     getBid = (element: ReplResult | Script | Breakpoint): string | undefined => {
         if (isReplResult(element)) {
@@ -304,7 +318,8 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
 
     /**
      * Jump to the breakpoint associated with the ReplResult.
-     * @param element - The ReplResult to jump to the breakpoint for.
+     * @param {ReplResult | Script | Breakpoint} element - The element to jump to the breakpoint for.
+     * @returns {Promise<void>} A Promise that resolves when the breakpoint is jumped to.
      */
     jumpToBreakpoint = async (element: ReplResult | Script | Breakpoint): Promise<void> => {
         const bid = this.getBid(element);
