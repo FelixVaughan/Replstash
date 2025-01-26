@@ -137,7 +137,7 @@ export default class StorageManager {
      * Updates the breakpoints stored in the extension workspace state.
      * @param {Breakpoint[]} breakpoints - The list of updated breakpoints.
      */
-    private updateBreakpoints(breakpoints: Breakpoint[]): void {
+    updateBreakpoints(breakpoints: Breakpoint[]): void {
         this.context?.workspaceState.update('breakpoints', breakpoints);
         this.loadBreakpoints();
         refreshTree();

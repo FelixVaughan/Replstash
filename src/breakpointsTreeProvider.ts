@@ -135,17 +135,11 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             'uri' in element ? element.uri : element.file
         );
 
-        
-    
-        // treeItem.checkboxState = element.active
-        //     ? vscode.TreeItemCheckboxState.Checked
-        //     : vscode.TreeItemCheckboxState.Unchecked;
-    
         if (isBreakpoint(element)) {
             const breakpoint = element as Breakpoint;
             const iconColor = !breakpoint.linked
-                ? 'charts.yellow' : breakpoint.active
-                ? 'charts.green' : 'errorForeground';
+                ? 'errorForeground' : breakpoint.active
+                ? 'charts.green' : 'charts.yellow';
             treeItem.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(iconColor));
             const collState = this.collapsibleStates.get(breakpoint.id) || vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.collapsibleState = collState;
@@ -513,4 +507,48 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     renameSavedScript = async (script: Script): Promise<void> => {
         CommandHandler.instance.renameSavedScript(path.basename(script.uri));
     };
+
+    /**
+     * Resync breakpoints with the current debug session.
+     * @returns {Promise<void>}
+     */
+    resyncBreakpoints = async (): Promise<void> => {
+        const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
+        const sessionBreakpoints = _debugger?.breakpoints;
+        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.map((bp: Breakpoint) => {
+            const sessionBp = sessionBreakpoints.find((sbp) => sbp.id === bp.id) as vscode.SourceBreakpoint | undefined;
+
+            if(sessionBp){
+                bp.line = sessionBp.location.range.start.line + 1;
+                bp.column = sessionBp.location.range.start.character;
+                bp.linked = true;
+                return bp;
+            }
+
+            const matches = sessionBreakpoints.filter((sbp) => {
+                if (sbp instanceof vscode.SourceBreakpoint) {
+                    return (
+                        sbp.location.uri.fsPath === bp.file
+                        && sbp.location.range.start.line + 1 === bp.line
+                    );
+                }
+                return false;
+            }) as vscode.SourceBreakpoint[] | undefined;
+
+            const nearestMatch = matches?.find((sbp: vscode.SourceBreakpoint) => {
+                return sbp.location.range.start.character === bp.column;
+            }) || matches?.[0];
+
+            if(nearestMatch){
+                bp.id = nearestMatch.id;
+                bp.active = false;
+                bp.linked = true;
+                return bp;
+            }
+
+            bp.linked = false;
+            return bp
+        });
+        this.storageManager.updateBreakpoints(updatedBreakpoints);
+    }
 }

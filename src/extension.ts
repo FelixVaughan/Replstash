@@ -85,6 +85,7 @@ export const activate = (context: vscode.ExtensionContext): void => {
         registerCommand('replstash.toggleBreakpointTreeViewMode', breakpointsTreeProvider.toggleFlattenedView),
         registerCommand('replstash.addScript', breakpointsTreeProvider.addScript),
         registerCommand('replstash.goTo', breakpointsTreeProvider.goTo),
+        registerCommand('replstash.resyncBreakpoints', breakpointsTreeProvider.resyncBreakpoints),
 
         // Evaluation Results Tree view commands
         registerCommand('replstash.toggleReplTreeViewMode', replResultsTreeProvider.toggleReplTreeViewMode),
@@ -112,10 +113,3 @@ export const deactivate = (): void => {};
 
 //TODO: README.md - 2.5 hr
 //TODO: Logo and publisher name - 1.5 hr
-
-/**
-    When a breakpoint is toggled off and on, it is unlinked but when created again, a new breakpoint is created
-    basically need to restore unlinked
-    Estimated completions date : MARCH 15, 2025
- */
-

@@ -131,6 +131,12 @@
         "icon": "$(debug-start)"
       },
       {
+        "command": "replstash.resyncBreakpoints",
+        "title": "Resync",
+        "category": "Replstash",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "replstash.disableScriptsRunnable",
         "title": "Disable Auto-run Replstash scripts",
         "category": "Replstash",
@@ -250,6 +256,11 @@
           "command": "replstash.enableScriptsRunnable",
           "when": "!replstash.scriptsRunnable && view == breakpointsView",
           "group": "navigation@1"
+        },
+        {
+          "command": "replstash.resyncBreakpoints",
+          "when": "view == breakpointsView",
+          "group": "navigation@3"
         },
         {
           "command": "replstash.disableScriptsRunnable",
