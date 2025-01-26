@@ -1,6 +1,7 @@
 import { _debugger, Breakpoint, commands, refreshTree } from './utils';
 import StorageManager from './storageManager';
 import * as vscode from 'vscode';
+import BreakpointsTreeProvider from './breakpointsTreeProvider';
 /**
  * Manages debugging sessions, breakpoints, and captured expression ouputs.
  * @class
@@ -53,6 +54,9 @@ export default class SessionManager {
      */
     private storageManager: StorageManager = StorageManager.instance;
 
+    /**
+     * Reference to the status bar item for capturing status.
+     */
     private statusBarItem: vscode.StatusBarItem;
 
     /**
@@ -69,6 +73,7 @@ export default class SessionManager {
 
     /**
      * Initializes event listeners for debugging sessions.
+     * @returns {void}
      */
     private debugEventListeners(): void {
         // Listen for debugging session start
@@ -100,6 +105,8 @@ export default class SessionManager {
                     this.storageManager.changeBreakpointLocation(point, brkt.location)
                 }
             });
+
+            BreakpointsTreeProvider.instance.resyncBreakpoints();
 
             // Refresh the UI tree to reflect changes
             refreshTree();
