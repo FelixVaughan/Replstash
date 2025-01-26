@@ -216,7 +216,7 @@
       },
       {
         "command": "replstash.goTo",
-        "title": "Go to",
+        "title": "Go To",
         "enablement": "view == breakpointsView"
       },
       {

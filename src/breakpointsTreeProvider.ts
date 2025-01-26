@@ -514,41 +514,63 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      */
     resyncBreakpoints = async (): Promise<void> => {
         const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
-        const sessionBreakpoints = _debugger?.breakpoints;
-        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.map((bp: Breakpoint) => {
+        //refresh debugger breakpoints
+        
+        const sessionBreakpoints = vscode.debug?.breakpoints ?? [];
+    
+        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.map((bp) => {
+            // Try to find an exact match by ID
             const sessionBp = sessionBreakpoints.find((sbp) => sbp.id === bp.id) as vscode.SourceBreakpoint | undefined;
-
-            if(sessionBp){
-                bp.line = sessionBp.location.range.start.line + 1;
-                bp.column = sessionBp.location.range.start.character;
-                bp.linked = true;
-                return bp;
+    
+            if (sessionBp) {
+                const { range } = sessionBp.location;
+                return {
+                    ...bp,
+                    line: range.start.line + 1,
+                    column: range.start.character,
+                    linked: true,
+                };
             }
-
-            const matches = sessionBreakpoints.filter((sbp) => {
-                if (sbp instanceof vscode.SourceBreakpoint) {
-                    return (
-                        sbp.location.uri.fsPath === bp.file
-                        && sbp.location.range.start.line + 1 === bp.line
-                    );
-                }
-                return false;
-            }) as vscode.SourceBreakpoint[] | undefined;
-
-            const nearestMatch = matches?.find((sbp: vscode.SourceBreakpoint) => {
-                return sbp.location.range.start.character === bp.column;
-            }) || matches?.[0];
-
-            if(nearestMatch){
-                bp.id = nearestMatch.id;
-                bp.active = false;
-                bp.linked = true;
-                return bp;
+    
+            // Find breakpoints that match by file and line
+            const matches = sessionBreakpoints.filter(
+                (sbp) => sbp instanceof vscode.SourceBreakpoint
+                    && sbp.location.uri.fsPath === bp.file
+                    && sbp.location.range.start.line + 1 === bp.line
+            ) as vscode.SourceBreakpoint[];
+    
+            // Find the best match (same column or first match)
+            const nearestMatch = matches.find((sbp) => sbp.location.range.start.character === bp.column) ?? matches[0];
+    
+            if (nearestMatch) {
+                return {
+                    ...bp,
+                    id: nearestMatch.id,
+                    active: false,
+                    linked: true,
+                    scripts: bp.scripts.map((s) => ({ ...s, bId: nearestMatch.id })),
+                };
             }
-
-            bp.linked = false;
-            return bp
+    
+            // No match found
+            return {
+                ...bp,
+                linked: false,
+            };
         });
-        this.storageManager.updateBreakpoints(updatedBreakpoints);
-    }
+
+        //merge any breakpoints with the same id
+        const mergedBreakpoints: Breakpoint[] = updatedBreakpoints.reduce((acc: Breakpoint[], bp: Breakpoint) => {
+            const existing = acc.find((b) => b.id === bp.id);
+            if (existing) {
+                existing.scripts.push(...bp.scripts);
+            } else {
+                acc.push(bp);
+            }
+            return acc;
+        }, []);
+    
+        this.storageManager.updateBreakpoints(mergedBreakpoints);
+    };
+    
 }
