@@ -114,12 +114,8 @@ export const deactivate = (): void => {};
 //TODO: Logo and publisher name - 1.5 hr
 
 /**
- * TEST ISSUES:
- * - Ln description in treeview for breakpoint not always accurate
- * - Empty scripts sometimes not removed
- * - Show autorun status on repl-stash view
- * - When a breakpoint is toggled off and on, it is unlinked but when created again, a new breakpoint is created
-    -basically need to restore unlinked
-Estimated completions date : MARCH 15, 2025
+    When a breakpoint is toggled off and on, it is unlinked but when created again, a new breakpoint is created
+    basically need to restore unlinked
+    Estimated completions date : MARCH 15, 2025
  */
 

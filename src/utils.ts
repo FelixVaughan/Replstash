@@ -242,7 +242,7 @@ export const evaluateScripts = async (scripts: Script[], threadId: number | null
  */
 export const describe = (bp: Breakpoint, length: boolean = true) => {
     let result = `${path.dirname(bp.file)}@Ln ${bp.line}, Col ${bp.column}`;
-    if (length) result += `- {${bp.scripts.length}}`; 
+    if (length) result += ` - {${bp.scripts.length}}`; 
     return result;
 }
 

@@ -269,11 +269,12 @@ export default class StorageManager {
      */
     removeBreakpointScript(breakpoint: Breakpoint, uri: string): void {
         const loadedBreakpoints: Breakpoint[] = this.loadBreakpoints();
-        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.map((bp) => {
+        const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.filter((bp) => {
             if (bp.id === breakpoint.id) {
                 bp.scripts = bp.scripts.filter((s: Script) => s.uri !== uri);
+                if (bp.scripts.length === 0) return false;
             }
-            return bp;
+            return true;
         });
         this.deleteScript(path.basename(uri));
         this.updateBreakpoints(updatedBreakpoints);
@@ -391,13 +392,12 @@ export default class StorageManager {
             loaded.map((bp) => {
                 if (bp.id === breakpoint.id) {
                     breakpoint.file = location.uri.fsPath;
-                    breakpoint.line = location.range.start.line;
+                    breakpoint.line = location.range.start.line + 1;
                     breakpoint.column = location.range.start.character;
                 }
                 return bp;
             })
         );
-        console.log(breakpoint, location);
     }
 
     /**

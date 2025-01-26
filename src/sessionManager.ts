@@ -87,8 +87,7 @@ export default class SessionManager {
 
             // Handle removed breakpoints
             removed.forEach((brkt: any) => {
-                const bId = brkt.id;
-                this.storageManager.unlinkBreakpoint(bId);
+                this.storageManager.unlinkBreakpoint(brkt.id);
             });
 
             // Handle changed breakpoints
@@ -97,7 +96,7 @@ export default class SessionManager {
                 const breakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
                 const point: Breakpoint | undefined = breakpoints.find((b) => b.id === bId);
                 if (point){
-                    this.storageManager.changeBreakpointActivation(point, false);
+                    // this.storageManager.changeBreakpointActivation(point, false);
                     this.storageManager.changeBreakpointLocation(point, brkt.location)
                 }
             });
