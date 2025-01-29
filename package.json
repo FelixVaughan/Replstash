@@ -11,6 +11,10 @@
   "bugs": {
     "url": "https://github.com/FelixVaughan/Replstash/issues"
   },
+  "galleryBanner": {
+    "color": "#21214c",
+    "theme": "dark"
+  },
   "icon": "icon.png",
   "extensionKind": [
     "ui",
