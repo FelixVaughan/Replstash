@@ -1,7 +1,7 @@
 import { _debugger, Breakpoint, commands, refreshTree } from './utils';
 import StorageManager from './storageManager';
 import * as vscode from 'vscode';
-import BreakpointsTreeProvider from './breakpointsTreeProvider';
+
 /**
  * Manages debugging sessions, breakpoints, and captured expression ouputs.
  * @class
@@ -106,7 +106,7 @@ export default class SessionManager {
                 }
             });
 
-            BreakpointsTreeProvider.instance.resyncBreakpoints();
+            // BreakpointsTreeProvider.instance.resyncBreakpoints();
 
             // Refresh the UI tree to reflect changes
             refreshTree();

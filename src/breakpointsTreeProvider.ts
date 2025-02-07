@@ -11,7 +11,8 @@ import {
     isBreakpoint,
     describe,
     InvalidReason,
-    getCurrentTimestamp
+    getCurrentTimestamp,
+    showErrorMessage
 } from './utils';
 import StorageManager from './storageManager';
 import CommandHandler from './commandHandler';
@@ -146,7 +147,7 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             treeItem.contextValue = 'breakpoint';
             treeItem.label = path.basename(breakpoint.file);
             treeItem.tooltip = !breakpoint.linked ? 'Unlinked' : breakpoint.active ? 'Active' : 'Inactive';
-            treeItem.description = describe(breakpoint);
+            treeItem.description = describe(breakpoint, { showPath: false, showScriptCount: true });
         } else {
             const script = element as Script;
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
@@ -513,6 +514,21 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
      * @returns {Promise<void>}
      */
     resyncBreakpoints = async (): Promise<void> => {
+        // Check for unsaved files
+        const unsavedFiles = vscode.workspace.textDocuments.filter(doc => doc.isDirty);
+        if (unsavedFiles.length > 0) {
+            const message = 'Please save all files before resyncing.';
+            const saveButton = 'Save All';
+            const result = await showErrorMessage(message, { modal: true }, saveButton);
+            
+            if (result === saveButton) {
+                await vscode.workspace.saveAll();
+                // Retry the resync after saving
+                return this.resyncBreakpoints();
+            }
+            return;
+        }
+
         const loadedBreakpoints: Breakpoint[] = this.storageManager.loadBreakpoints();
         //refresh debugger breakpoints
         
@@ -520,10 +536,10 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
     
         const updatedBreakpoints: Breakpoint[] = loadedBreakpoints.map((bp) => {
             // Try to find an exact match by ID
-            const sessionBp = sessionBreakpoints.find((sbp) => sbp.id === bp.id) as vscode.SourceBreakpoint | undefined;
+            const idBp = sessionBreakpoints.find((sbp) => sbp.id === bp.id) as vscode.SourceBreakpoint | undefined;
     
-            if (sessionBp) {
-                const { range } = sessionBp.location;
+            if (idBp) {
+                const { range } = idBp.location;
                 return {
                     ...bp,
                     line: range.start.line + 1,
@@ -533,14 +549,16 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             }
     
             // Find breakpoints that match by file and line
-            const matches = sessionBreakpoints.filter(
+            const locationMatches = sessionBreakpoints.filter(
                 (sbp) => sbp instanceof vscode.SourceBreakpoint
                     && sbp.location.uri.fsPath === bp.file
                     && sbp.location.range.start.line + 1 === bp.line
             ) as vscode.SourceBreakpoint[];
     
             // Find the best match (same column or first match)
-            const nearestMatch = matches.find((sbp) => sbp.location.range.start.character === bp.column) ?? matches[0];
+            const nearestMatch = locationMatches.find((sbp) => 
+                sbp.location.range.start.character === bp.column
+            ) ?? locationMatches[0];
     
             if (nearestMatch) {
                 return {

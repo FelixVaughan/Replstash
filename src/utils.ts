@@ -236,15 +236,35 @@ export const evaluateScripts = async (scripts: Script[], threadId: number | null
 
 
 /**
- * 
- * @param bp - The breakpoint to describe.
- * @returns A string description of the breakpoint.
+ * Generates a description string for a breakpoint
+ * @param bp The breakpoint to describe
+ * @param options Configuration for the description
+ * @returns Formatted description string
  */
-export const describe = (bp: Breakpoint, length: boolean = true) => {
-    let result = `${path.dirname(bp.file)}@Ln ${bp.line}, Col ${bp.column}`;
-    if (length) result += ` - {${bp.scripts.length}}`; 
-    return result;
-}
+export const describe = (
+    bp: Breakpoint, 
+    options: { 
+        showPath?: boolean;
+        showScriptCount?: boolean;
+    } = { 
+        showPath: true, 
+        showScriptCount: true 
+    }
+): string => {
+    const parts: string[] = [];
+    
+    if (options.showPath) {
+        parts.push(`${path.dirname(bp.file)}@`);
+    }
+    
+    parts.push(`Ln ${bp.line}, Col ${bp.column}`);
+    
+    if (options.showScriptCount) {
+        parts.push(`{${bp.scripts.length}}`);
+    }
+    
+    return parts.join(' ');
+};
 
 /**
  * Determines if the given object is a breakpoint.

@@ -212,7 +212,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
             bp.file).with({query: `bId=${bp.id}`});
         treeItem.resourceUri = resourceUri;
         treeItem.iconPath = new vscode.ThemeIcon('file');
-        treeItem.description = describe(bp, false);
+        treeItem.description = describe(bp);
 
         // Notify the decoration provider
         const decorationProvider = BreakpointDecorationProvider.instance;
@@ -229,7 +229,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         const assocBreakpoint = this.storageManager.loadBreakpoints().find(
             bp => bp.id === result.bId
         );
-        return assocBreakpoint ? describe(assocBreakpoint, false) : 'No breakpoint info.';
+        return assocBreakpoint ? describe(assocBreakpoint) : 'No breakpoint info.';
     }
     
 
