@@ -3,5 +3,5 @@ node_modules
 *.vsix
 dist/
 package-lock.json
-.vscode/
+.vscode/*
 .vscodeignore

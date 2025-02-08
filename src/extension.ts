@@ -110,6 +110,3 @@ export const activate = (context: vscode.ExtensionContext): void => {
 export const deactivate = (): void => {};
 
  
-
-//TODO: README.md - 2.5 hr
-//TODO: Logo and publisher name - 1.5 hr
