@@ -75,32 +75,32 @@
     "commands": [
       {
         "command": "replstash.startCapture",
-        "title": "Start Capturing Debug Console",
+        "title": "Start Capture",
         "category": "Replstash"
       },
       {
         "command": "replstash.pauseCapture",
-        "title": "Pause Capturing Debug Console",
+        "title": "Pause Capture",
         "category": "Replstash"
       },
       {
         "command": "replstash.stopCapture",
-        "title": "Stop Debug Capture",
+        "title": "Stop Capture",
         "category": "Replstash"
       },
       {
         "command": "replstash.outputCapture",
-        "title": "Output Capture Content",
+        "title": "View Captured Content",
         "category": "Replstash"
       },
       {
         "command": "replstash.clearCapture",
-        "title": "Clear Debug Captured",
+        "title": "Clear Capture",
         "category": "Replstash"
       },
       {
         "command": "replstash.discardCapture",
-        "title": "Discard Debug Captured",
+        "title": "Discard Capture",
         "category": "Replstash"
       },
       {
@@ -115,22 +115,22 @@
       },
       {
         "command": "replstash.deleteSavedScript",
-        "title": "Delete Capture Script",
+        "title": "Delete Script",
         "category": "Replstash"
       },
       {
         "command": "replstash.purgeScripts",
-        "title": "Purge all Scripts",
+        "title": "Purge Scripts",
         "category": "Replstash"
       },
       {
         "command": "replstash.purgeBreakpoints",
-        "title": "Purge all Breakpoints",
+        "title": "Purge Breakpoints",
         "category": "Replstash"
       },
       {
         "command": "replstash.enableScriptsRunnable",
-        "title": "Enable Auto-run Replstash scripts",
+        "title": "Enable Auto-run scripts",
         "category": "Replstash",
         "icon": "$(debug-start)"
       },
@@ -142,18 +142,18 @@
       },
       {
         "command": "replstash.disableScriptsRunnable",
-        "title": "Disable Auto-run Replstash scripts",
+        "title": "Disable Auto-run scripts",
         "category": "Replstash",
         "icon": "$(debug-stop)"
       },
       {
         "command": "replstash.deleteBreakpoint",
-        "title": "Delete Replstash Breakpoint",
+        "title": "Delete Breakpoint",
         "category": "Replstash"
       },
       {
         "command": "replstash.renameSavedScript",
-        "title": "Rename Replstash Script",
+        "title": "Rename Script",
         "category": "Replstash"
       },
       
