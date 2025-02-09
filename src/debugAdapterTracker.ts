@@ -4,7 +4,6 @@ import StorageManager from './storageManager';
 import {
     _debugger, 
     Breakpoint, 
-    showInformationMessage, 
     Script,
     evaluateScripts,
 } from './utils';
@@ -142,7 +141,6 @@ export default class DebugAdapterTracker {
             if (this.sessionManager.isCapturing() || this.sessionManager.capturePaused()) {
                 this.commandHandler.stopCapture(true);
             }
-            showInformationMessage('Debugger resumed from breakpoint.');
         }
     };
 

@@ -6,7 +6,15 @@
 
 A Visual Studio Code extension to quickly save, edit and rerun [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) content captured on breakpoints from the debug console.
 
-![Replstash Demo](images/demo.gif)
+![Replstash Logging Example](images/log_example.gif)
+
+*Separate logging and execution.*
+
+<br>
+
+![Replstash Script Example](images/script_example.gif)
+
+*Create script and change state.*
 
 ## Installation
 
