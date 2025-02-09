@@ -139,8 +139,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
         if (isBreakpoint(element)) {
             const breakpoint = element as Breakpoint;
             const iconColor = !breakpoint.linked
-                ? 'errorForeground' : breakpoint.active
-                ? 'charts.green' : 'charts.yellow';
+                ? 'disabledForeground' : breakpoint.active
+                ? 'testing.iconPassed' : 'charts.yellow';
             treeItem.iconPath = new vscode.ThemeIcon('circle-filled', new vscode.ThemeColor(iconColor));
             const collState = this.collapsibleStates.get(breakpoint.id) || vscode.TreeItemCollapsibleState.Collapsed;
             treeItem.collapsibleState = collState;
@@ -160,8 +160,8 @@ export default class BreakpointsTreeProvider implements vscode.TreeDataProvider<
             }
 
             const iconColor = script.error
-                ? 'errorForeground' : script.active
-                ? 'charts.green' : 'charts.yellow';
+                ? 'testing.iconFailed' : script.active
+                ? 'testing.iconPassed' : 'charts.yellow';
             treeItem.iconPath = new vscode.ThemeIcon('file-code', new vscode.ThemeColor(iconColor));
         }
     

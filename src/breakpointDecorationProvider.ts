@@ -38,13 +38,13 @@ export default class BreakpointDecorationProvider implements vscode.FileDecorati
             return {
                 badge: `${errCount}`,
                 tooltip: 'Error detected',
-                color: new vscode.ThemeColor('charts.red'),
+                color: new vscode.ThemeColor('charts.yellow'),
             };
         }
     
         return {
             tooltip: 'No errors detected',
-            color: new vscode.ThemeColor('charts.green'),
+            color: new vscode.ThemeColor('testing.iconPassed'),
         }
     }
 

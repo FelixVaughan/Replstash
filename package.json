@@ -15,7 +15,7 @@
     "color": "#21214c",
     "theme": "dark"
   },
-  "icon": "icon.png",
+  "icon": "images/icon.png",
   "extensionKind": [
     "ui",
     "workspace"

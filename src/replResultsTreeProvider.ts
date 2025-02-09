@@ -164,7 +164,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         treeItem.tooltip = result.stack || 'No issues detected.';
         treeItem.iconPath = new vscode.ThemeIcon(
             result.success ? 'pass' : 'error',
-            new vscode.ThemeColor(result.success ? 'charts.green' : 'charts.red')
+            new vscode.ThemeColor(result.success ? 'testing.iconPassed' : 'testing.iconFailed')
         );
     }
 
@@ -186,7 +186,7 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
         treeItem.tooltip = script.uri;
         treeItem.iconPath = new vscode.ThemeIcon(
             scriptHasError ? 'error' : 'pass',
-            new vscode.ThemeColor(scriptHasError ? 'charts.red' : 'charts.green')
+            new vscode.ThemeColor(scriptHasError ? 'testing.iconFailed' : 'testing.iconPassed')
         );
         // treeItem.resourceUri = vscode.Uri.file(script.uri);
     }
@@ -199,12 +199,6 @@ export default class ReplResultsTreeProvider implements vscode.TreeDataProvider<
      */
     private configureBreakpointItem(treeItem: vscode.TreeItem, bp: Breakpoint): void {
         const label = path.basename(bp.file);
-        
-        //@ts-ignore
-        const breakpointHasError = bp.scripts.some(script =>
-            this.results.some(result => result.bId === bp.id && result.script === script.uri && !result.success)
-        );
-    
         treeItem.label = label;
         treeItem.contextValue = 'breakpoint';
         treeItem.tooltip = `Breakpoint at ${bp.file}:${bp.line}`;

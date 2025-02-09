@@ -8,27 +8,45 @@ A Visual Studio Code extension to quickly save, edit and rerun [REPL](https://en
 
 ![Replstash Demo](images/demo.gif)
 
-## Features 
-- Palette commands to start, stop, save and auto-run REPL content
-- Panel on the debug sidebar to manage and execute scripts
-- Container on bottom panel to view content execution results and stack traces
-- Status bar indicates capture state
-- Supports Python, Bash, JavaScript and other REPL-supported languages
-
-## Use Cases 
-- Set snippets to change variables, log messages, and import dependencies on hit breakpoints
-- Save parts of code you want to remove but keep executable
-- Test multiple execution paths when paused on a breakpoint
-- Eliminate repetitive commands ran in the console
-- Monitor and modify program and system state between breakpoints
-
 ## Installation
 
 Install directly from the Visual Studio Code Marketplace or via the extensions panel in VS Code.
 
 ## Usage
 
-The workflow is most effective when executing commands via the palette or shortcuts and interacting with the views on the debug sidebar and bottom panel.
+The workflow is designed to be streamlined through VS Code's command palette and keyboard shortcuts. While you can browse and edit your saved scripts and breakpoints at any time, the core functionality requires an active debugging session.
+
+Here's how it works:
+
+1. Start a debugging session
+2. Hit a breakpoint to pause execution
+3. Begin capturing content using either:
+   - The colored `Replstash` status bar icon
+   - Keyboard shortcuts
+   - Command palette commands
+
+The `Replstash` status bar icon serves as a visual indicator of your current capture state. When active, it will change color to show that capture is in progress.
+
+You can interact with your captured content through:
+- The debug sidebar views
+- The bottom panel interface
+
+## Use Cases 
+
+- Set snippets to change variables, log messages, and import dependencies on hit breakpoints
+- Save parts of code you want to remove but keep executable
+- Test multiple execution paths when paused on a breakpoint
+- Eliminate repetitive commands ran in the console
+- Monitor and modify program and system state between breakpoints
+
+## Features 
+
+- Palette commands to start, stop, save and auto-run REPL content
+- Panel on the debug sidebar to manage and execute scripts
+- Container on bottom panel to view content execution results and stack traces
+- Status bar indicates capture state
+- Supports Python, Bash, JavaScript and other REPL-supported languages
+- Visual indicators in the debug panel show execution status and results of each script run
 
 ### Key Commands
 
@@ -44,6 +62,7 @@ The workflow is most effective when executing commands via the palette or shortc
 | Toggle Auto-Run | `Replstash: Toggle Auto-Run` | `ctrl + shift + j + m` |
 
 ### Additional Functions
+
 - Delete a breakpoint via palette or debug panel
 - Edit a saved script via palette or debug panel
 - Delete a saved script via palette or debug panel
