@@ -10,20 +10,20 @@ A Visual Studio Code extension to quickly save, edit and rerun [REPL](https://en
 
 ![Replstash Logging Example](images/log_and_modify.gif)
 
-*Demonstrates moving debug logs to a REPL script and using it to calculate and set game moves automatically.*
+Demonstrates moving debug logs to a REPL script and using it to calculate and set game moves automatically.
 
-<br/>
 <br/>
 
 ![Replstash Run Example](images/run_example.gif)
 
-*Just some harmless fun.*
-<br/>
+Just some harmless fun.
+
 <br/>
 
 ![contributes.png](images/contributes.png)
 
-*Views, Panels and commands in the command palette.*
+Views, Panels and commands in the command palette.
+
 <br/>
 
 ## Installation
