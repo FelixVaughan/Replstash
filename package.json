@@ -2,7 +2,7 @@
   "name": "replstash",
   "displayName": "Replstash",
   "description": "Save, edit and rerun repl expressions captured from the debug console",
-  "publisher": "Replstash",
+  "publisher": "felixezamavaughan",
   "license": "MIT",
   "markdown": "github",
   "qna": "marketplace",
